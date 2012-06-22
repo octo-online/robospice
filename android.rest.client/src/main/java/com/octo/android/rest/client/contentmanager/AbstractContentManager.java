@@ -153,7 +153,7 @@ public class AbstractContentManager {
 	 *            can service be used multiple times to parallelize content request (e.g. : image downloading)
 	 * @return an int value containing the requestId, will be used to retrieve the request in the list of request
 	 */
-	protected int requestContentWithService(int serviceType, Class<? extends AbstractContentService<?>> serviceClass, Bundle optionalBundle, boolean useCache, boolean isServiceParallelizable) {
+	public int requestContentWithService(int serviceType, Class<? extends AbstractContentService<?>> serviceClass, Bundle optionalBundle, boolean useCache, boolean isServiceParallelizable) {
 
 		checkContentServiceIsDeclaredInManifest(serviceClass);
 
