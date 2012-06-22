@@ -12,7 +12,6 @@ import android.content.pm.ResolveInfo;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.ResultReceiver;
-import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.util.SparseArray;
 import com.octo.android.rest.client.contentmanager.listener.ContentRequestFinishedListener;
