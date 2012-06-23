@@ -8,6 +8,7 @@ import android.widget.Toast;
 
 import com.google.inject.Inject;
 import com.octo.android.rest.client.contentmanager.ContentManager;
+import com.octo.android.rest.client.contentmanager.RestRequest;
 import com.octo.android.rest.client.contentmanager.listener.OnAbstractContentRequestFinishedListener;
 import com.octo.android.rest.client.contentservice.AbstractContentService;
 import com.octo.android.rest.client.custom.cnil.CnilLegalMentionsContentService;
@@ -17,17 +18,19 @@ public class HelloAndroidActivity extends RoboActivity {
 	// ============================================================================================
 	// ATTRIBUTES
 	// ============================================================================================
-	
+
 	private TextView mCnilTextView;
-	
+
 	@Inject
 	private ContentManager mContentManager;
+
+	private final CnilRequest cnilRequest = new CnilRequest();
 
 	// ============================================================================================
 	// ACITVITY LIFE CYCLE
 	// ============================================================================================
-	
-	
+
+
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -38,36 +41,41 @@ public class HelloAndroidActivity extends RoboActivity {
 		// Log a message (only on dev platform)
 		Log.i(getClass().getName(), "onCreate");
 
-		int requestId = requestCnilLegalMentions();
-		CnilRequestListener cnilRequestListener = new CnilRequestListener();
-		mContentManager.addOnRequestFinishedListener( cnilRequestListener);
-		cnilRequestListener.setRequestId(requestId);
+		requestCnilLegalMentions();
 	}
 
 	// ============================================================================================
 	// PUBLIC METHODS
 	// ============================================================================================
+
+	public void requestCnilLegalMentions() {
+		mContentManager.requestContentWithService(cnilRequest);
+	}
 	
-	public int requestCnilLegalMentions() {
-		return mContentManager.requestContentWithService(0, CnilLegalMentionsContentService.class, null, true, false);
+	@Override
+	protected void onPause() {
+		mContentManager.removeOnRequestFinishedListener(cnilRequest);
+		super.onPause();
 	}
 
 	// ============================================================================================
 	// INNER CLASSES
 	// ============================================================================================
-	
-	private final class CnilRequestListener extends OnAbstractContentRequestFinishedListener {
-		public void onRequestFinished(int requestId, int resultCode, Object result) {
-			if( requestId == getRequestId() ) {
-				if( resultCode == AbstractContentService.RESULT_OK) {
-					Toast.makeText(HelloAndroidActivity.this, "success", Toast.LENGTH_SHORT);
-					mCnilTextView.setText((String) result );
-				} else {
-					Toast.makeText(HelloAndroidActivity.this, "failure", Toast.LENGTH_SHORT);
-				}
-			}
+
+	private final class CnilRequest extends RestRequest<String> {
+
+		public CnilRequest() {
+			super(0, CnilLegalMentionsContentService.class, null, true, false);
+		}
+
+		protected  void onRequestFailure(int resultCode) {
+			Toast.makeText(HelloAndroidActivity.this, "failure", Toast.LENGTH_SHORT);
+		}
+
+		protected void onRequestSuccess(String result) {
+			Toast.makeText(HelloAndroidActivity.this, "success", Toast.LENGTH_SHORT);
+			mCnilTextView.setText( result );
 		}
 	}
-
 }
 

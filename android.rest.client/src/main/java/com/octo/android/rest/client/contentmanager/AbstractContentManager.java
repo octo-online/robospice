@@ -140,29 +140,21 @@ public class AbstractContentManager {
 
 	/**
 	 * Retrieve a content for a specific request (serviceType)
+	 * @param restRequest TODO
 	 * 
-	 * @param serviceType
-	 *            The request to execute
-	 * @param serviceClass
-	 *            The service class to launch (must extends {@link AbstractContentService})
-	 * @param optionalBundle
-	 *            params to add in the intent bundle for the service
-	 * @param useCache
-	 *            use local file cache system
-	 * @param isServiceParallelizable
-	 *            can service be used multiple times to parallelize content request (e.g. : image downloading)
 	 * @return an int value containing the requestId, will be used to retrieve the request in the list of request
 	 */
-	public int requestContentWithService(int serviceType, Class<? extends AbstractContentService<?>> serviceClass, Bundle optionalBundle, boolean useCache, boolean isServiceParallelizable) {
+	public int requestContentWithService(RestRequest restRequest) {
 
-		checkContentServiceIsDeclaredInManifest(serviceClass);
+		Bundle optionalBundle = restRequest.getOptionalBundle();
+		checkContentServiceIsDeclaredInManifest(restRequest.getServiceClass());
 
-		if (!isServiceParallelizable) {
+		if (!restRequest.isServiceParallelizable()) {
 			// search in the list if the intent is already there
 			for (int requestIndex = 0; requestIndex < mRequestSparseArray.size(); requestIndex++) {
 				final Intent savedIntent = mRequestSparseArray.valueAt(requestIndex);
 
-				if (savedIntent.getIntExtra(INTENT_EXTRA_SERVICE_TYPE, -1) == serviceType) {
+				if (savedIntent.getIntExtra(INTENT_EXTRA_SERVICE_TYPE, -1) == restRequest.getServiceType()) {
 					return mRequestSparseArray.keyAt(requestIndex);
 				}
 
@@ -173,13 +165,13 @@ public class AbstractContentManager {
 		if (optionalBundle == null) {
 			optionalBundle = new Bundle();
 		}
-		optionalBundle.putBoolean(AbstractContentService.BUNDLE_EXTRA_CACHE_ENABLED, useCache);
+		optionalBundle.putBoolean(AbstractContentService.BUNDLE_EXTRA_CACHE_ENABLED, restRequest.isUseCache());
 
 		// if the request is not already pending, create a new request and launch the Service
 		final int requestId = sRandom.nextInt(Integer.MAX_VALUE);
 
-		Intent intent = new Intent(mContext, serviceClass);
-		intent.putExtra(INTENT_EXTRA_SERVICE_TYPE, serviceType);
+		Intent intent = new Intent(mContext, restRequest.getServiceClass());
+		intent.putExtra(INTENT_EXTRA_SERVICE_TYPE, restRequest.getServiceType());
 		intent.putExtra(INTENT_EXTRA_RECEIVER, mServiceResultReceiver);
 		intent.putExtra(INTENT_EXTRA_REQUEST_ID, requestId);
 		if (optionalBundle != null) {
@@ -187,6 +179,8 @@ public class AbstractContentManager {
 		}
 		mContext.startService(intent);
 		mRequestSparseArray.append(requestId, intent);
+		restRequest.setRequestId(requestId);
+		addOnRequestFinishedListener(restRequest);
 
 		return requestId;
 	}

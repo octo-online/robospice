@@ -6,7 +6,7 @@ package com.octo.android.rest.client.contentmanager.listener;
  * @author mwa
  * 
  */
-public interface ContentRequestFinishedListener {
+public interface ContentRequestFinishedListener<RESULT> {
 
 	/**
 	 * Event fired when a request is finished
@@ -18,5 +18,5 @@ public interface ContentRequestFinishedListener {
 	 * @param result
 	 *            The result of the service execution
 	 */
-	public void onRequestFinished(int requestId, int resultCode, Object result);
+	public void onRequestFinished(int requestId, int resultCode, RESULT result);
 }

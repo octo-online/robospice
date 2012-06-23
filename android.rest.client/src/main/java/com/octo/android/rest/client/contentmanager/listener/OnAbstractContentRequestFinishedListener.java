@@ -8,7 +8,7 @@ import com.octo.android.rest.client.contentmanager.ContentManager;
  * @author stephanenicolas
  * 
  */
-public abstract class OnAbstractContentRequestFinishedListener implements ContentRequestFinishedListener {
+public abstract class OnAbstractContentRequestFinishedListener<RESULT> implements ContentRequestFinishedListener<RESULT> {
 
 	// ============================================================================================
 	// ATTRIBUTES
