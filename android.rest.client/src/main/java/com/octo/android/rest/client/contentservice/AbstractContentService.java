@@ -4,7 +4,8 @@ import java.io.IOException;
 import java.util.Calendar;
 import java.util.Date;
 
-import android.app.IntentService;
+import roboguice.service.RoboIntentService;
+
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.ResultReceiver;
@@ -15,6 +16,7 @@ import com.octo.android.rest.client.utils.CacheFileUtils;
 import com.octo.android.rest.client.utils.ContentRequestBundleUtils;
 import com.octo.android.rest.client.utils.DeviceUtils;
 
+
 /**
  * This is an abstract class used to manage the cache and provide web service result to an activity. <br/>
  * 
@@ -22,7 +24,7 @@ import com.octo.android.rest.client.utils.DeviceUtils;
  * 
  * @author jva
  */
-public abstract class AbstractContentService<T> extends IntentService {
+public abstract class AbstractContentService<T> extends RoboIntentService {
 
 	// ============================================================================================
 	// CONSTANTS
@@ -101,7 +103,7 @@ public abstract class AbstractContentService<T> extends IntentService {
 				}
 			}
 			catch (Exception e) {
-				Log.e(LOGCAT_TAG,"An exception occured during service execution", e);
+				Log.e(LOGCAT_TAG,"An exception occured during service execution :"+e.getMessage(), e);
 			}
 		}
 
@@ -154,7 +156,7 @@ public abstract class AbstractContentService<T> extends IntentService {
 					ContentRequestBundleUtils.setResultCodeAndObjectInBundle(extras, resultCode, result);
 				}
 				catch (IOException e) {
-					Log.e(LOGCAT_TAG,"Unable to put service result into bundle before back send");
+					Log.e(LOGCAT_TAG,"Unable to put service result into bundle before back send",e);
 				}
 				resultReceiver.send(resultCode, extras);
 			}

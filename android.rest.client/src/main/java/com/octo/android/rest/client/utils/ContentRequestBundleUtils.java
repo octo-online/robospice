@@ -13,6 +13,9 @@ import java.io.Serializable;
 import org.apache.commons.io.IOUtils;
 
 import android.os.Bundle;
+import android.text.GetChars;
+import android.util.Log;
+
 import com.octo.android.rest.client.contentservice.JsonContentService;
 
 public class ContentRequestBundleUtils {
@@ -24,6 +27,7 @@ public class ContentRequestBundleUtils {
 	public static final String BUNDLE_RESULT = "bundle_result_key";
 	public static final String BUNDLE_RESULT_CODE = "bundle_result_code_key";
 	private static final String BUNDLE_IS_INPUTSTREAM = "bundle_is_inputstream";
+	private static final String LOGCAT_TAG = "ContentRequestBundleUtils";
 
 	// ============================================================================================
 	// CONSTRUCTORS
@@ -63,7 +67,10 @@ public class ContentRequestBundleUtils {
 
 	public static void setResultCodeAndObjectInBundle(Bundle bundle, int code, Object object) throws IOException {
 		ContentRequestBundleUtils.setResultCodeInBundle(bundle, code);
-		ContentRequestBundleUtils.setResultObjectInBundle(bundle, object);
+		Log.e( LOGCAT_TAG, "object to convert is "+ object);
+		if( object != null ) {
+			ContentRequestBundleUtils.setResultObjectInBundle(bundle, object);
+		}
 	}
 
 	private static byte[] convertObjectIntoBytesArray(Object object) throws IOException {

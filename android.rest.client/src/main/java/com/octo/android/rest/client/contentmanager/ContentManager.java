@@ -1,6 +1,10 @@
 package com.octo.android.rest.client.contentmanager;
 
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+
+import android.app.Application;
 import android.content.Context;
 import android.os.Bundle;
 
@@ -12,6 +16,7 @@ import android.os.Bundle;
  * @author jva
  * 
  */
+@Singleton
 public class ContentManager extends CommonContentManager {
 
 	// ============================================================================================
@@ -52,8 +57,9 @@ public class ContentManager extends CommonContentManager {
 	 * @param context
 	 *            the context in which the content manager operates.
 	 */
-	public ContentManager(Context context) {
-		super(context);
+	@Inject
+	public ContentManager(Application application) {
+		super(application);
 	}
 
 }
