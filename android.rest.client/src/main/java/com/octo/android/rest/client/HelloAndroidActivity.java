@@ -10,7 +10,7 @@ import com.google.inject.Inject;
 import com.octo.android.rest.client.contentmanager.ContentManager;
 import com.octo.android.rest.client.contentmanager.listener.OnAbstractContentRequestFinishedListener;
 import com.octo.android.rest.client.contentservice.AbstractContentService;
-import com.octo.android.rest.client.contentservice.CnilLegalMentionsContentService;
+import com.octo.android.rest.client.custom.cnil.CnilLegalMentionsContentService;
 
 public class HelloAndroidActivity extends RoboActivity {
 

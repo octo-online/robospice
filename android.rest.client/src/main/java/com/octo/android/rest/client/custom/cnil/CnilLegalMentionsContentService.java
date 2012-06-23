@@ -1,7 +1,9 @@
-package com.octo.android.rest.client.contentservice;
+package com.octo.android.rest.client.custom.cnil;
 
 import android.os.Bundle;
-import com.octo.android.rest.client.webservice.CnilLegalMentionsWebService;
+
+import com.octo.android.rest.client.contentservice.SimpleTextContentService;
+import com.octo.android.rest.client.contentservice.WebServiceException;
 
 /**
  * Content service used to get cnil legal mentions text

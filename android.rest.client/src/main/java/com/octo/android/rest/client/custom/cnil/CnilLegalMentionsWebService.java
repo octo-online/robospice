@@ -1,9 +1,11 @@
-package com.octo.android.rest.client.webservice;
+package com.octo.android.rest.client.custom.cnil;
 
 import android.content.Context;
 import android.util.Log;
 
 import com.octo.android.rest.client.contentservice.WebServiceException;
+import com.octo.android.rest.client.webservice.WebService;
+import com.octo.android.rest.client.webservice.WebService.Urls;
 
 /**
  * Web service in charge of retrieving credit disclaimer
