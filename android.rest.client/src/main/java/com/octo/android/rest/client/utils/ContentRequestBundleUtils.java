@@ -13,10 +13,9 @@ import java.io.Serializable;
 import org.apache.commons.io.IOUtils;
 
 import android.os.Bundle;
-import android.text.GetChars;
 import android.util.Log;
 
-import com.octo.android.rest.client.contentservice.JsonContentService;
+import com.octo.android.rest.client.contentservice.AbstractContentService;
 
 public class ContentRequestBundleUtils {
 
@@ -50,7 +49,7 @@ public class ContentRequestBundleUtils {
 	}
 
 	public static int getResultCodeFromBundle(Bundle bundle) {
-		return bundle.getInt(BUNDLE_RESULT_CODE, JsonContentService.RESULT_ERROR);
+		return bundle.getInt(BUNDLE_RESULT_CODE, AbstractContentService.RESULT_ERROR);
 	}
 
 	public static void setResultObjectInBundle(Bundle bundle, Object object) throws IOException {

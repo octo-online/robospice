@@ -1,6 +1,6 @@
 package com.octo.android.rest.client.contentmanager.listener;
 
-import com.octo.android.rest.client.contentmanager.ContentManager;
+import com.octo.android.rest.client.contentmanager.AbstractContentManager;
 
 /**
  * Super class whose instances are responsible for receiving the result of the request to get all saving products. Every OnContentRequestFinishedListener can manage a single request.
@@ -8,7 +8,7 @@ import com.octo.android.rest.client.contentmanager.ContentManager;
  * @author stephanenicolas
  * 
  */
-public abstract class OnAbstractContentRequestFinishedListener<RESULT> implements ContentRequestFinishedListener<RESULT> {
+public abstract class OnAbstractContentRequestFinishedListener<ACTIVITY, RESULT> implements ContentRequestFinishedListener<RESULT> {
 
 	// ============================================================================================
 	// ATTRIBUTES
@@ -34,6 +34,6 @@ public abstract class OnAbstractContentRequestFinishedListener<RESULT> implement
 	 * @return true if request is finished or false if it is still pending.
 	 */
 	public boolean isRequestFinished() {
-		return mRequestId == ContentManager.FINISHED_REQUEST_ID;
+		return mRequestId == AbstractContentManager.FINISHED_REQUEST_ID;
 	}
 }

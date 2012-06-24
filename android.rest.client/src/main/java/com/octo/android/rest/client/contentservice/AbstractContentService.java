@@ -1,20 +1,26 @@
 package com.octo.android.rest.client.contentservice;
 
 import java.io.IOException;
+import java.io.Serializable;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 
 import roboguice.service.RoboIntentService;
-
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.ResultReceiver;
 import android.util.Log;
 
-import com.octo.android.rest.client.contentmanager.ContentManager;
+import com.google.inject.Inject;
+import com.octo.android.rest.client.contentmanager.AbstractContentManager;
+import com.octo.android.rest.client.contentmanager.RestRequest;
+import com.octo.android.rest.client.contentservice.loader.JSonContentLoader;
+import com.octo.android.rest.client.contentservice.loader.StringContentLoader;
 import com.octo.android.rest.client.utils.CacheFileUtils;
 import com.octo.android.rest.client.utils.ContentRequestBundleUtils;
 import com.octo.android.rest.client.utils.DeviceUtils;
+import com.octo.android.rest.client.webservice.WebService;
 
 
 /**
@@ -24,7 +30,7 @@ import com.octo.android.rest.client.utils.DeviceUtils;
  * 
  * @author jva
  */
-public abstract class AbstractContentService<T> extends RoboIntentService {
+public class AbstractContentService extends RoboIntentService {
 
 	// ============================================================================================
 	// CONSTANTS
@@ -37,6 +43,16 @@ public abstract class AbstractContentService<T> extends RoboIntentService {
 	public static final String BUNDLE_EXTRA_CACHE_ENABLED = "BUNDLE_EXTRA_CACHE_ENABLED";
 	private static final String LOGCAT_TAG = "AbstractContentService";
 
+	
+	// ============================================================================================
+	// ATTRIBUTES
+	// ============================================================================================
+	
+	@Inject private StringContentLoader stringContentLoader;
+	
+	@Inject private JSonContentLoader jSonContentLoader;
+
+	@Inject private WebService webService;
 	// ============================================================================================
 	// CONSTRUCTOR
 	// ============================================================================================
@@ -45,8 +61,8 @@ public abstract class AbstractContentService<T> extends RoboIntentService {
 	 * 
 	 * @param name
 	 */
-	public AbstractContentService(String name) {
-		super(name);
+	public AbstractContentService() {
+		super("AbstractContentService");
 	}
 
 	// ============================================================================================
@@ -60,10 +76,14 @@ public abstract class AbstractContentService<T> extends RoboIntentService {
 	 * Cache is disabled by default, to enable it add <code>bundle.putBoolean(ContentService.BUNDLE_EXTRA_CACHE_ENABLED, true);</code> to the intent 
 	 */
 	protected void onHandleIntent(Intent intent) {
-		String cacheKey = getCacheKey(intent.getExtras());
+		//extract class of request from bundle
+		RestRequest<?,?> request = (RestRequest<?,?>) intent.getSerializableExtra(AbstractContentManager.INTENT_EXTRA_REST_REQUEST);
+		Class<?> clazz = request.getResultType();
+
+		String cacheKey = request.getCacheKey();
 		Log.d(LOGCAT_TAG, "Loading content for key : " + cacheKey);
 
-		T result = null;
+		Object result = null;
 		Date lastModifiedDateForCache = null;
 		String cacheFilename = cacheKey + FILE_CACHE_EXTENSION;
 		boolean isCacheEnabled = intent.getBooleanExtra(BUNDLE_EXTRA_CACHE_ENABLED, false);
@@ -73,11 +93,12 @@ public abstract class AbstractContentService<T> extends RoboIntentService {
 			lastModifiedDateForCache = CacheFileUtils.getModifiedDateForFile(this, cacheFilename);
 		}
 
+
 		// if file is found, check the date : if the cache did not expired, return data
 		if (lastModifiedDateForCache != null && isCacheExpired(new Date(), lastModifiedDateForCache) == false) {
 			Log.d(LOGCAT_TAG,"Content available in cache and not expired");
 
-			result = loadDataFromCache(cacheFilename);
+			result = loadDataFromCache(clazz, cacheFilename);
 		}
 		else {
 			// if file is not found or the date is a day after or cache disabled, call the web service
@@ -88,7 +109,7 @@ public abstract class AbstractContentService<T> extends RoboIntentService {
 					Log.e(LOGCAT_TAG,"Network is down.");
 				}
 				else {
-					result = loadDataFromNetwork(intent.getExtras());
+					result =  request.loadDataFromNetwork(webService);
 
 					if (result == null) {
 						Log.e(LOGCAT_TAG,"Unable to get web service result");
@@ -129,7 +150,7 @@ public abstract class AbstractContentService<T> extends RoboIntentService {
 	 * @throws IOException
 	 *             if some problem occurs during during creation of a new result in overriden methods.
 	 */
-	protected T asyncSaveDataToCacheAndReturnData(final T result, final String cacheFilename) throws IOException {
+	protected <T> T asyncSaveDataToCacheAndReturnData(final T result, final String cacheFilename) throws IOException {
 		new CacheWritingThread(result, cacheFilename).start();
 		return result;
 	}
@@ -149,7 +170,7 @@ public abstract class AbstractContentService<T> extends RoboIntentService {
 
 		if (extras != null) {
 
-			ResultReceiver resultReceiver = (ResultReceiver) extras.get(ContentManager.INTENT_EXTRA_RECEIVER);
+			ResultReceiver resultReceiver = (ResultReceiver) extras.get(AbstractContentManager.INTENT_EXTRA_RECEIVER);
 
 			if (resultReceiver != null) {
 				try {
@@ -184,16 +205,11 @@ public abstract class AbstractContentService<T> extends RoboIntentService {
 		return !areDatesInSameDay;
 	}
 
-	protected abstract String getCacheKey(Bundle extraBundle);
+	protected String getCacheKey(Bundle extraBundle) {
+		//TODO
+		return "default cache key, change this ! AbstractContentService :: 198";
+	}
 
-	/**
-	 * Implement this method to call the web service
-	 * 
-	 * @param bundle
-	 *            bundle containing extra informations
-	 * @return the object result of the web service
-	 */
-	protected abstract T loadDataFromNetwork(Bundle bundle) throws WebServiceException;
 
 	/**
 	 * Implement this method to get data from local cache system
@@ -201,7 +217,25 @@ public abstract class AbstractContentService<T> extends RoboIntentService {
 	 * @param cacheFileName
 	 * @return the object result of the cache system
 	 */
-	protected abstract T loadDataFromCache(String cacheFileName);
+	@SuppressWarnings("unchecked")
+	protected  <T> T loadDataFromCache(Class<T> clazz, String cacheFileName) {
+		if( clazz.equals(String.class)) {
+			return (T) loadStringDataFromCache(cacheFileName);
+		}
+		else if( Arrays.asList(clazz.getInterfaces()).contains(Serializable.class) ) {
+			Class<? extends Serializable> clazzSerializable = clazz.asSubclass(Serializable.class);
+			return (T) loadSerializableDataFromCache(clazzSerializable, cacheFileName);
+		}
+		throw new IllegalArgumentException( "Class "+clazz.getName() + " is not handled by any registered loader" );
+	}
+
+	protected  String loadStringDataFromCache( String cacheFileName ) {
+		return stringContentLoader.loadDataFromCache(cacheFileName);
+	}
+
+	protected <T extends Serializable> T loadSerializableDataFromCache( Class<T> clazz, String cacheFileName ) {
+		return jSonContentLoader.loadDataFromCache(clazz, cacheFileName);
+	}
 
 	/**
 	 * Implement this method to save data in local cache system
@@ -211,7 +245,17 @@ public abstract class AbstractContentService<T> extends RoboIntentService {
 	 * @param cacheFileName
 	 *            name of the data in cache system
 	 */
-	protected abstract void saveDataToCache(T data, String cacheFileName);
+	protected <T> void saveDataToCache(T data, String cacheFileName) {
+		if( data instanceof String ) {
+			stringContentLoader.saveDataToCache((String)data, cacheFileName);
+			return;
+		}
+		else if( data instanceof Serializable) {
+			jSonContentLoader.saveDataToCache((Serializable)data, cacheFileName);
+			return;
+		}
+		throw new IllegalArgumentException( "Class "+data.getClass().getName() + " is not handled by any registered loader" );
+	}
 
 	// ============================================================================================
 	// INNER CLASSES
@@ -225,10 +269,10 @@ public abstract class AbstractContentService<T> extends RoboIntentService {
 	protected class CacheWritingThread extends Thread {
 
 		// attributes
-		private final T mResult;
+		private final Object mResult;
 		private final String mCacheFilename;
 
-		public CacheWritingThread(T result, String cacheFilename) {
+		public CacheWritingThread(Object result, String cacheFilename) {
 			mCacheFilename = cacheFilename;
 			mResult = result;
 		}

@@ -1,45 +1,34 @@
 package com.octo.android.rest.client.contentmanager;
 
+import java.io.Serializable;
+
+import org.springframework.web.client.RestClientException;
+
 import android.os.Bundle;
-import android.widget.Toast;
 
-import com.octo.android.rest.client.HelloAndroidActivity;
-import com.octo.android.rest.client.contentmanager.listener.OnAbstractContentRequestFinishedListener;
 import com.octo.android.rest.client.contentservice.AbstractContentService;
+import com.octo.android.rest.client.webservice.WebService;
 
-public abstract class RestRequest<RESULT> extends OnAbstractContentRequestFinishedListener<RESULT> {
-	private int serviceType;
-	private Class<? extends AbstractContentService<?>> serviceClass;
+public abstract class RestRequest<ACTIVITY, RESULT> implements Serializable {
+	private static final long serialVersionUID = 1008863412866054970L;
 	private Bundle optionalBundle;
 	private boolean useCache;
 	private boolean isServiceParallelizable;
+	private transient ACTIVITY activity;
+	protected int mRequestId;
 
-	public RestRequest(int serviceType,
-			Class<? extends AbstractContentService<?>> serviceClass,
-					Bundle optionalBundle, boolean useCache,
-					boolean isServiceParallelizable) {
-		this.serviceType = serviceType;
-		this.serviceClass = serviceClass;
+	public RestRequest( ACTIVITY activity,
+			Bundle optionalBundle, boolean useCache,
+			boolean isServiceParallelizable) {
+		this.activity = activity;
 		this.optionalBundle = optionalBundle;
 		this.useCache = useCache;
 		this.isServiceParallelizable = isServiceParallelizable;
 	}
 
-	public int getServiceType() {
-		return serviceType;
-	}
-
-	public void setServiceType(int serviceType) {
-		this.serviceType = serviceType;
-	}
-
-	public Class<? extends AbstractContentService<?>> getServiceClass() {
-		return serviceClass;
-	}
-
-	public void setServiceClass(
-			Class<? extends AbstractContentService<?>> serviceClass) {
-		this.serviceClass = serviceClass;
+	@SuppressWarnings("unchecked")
+	public Class<RESULT> getResultType() {
+		return (Class<RESULT>) getClass().getTypeParameters().getClass();
 	}
 
 	public Bundle getOptionalBundle() {
@@ -65,20 +54,48 @@ public abstract class RestRequest<RESULT> extends OnAbstractContentRequestFinish
 	public void setServiceParallelizable(boolean isServiceParallelizable) {
 		this.isServiceParallelizable = isServiceParallelizable;
 	}
+	
+	protected ACTIVITY getActivity() {
+		return this.activity;
+	}
+
+	// ============================================================================================
+	// METHODS
+	// ============================================================================================
+
+	public int getRequestId() {
+		return mRequestId;
+	}
+
+	public void setRequestId(int requestId) {
+		this.mRequestId = requestId;
+	}
+
+	/**
+	 * Indicates whether or not request is finished or still pending.
+	 * 
+	 * @return true if request is finished or false if it is still pending.
+	 */
+	public boolean isRequestFinished() {
+		return mRequestId == AbstractContentManager.FINISHED_REQUEST_ID;
+	}
 
 	public final void onRequestFinished(int requestId, int resultCode, RESULT result) {
 		if( requestId == getRequestId() ) {
 			if( resultCode == AbstractContentService.RESULT_OK && result != null) {
-				onRequestSuccess( result );
+				onRequestSuccess(result );
 			} else {
-				onRequestFailure( resultCode );
+				onRequestFailure(resultCode );
 			}
 		}
 	}
 
-	protected abstract void onRequestFailure(int resultCode);
+	public abstract RESULT loadDataFromNetwork( WebService webService) throws RestClientException;
 
-	protected abstract void onRequestSuccess(RESULT result);
+	protected abstract void onRequestFailure( int resultCode);
 
-	
+	protected abstract void onRequestSuccess( RESULT result);
+
+	public abstract String getCacheKey();
+
 }

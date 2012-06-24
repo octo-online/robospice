@@ -1,44 +1,35 @@
-package com.octo.android.rest.client.contentservice;
+package com.octo.android.rest.client.contentservice.loader;
 
 import java.io.IOException;
 import java.io.Serializable;
-import java.lang.reflect.ParameterizedType;
+import java.util.Arrays;
 
 import org.apache.commons.lang.StringUtils;
 import org.codehaus.jackson.map.ObjectMapper;
 
-import android.os.Bundle;
+import android.app.Application;
 import android.util.Log;
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
 import com.octo.android.rest.client.utils.CacheFileUtils;
 
-/**
- * This is an abstract class used to manage the cache and provide web service result to an activity. <br/>
- * 
- * Extends this class to provide a service able to load content from web service or cache (if available and enabled)
- * 
- * @author jva
- * 
- * @param <T>
- *            type of the object the service must return
- */
-public abstract class JsonContentService<T extends Serializable> extends AbstractContentService<T> {
+@Singleton
+public final class JSonContentLoader {
 
+	@Inject Application mApplication;
+	
 	// ============================================================================================
 	// ATTRIBUTES
 	// ============================================================================================
 
 	private final ObjectMapper mJsonMapper;
-	protected Class<T> mGenericType;
 
 	// ============================================================================================
 	// CONSTRUCTOR
 	// ============================================================================================
 
-	@SuppressWarnings("unchecked")
-	public JsonContentService(String name) {
-		super(name);
-		this.mGenericType = (Class<T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[0];
+	public JSonContentLoader() {
 		this.mJsonMapper = new ObjectMapper();
 	}
 
@@ -46,20 +37,19 @@ public abstract class JsonContentService<T extends Serializable> extends Abstrac
 	// METHODS
 	// ============================================================================================
 
-	@Override
-	protected final T loadDataFromCache(String cacheFileName) {
+	public final <T extends Serializable> T loadDataFromCache(Class<T> clazz, String cacheFileName) {
 		T result = null;
 		String resultJson = null;
-		resultJson = CacheFileUtils.readStringContentFromFile(this, cacheFileName);
+		resultJson = CacheFileUtils.readStringContentFromFile(mApplication, cacheFileName);
 
 		if (resultJson != null) {
 			// finally transform json in object
 			if (StringUtils.isNotEmpty(resultJson)) {
 				try {
-					result = mJsonMapper.readValue(resultJson, mGenericType);
+					result = mJsonMapper.readValue(resultJson, clazz);
 				}
 				catch (IOException e) {
-					Log.e(getClass().getName(),"Unable to restore cache content in an object of type " + mGenericType);
+					Log.e(getClass().getName(),"Unable to restore cache content in an object of type " + clazz);
 				}
 			}
 			else {
@@ -72,8 +62,7 @@ public abstract class JsonContentService<T extends Serializable> extends Abstrac
 		return result;
 	}
 
-	@Override
-	protected final void saveDataToCache(T data, String cacheFileName) {
+	public final void saveDataToCache(Serializable data, String cacheFileName) {
 		String resultJson = null;
 
 		// transform the content in json to store it in the cache
@@ -82,7 +71,7 @@ public abstract class JsonContentService<T extends Serializable> extends Abstrac
 
 			// finally store the json in the cache
 			if (StringUtils.isNotEmpty(resultJson)) {
-				CacheFileUtils.saveStringToFile(this, resultJson, cacheFileName);
+				CacheFileUtils.saveStringToFile(mApplication, resultJson, cacheFileName);
 			}
 			else {
 				Log.e(getClass().getName(),"Unable to save web service result into the cache");
@@ -93,8 +82,4 @@ public abstract class JsonContentService<T extends Serializable> extends Abstrac
 		}
 	}
 
-	@Override
-	protected String getCacheKey(Bundle extraBundle) {
-		return mGenericType.getSimpleName();
-	}
 }

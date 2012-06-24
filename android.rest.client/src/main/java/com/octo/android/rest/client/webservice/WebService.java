@@ -11,11 +11,7 @@ import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.http.converter.json.MappingJacksonHttpMessageConverter;
 import org.springframework.web.client.RestTemplate;
 
-import roboguice.RoboGuice;
-import android.content.Context;
-
 import com.google.inject.Inject;
-
 import com.octo.android.rest.client.utils.EnvironmentConfigService;
 
 /**
@@ -24,7 +20,7 @@ import com.octo.android.rest.client.utils.EnvironmentConfigService;
  * @author mwa
  * 
  */
-public class WebService {
+public class WebService  {
 	// ============================================================================================
 	// CONSTANTS
 	// ============================================================================================
@@ -80,19 +76,17 @@ public class WebService {
 	// ATTRIBUTES
 	// ============================================================================================
 
-	protected Context mContext;
 	protected RestTemplate mRestTemplate;
 	private final String mBaseUrl;
 
 	// ============================================================================================
 	// CONSTRUCTOR
 	// ============================================================================================
-	@Inject
-	public WebService(Context context) {
-		mContext = context;
-		EnvironmentConfigService environmentConfig = RoboGuice.getInjector(context).getInstance(EnvironmentConfigService.class);
-		mBaseUrl = environmentConfig.getWebServiceUrl();
 
+	@Inject
+	public WebService(EnvironmentConfigService environmentConfigService) {
+
+		this.mBaseUrl = environmentConfigService.getWebServiceUrl();
 		mRestTemplate = new RestTemplate();
 
 		// set timeout for requests
@@ -121,12 +115,12 @@ public class WebService {
 	// METHODS
 	// ============================================================================================
 
-	protected String getBaseUrl() {
+	public String getBaseUrl() {
 		return mBaseUrl;
 	}
 
-	protected RestTemplate getRestTemplate() {
+	public RestTemplate getRestTemplate() {
 		return mRestTemplate;
 	}
-
+	
 }

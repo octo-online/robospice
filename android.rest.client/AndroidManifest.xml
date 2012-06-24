@@ -19,8 +19,8 @@
             </intent-filter>
         </activity>
 
-        <service android:name=".custom.cnil.CnilLegalMentionsContentService" >
-        </service>
+        <service android:name=".custom.cnil.CnilLegalMentionsContentService" />
+        <service android:name=".contentservice.AbstractContentService" />
     </application>
 
 </manifest>

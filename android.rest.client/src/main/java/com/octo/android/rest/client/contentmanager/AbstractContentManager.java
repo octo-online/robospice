@@ -5,6 +5,7 @@ import java.util.Random;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import android.app.Activity;
+import android.app.Application;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
@@ -14,6 +15,9 @@ import android.os.Handler;
 import android.os.ResultReceiver;
 import android.util.Log;
 import android.util.SparseArray;
+
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
 import com.octo.android.rest.client.contentmanager.listener.ContentRequestFinishedListener;
 import com.octo.android.rest.client.contentservice.AbstractContentService;
 import com.octo.android.rest.client.utils.ContentRequestBundleUtils;
@@ -28,6 +32,7 @@ import com.octo.android.rest.client.utils.ContentRequestBundleUtils;
  * @author jva
  * 
  */
+@Singleton
 public class AbstractContentManager {
 
 	// ============================================================================================
@@ -36,9 +41,9 @@ public class AbstractContentManager {
 
 	public static final int FINISHED_REQUEST_ID = -1;
 
-	protected static final String INTENT_EXTRA_SERVICE_TYPE = "INTENT_EXTRA_SERVICE_TYPE";
 	public static final String INTENT_EXTRA_REQUEST_ID = "INTENT_EXTRA_REQUEST_ID";
 	public static final String INTENT_EXTRA_RECEIVER = "INTENT_EXTRA_RECEIVER";
+	public static final String INTENT_EXTRA_REST_REQUEST = "INTENT_EXTRA_REST_REQUEST";
 
 	private static final String LOG_CAT_TAG = "AbstractContentManager";
 
@@ -55,7 +60,7 @@ public class AbstractContentManager {
 	/**
 	 * List of listeners (fragments or activities, or their inner classes that listen for a request result) using CopyOnWriteArrayList to avoid ConcurrentModificationException.
 	 */
-	protected CopyOnWriteArrayList<ContentRequestFinishedListener> mListenersList;
+	protected CopyOnWriteArrayList<RestRequest<?,?>> mRequestList;
 
 	protected Context mContext;
 	protected Handler mHandler = new Handler();
@@ -65,10 +70,11 @@ public class AbstractContentManager {
 	// CONSTRUCTOR
 	// ============================================================================================
 
-	public AbstractContentManager(Context context) {
+	@Inject
+	public AbstractContentManager(Application context) {
 		mContext = context;
 		mRequestSparseArray = new SparseArray<Intent>();
-		mListenersList = new CopyOnWriteArrayList<ContentRequestFinishedListener>();
+		mRequestList = new CopyOnWriteArrayList<RestRequest<?,?>>();
 	}
 
 	// ============================================================================================
@@ -92,23 +98,23 @@ public class AbstractContentManager {
 	 * @param resultBundle
 	 *            result content of the service
 	 */
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	protected void handleServiceResult(int resultCode, Bundle resultBundle) {
 		// Get the request Id
 		int requestId = resultBundle.getInt(INTENT_EXTRA_REQUEST_ID);
-		final int serviceType = resultBundle.getInt(INTENT_EXTRA_SERVICE_TYPE);
 
 		mRequestSparseArray.remove(requestId);
 
 		// Call the available listeners
-		synchronized (mListenersList) {
+		synchronized (mRequestList) {
 			Object result = null;
 
-			if (!mListenersList.isEmpty() && resultCode == AbstractContentService.RESULT_OK) {
+			if (!mRequestList.isEmpty() && resultCode == AbstractContentService.RESULT_OK) {
 				// get object if result is ok :
 				try {
 					result = ContentRequestBundleUtils.getResultFromBundle(resultBundle);
 					if (result != null) {
-						result = doProcessResultIfNeeded(serviceType, result);
+						result = doProcessResultIfNeeded(result);
 					}
 				}
 				catch (Exception e) {
@@ -117,7 +123,7 @@ public class AbstractContentManager {
 			}
 
 			// notify listeners, whatever result we have.
-			for (ContentRequestFinishedListener listener : mListenersList) {
+			for (RestRequest listener : mRequestList) {
 				if (listener != null) {
 					listener.onRequestFinished(requestId, resultCode, result);
 				}
@@ -134,7 +140,7 @@ public class AbstractContentManager {
 	 *            the result from the request.
 	 * @return a new processed result. This default implementation simply return the param result.
 	 */
-	protected Object doProcessResultIfNeeded(int serviceType, Object result) {
+	protected Object doProcessResultIfNeeded( Object result) {
 		return result;
 	}
 
@@ -144,11 +150,13 @@ public class AbstractContentManager {
 	 * 
 	 * @return an int value containing the requestId, will be used to retrieve the request in the list of request
 	 */
-	public int requestContentWithService(RestRequest restRequest) {
+	public int requestContentWithService(RestRequest<?, ?> restRequest) {
 
 		Bundle optionalBundle = restRequest.getOptionalBundle();
-		checkContentServiceIsDeclaredInManifest(restRequest.getServiceClass());
+		//checkContentServiceIsDeclaredInManifest(restRequest.getServiceClass());
 
+		/*
+		 * TODO
 		if (!restRequest.isServiceParallelizable()) {
 			// search in the list if the intent is already there
 			for (int requestIndex = 0; requestIndex < mRequestSparseArray.size(); requestIndex++) {
@@ -160,6 +168,7 @@ public class AbstractContentManager {
 
 			}
 		}
+		*/
 
 		// set cache :
 		if (optionalBundle == null) {
@@ -170,8 +179,8 @@ public class AbstractContentManager {
 		// if the request is not already pending, create a new request and launch the Service
 		final int requestId = sRandom.nextInt(Integer.MAX_VALUE);
 
-		Intent intent = new Intent(mContext, restRequest.getServiceClass());
-		intent.putExtra(INTENT_EXTRA_SERVICE_TYPE, restRequest.getServiceType());
+		Intent intent = new Intent(mContext, AbstractContentService.class );
+		intent.putExtra(INTENT_EXTRA_REST_REQUEST, restRequest);
 		intent.putExtra(INTENT_EXTRA_RECEIVER, mServiceResultReceiver);
 		intent.putExtra(INTENT_EXTRA_REQUEST_ID, requestId);
 		if (optionalBundle != null) {
@@ -185,15 +194,15 @@ public class AbstractContentManager {
 		return requestId;
 	}
 
-	private void checkContentServiceIsDeclaredInManifest(Class<? extends AbstractContentService<?>> serviceClass) {
-		Intent i = new Intent();
-		i.setClass(mContext, serviceClass);
-		List<ResolveInfo> listResolveInfo = mContext.getPackageManager().queryIntentServices(i, 0);
-		if (listResolveInfo == null || listResolveInfo.isEmpty()) {
-			Log.e(LOG_CAT_TAG, "The service class " + serviceClass.getName() + " is not declared in manifest !");
-			throw new RuntimeException("The service class " + serviceClass.getName() + " is not declared in manifest !");
-		}
-	}
+//	private void checkContentServiceIsDeclaredInManifest(Class<? extends AbstractContentService<?>> serviceClass) {
+//		Intent i = new Intent();
+//		i.setClass(mContext, serviceClass);
+//		List<ResolveInfo> listResolveInfo = mContext.getPackageManager().queryIntentServices(i, 0);
+//		if (listResolveInfo == null || listResolveInfo.isEmpty()) {
+//			Log.e(LOG_CAT_TAG, "The service class " + serviceClass.getName() + " is not declared in manifest !");
+//			throw new RuntimeException("The service class " + serviceClass.getName() + " is not declared in manifest !");
+//		}
+//	}
 
 	/**
 	 * Add a {@link ContentRequestFinishedListener} to this {@link AbstractContentManager}. Clients may use it in order to listen to events fired when a request is finished.
@@ -201,13 +210,13 @@ public class AbstractContentManager {
 	 * <b>Warning !! </b> If it's an {@link Activity} or {@link Fragment} that is used as a Listener, it must be detached when {@link Activity#onPause} or {@link Fragment#onPause()} is called.
 	 * </p>
 	 * 
-	 * @param listener
+	 * @param request
 	 *            The listener to add
 	 */
-	public void addOnRequestFinishedListener(final ContentRequestFinishedListener listener) {
-		synchronized (mListenersList) {
-			if (!mListenersList.contains(listener)) {
-				mListenersList.add(listener);
+	public void addOnRequestFinishedListener(final RestRequest<?, ?> request) {
+		synchronized (mRequestList) {
+			if (!mRequestList.contains(request)) {
+				mRequestList.add(request);
 			}
 		}
 	}
@@ -215,12 +224,13 @@ public class AbstractContentManager {
 	/**
 	 * Remove a {@link OnRequestFinishedListener} to this {@link AbstractContentManager}.
 	 * 
-	 * @param listener
+	 * @param request
 	 *            The listener to remove
 	 */
-	public void removeOnRequestFinishedListener(final ContentRequestFinishedListener listener) {
-		synchronized (mListenersList) {
-			mListenersList.remove(listener);
+	@SuppressWarnings("rawtypes")
+	public void removeOnRequestFinishedListener(final RestRequest request) {
+		synchronized (mRequestList) {
+			mRequestList.remove(request);
 		}
 	}
 
