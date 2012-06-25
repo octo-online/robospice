@@ -1,10 +1,17 @@
 package com.octo.android.rest.client.contentservice;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
+
+import org.codehaus.jackson.JsonParseException;
+import org.codehaus.jackson.map.JsonMappingException;
 
 import roboguice.service.RoboIntentService;
 import android.content.Intent;
@@ -15,6 +22,8 @@ import android.util.Log;
 import com.google.inject.Inject;
 import com.octo.android.rest.client.contentmanager.AbstractContentManager;
 import com.octo.android.rest.client.contentmanager.RestRequest;
+import com.octo.android.rest.client.contentservice.loader.BinaryContentLoader;
+import com.octo.android.rest.client.contentservice.loader.DataContentLoader;
 import com.octo.android.rest.client.contentservice.loader.JSonContentLoader;
 import com.octo.android.rest.client.contentservice.loader.StringContentLoader;
 import com.octo.android.rest.client.utils.CacheFileUtils;
@@ -43,16 +52,22 @@ public class AbstractContentService extends RoboIntentService {
 	public static final String BUNDLE_EXTRA_CACHE_ENABLED = "BUNDLE_EXTRA_CACHE_ENABLED";
 	private static final String LOGCAT_TAG = "AbstractContentService";
 
-	
+
 	// ============================================================================================
 	// ATTRIBUTES
 	// ============================================================================================
-	
+
 	@Inject private StringContentLoader stringContentLoader;
-	
+
 	@Inject private JSonContentLoader jSonContentLoader;
 
+	@Inject private BinaryContentLoader binaryContentLoader;
+
+	List<DataContentLoader<?>> dataContentLoaderList = new ArrayList<DataContentLoader<?>>();
+	
 	@Inject private WebService webService;
+	
+	
 	// ============================================================================================
 	// CONSTRUCTOR
 	// ============================================================================================
@@ -63,6 +78,9 @@ public class AbstractContentService extends RoboIntentService {
 	 */
 	public AbstractContentService() {
 		super("AbstractContentService");
+		dataContentLoaderList.add(stringContentLoader);
+		dataContentLoaderList.add(jSonContentLoader);
+		dataContentLoaderList.add(binaryContentLoader);
 	}
 
 	// ============================================================================================
@@ -79,6 +97,9 @@ public class AbstractContentService extends RoboIntentService {
 		//extract class of request from bundle
 		RestRequest<?,?> request = (RestRequest<?,?>) intent.getSerializableExtra(AbstractContentManager.INTENT_EXTRA_REST_REQUEST);
 		Class<?> clazz = request.getResultType();
+		Log.d(LOGCAT_TAG, "Result type is " + clazz.getName());
+
+		Bundle bundle = intent.getParcelableExtra(AbstractContentManager.INTENT_EXTRA_REST_REQUEST_BUNDLE);
 
 		String cacheKey = request.getCacheKey();
 		Log.d(LOGCAT_TAG, "Loading content for key : " + cacheKey);
@@ -98,7 +119,15 @@ public class AbstractContentService extends RoboIntentService {
 		if (lastModifiedDateForCache != null && isCacheExpired(new Date(), lastModifiedDateForCache) == false) {
 			Log.d(LOGCAT_TAG,"Content available in cache and not expired");
 
-			result = loadDataFromCache(clazz, cacheFilename);
+			try {
+				result = loadDataFromCache(clazz, cacheFilename);
+			} catch (FileNotFoundException e) {
+				Log.e(getClass().getName(),"Cache file cacheFilename not found:"+cacheFilename,e);
+				return;
+			} catch (IOException e) {
+				e.printStackTrace();
+				return;
+			}
 		}
 		else {
 			// if file is not found or the date is a day after or cache disabled, call the web service
@@ -109,16 +138,15 @@ public class AbstractContentService extends RoboIntentService {
 					Log.e(LOGCAT_TAG,"Network is down.");
 				}
 				else {
-					result =  request.loadDataFromNetwork(webService);
+					result =  request.loadDataFromNetwork(webService, bundle );
 
 					if (result == null) {
-						Log.e(LOGCAT_TAG,"Unable to get web service result");
+						Log.e(LOGCAT_TAG,"Unable to get web service result : " + clazz );
 					}
 					else {
 						if (isCacheEnabled) {
 							Log.d(LOGCAT_TAG,"Start caching content...");
-							// callSaveDataInCacheAsyncAndReturnData method can be overriden by subclasses (for inputstreams)
-							result = asyncSaveDataToCacheAndReturnData(result, cacheFilename);
+							result = saveDataToCacheAndReturnData(result, cacheFilename);
 						}
 					}
 				}
@@ -136,23 +164,6 @@ public class AbstractContentService extends RoboIntentService {
 
 		// finally send the information back to the activity with a messenger
 		sendBackResultToCaller(intent, result, resultCode);
-	}
-
-	/**
-	 * Default implementation of an async invocation of saveDataInCache. Simply invoke the method and return the parameter result, unchanged. This method will be overriden for some types of result
-	 * (namely input streams)
-	 * 
-	 * @param result
-	 *            the data to save in cache.
-	 * @param cacheFilename
-	 *            the name of the cache file to save the item in.
-	 * @return the data that should be send back to service caller.
-	 * @throws IOException
-	 *             if some problem occurs during during creation of a new result in overriden methods.
-	 */
-	protected <T> T asyncSaveDataToCacheAndReturnData(final T result, final String cacheFilename) throws IOException {
-		new CacheWritingThread(result, cacheFilename).start();
-		return result;
 	}
 
 	/**
@@ -216,25 +227,17 @@ public class AbstractContentService extends RoboIntentService {
 	 * 
 	 * @param cacheFileName
 	 * @return the object result of the cache system
+	 * @throws IOException 
+	 * @throws FileNotFoundException 
 	 */
 	@SuppressWarnings("unchecked")
-	protected  <T> T loadDataFromCache(Class<T> clazz, String cacheFileName) {
-		if( clazz.equals(String.class)) {
-			return (T) loadStringDataFromCache(cacheFileName);
-		}
-		else if( Arrays.asList(clazz.getInterfaces()).contains(Serializable.class) ) {
-			Class<? extends Serializable> clazzSerializable = clazz.asSubclass(Serializable.class);
-			return (T) loadSerializableDataFromCache(clazzSerializable, cacheFileName);
+	protected  <T> T loadDataFromCache(Class<T> clazz, String cacheFileName) throws FileNotFoundException, IOException {
+		for( DataContentLoader<T> dataContentLoader : new ArrayList<DataContentLoader<T>>() ) {
+			if( dataContentLoader.canHandleData(clazz)) {
+				return dataContentLoader.loadDataFromCache( clazz, cacheFileName);
+			}
 		}
 		throw new IllegalArgumentException( "Class "+clazz.getName() + " is not handled by any registered loader" );
-	}
-
-	protected  String loadStringDataFromCache( String cacheFileName ) {
-		return stringContentLoader.loadDataFromCache(cacheFileName);
-	}
-
-	protected <T extends Serializable> T loadSerializableDataFromCache( Class<T> clazz, String cacheFileName ) {
-		return jSonContentLoader.loadDataFromCache(clazz, cacheFileName);
 	}
 
 	/**
@@ -244,42 +247,16 @@ public class AbstractContentService extends RoboIntentService {
 	 *            data to save
 	 * @param cacheFileName
 	 *            name of the data in cache system
+	 * @throws IOException 
+	 * @throws FileNotFoundException 
 	 */
-	protected <T> void saveDataToCache(T data, String cacheFileName) {
-		if( data instanceof String ) {
-			stringContentLoader.saveDataToCache((String)data, cacheFileName);
-			return;
-		}
-		else if( data instanceof Serializable) {
-			jSonContentLoader.saveDataToCache((Serializable)data, cacheFileName);
-			return;
+	protected <T> T saveDataToCacheAndReturnData(T data, String cacheFileName) throws FileNotFoundException, IOException {
+		for( DataContentLoader<T> dataContentLoader : new ArrayList<DataContentLoader<T>>() ) {
+			if( dataContentLoader.canHandleData(data.getClass())) {
+				return dataContentLoader.saveDataToCacheAndReturnData(data, cacheFileName);
+			}
 		}
 		throw new IllegalArgumentException( "Class "+data.getClass().getName() + " is not handled by any registered loader" );
 	}
 
-	// ============================================================================================
-	// INNER CLASSES
-	// ============================================================================================
-	/**
-	 * Thread which write result object as its json value in internal storage
-	 * 
-	 * @author mwa
-	 * 
-	 */
-	protected class CacheWritingThread extends Thread {
-
-		// attributes
-		private final Object mResult;
-		private final String mCacheFilename;
-
-		public CacheWritingThread(Object result, String cacheFilename) {
-			mCacheFilename = cacheFilename;
-			mResult = result;
-		}
-
-		@Override
-		public void run() {
-			saveDataToCache(mResult, mCacheFilename);
-		}
-	}
 }

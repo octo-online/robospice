@@ -1,28 +1,33 @@
 package com.octo.android.rest.client.contentservice.loader;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 
-import android.util.Log;
+import org.apache.commons.io.IOUtils;
 
+import android.app.Application;
+
+import com.google.inject.Inject;
 import com.google.inject.Singleton;
-import com.octo.android.rest.client.utils.CacheFileUtils;
 
 @Singleton
 public final class StringContentLoader extends DataContentLoader<String> {
-	
+
+	@Inject Application application;
+
 	@Override
-	public String loadDataFromCache(String cacheFileName) {
-		return CacheFileUtils.readStringContentFromFile(getApplication(), cacheFileName);
+	public String loadDataFromCache(Class<String> clazz, String cacheFileName) throws FileNotFoundException, IOException {
+		return IOUtils.toString( new FileInputStream( new File(application.getCacheDir(), cacheFileName) ) );
 	}
 
 	@Override
-	public final void saveDataToCache(String data, String cacheFileName) {
-		try {
-			CacheFileUtils.saveStringToFile(getApplication(), data, cacheFileName);
-		}
-		catch (IOException e) {
-			Log.e(getClass().getName(),"Unable to save web service result into the cache",e);
-		}
+	public String saveDataToCacheAndReturnData(String data, String cacheFileName)
+			throws FileNotFoundException, IOException {	IOUtils.write(data, new FileOutputStream( new File(application.getCacheDir(), cacheFileName) ) );
+			return data;
 	}
 
 	@Override

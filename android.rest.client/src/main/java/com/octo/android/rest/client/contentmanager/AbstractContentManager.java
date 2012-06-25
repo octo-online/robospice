@@ -1,6 +1,5 @@
 package com.octo.android.rest.client.contentmanager;
 
-import java.util.List;
 import java.util.Random;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -9,10 +8,10 @@ import android.app.Application;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.ResolveInfo;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.ResultReceiver;
+import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.util.SparseArray;
 
@@ -44,8 +43,10 @@ public class AbstractContentManager {
 	public static final String INTENT_EXTRA_REQUEST_ID = "INTENT_EXTRA_REQUEST_ID";
 	public static final String INTENT_EXTRA_RECEIVER = "INTENT_EXTRA_RECEIVER";
 	public static final String INTENT_EXTRA_REST_REQUEST = "INTENT_EXTRA_REST_REQUEST";
+	public static final String INTENT_EXTRA_REST_REQUEST_BUNDLE = "INTENT_EXTRA_REST_REQUEST_BUNDLE";
 
 	private static final String LOG_CAT_TAG = "AbstractContentManager";
+
 
 	// ============================================================================================
 	// ATTRIBUTES
@@ -152,7 +153,7 @@ public class AbstractContentManager {
 	 */
 	public int requestContentWithService(RestRequest<?, ?> restRequest) {
 
-		Bundle optionalBundle = restRequest.getOptionalBundle();
+		Bundle optionalBundle = restRequest.getBundle();
 		//checkContentServiceIsDeclaredInManifest(restRequest.getServiceClass());
 
 		/*
@@ -180,7 +181,10 @@ public class AbstractContentManager {
 		final int requestId = sRandom.nextInt(Integer.MAX_VALUE);
 
 		Intent intent = new Intent(mContext, AbstractContentService.class );
+		//request is passed but no state variable is passed
 		intent.putExtra(INTENT_EXTRA_REST_REQUEST, restRequest);
+		//bundle is passed as well as restRequest won't be serialized normally
+		intent.putExtra(INTENT_EXTRA_REST_REQUEST_BUNDLE, restRequest.getBundle());
 		intent.putExtra(INTENT_EXTRA_RECEIVER, mServiceResultReceiver);
 		intent.putExtra(INTENT_EXTRA_REQUEST_ID, requestId);
 		if (optionalBundle != null) {

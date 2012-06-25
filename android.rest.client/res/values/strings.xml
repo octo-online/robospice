@@ -2,4 +2,7 @@
 <resources>
     <string name="hello">Hello android.rest.client!</string>
     <string name="app_name">android.rest.client</string>
+    <string name="textview_text">Text:</string>
+    <string name="textview_json">Json:</string>
+    <string name="textview_image">Image:</string>
 </resources>

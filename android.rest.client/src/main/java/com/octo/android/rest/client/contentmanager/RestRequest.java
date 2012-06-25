@@ -1,8 +1,12 @@
 package com.octo.android.rest.client.contentmanager;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
 
 import org.springframework.web.client.RestClientException;
+import java.lang.reflect.ParameterizedType;
 
 import android.os.Bundle;
 
@@ -11,32 +15,34 @@ import com.octo.android.rest.client.webservice.WebService;
 
 public abstract class RestRequest<ACTIVITY, RESULT> implements Serializable {
 	private static final long serialVersionUID = 1008863412866054970L;
-	private Bundle optionalBundle;
+	private Bundle bundle = new Bundle();
 	private boolean useCache;
 	private boolean isServiceParallelizable;
 	private transient ACTIVITY activity;
 	protected int mRequestId;
 
+	public RestRequest() {
+		
+	}
 	public RestRequest( ACTIVITY activity,
-			Bundle optionalBundle, boolean useCache,
+			boolean useCache,
 			boolean isServiceParallelizable) {
 		this.activity = activity;
-		this.optionalBundle = optionalBundle;
 		this.useCache = useCache;
 		this.isServiceParallelizable = isServiceParallelizable;
 	}
 
 	@SuppressWarnings("unchecked")
 	public Class<RESULT> getResultType() {
-		return (Class<RESULT>) getClass().getTypeParameters().getClass();
+		return (Class<RESULT>) ((ParameterizedType)getClass().getGenericSuperclass()).getActualTypeArguments()[1];
 	}
 
-	public Bundle getOptionalBundle() {
-		return optionalBundle;
+	public Bundle getBundle() {
+		return bundle;
 	}
 
-	public void setOptionalBundle(Bundle optionalBundle) {
-		this.optionalBundle = optionalBundle;
+	public void setBundle(Bundle bundle) {
+		this.bundle = bundle;
 	}
 
 	public boolean isUseCache() {
@@ -90,12 +96,18 @@ public abstract class RestRequest<ACTIVITY, RESULT> implements Serializable {
 		}
 	}
 
-	public abstract RESULT loadDataFromNetwork( WebService webService) throws RestClientException;
+	public abstract RESULT loadDataFromNetwork( WebService webService, Bundle bundle ) throws RestClientException;
 
 	protected abstract void onRequestFailure( int resultCode);
 
 	protected abstract void onRequestSuccess( RESULT result);
 
 	public abstract String getCacheKey();
+
+	// do nothing when serializing object
+	private void writeObject(ObjectOutputStream out) throws IOException {}
+	
+	// do nothing when deserializing object
+	private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {}
 
 }

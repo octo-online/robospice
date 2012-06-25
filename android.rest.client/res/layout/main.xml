@@ -4,16 +4,26 @@
     android:layout_height="fill_parent"
     android:orientation="vertical" >
 
-    <ScrollView
+    <TextView
+        android:id="@+id/textview_hello_cnil"
         android:layout_width="fill_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1" >
+        android:layout_height="wrap_content"
+        android:singleLine="true"
+        android:ellipsize="marquee"
+        android:text="@string/textview_text" />
 
-        <TextView
-            android:id="@+id/textview_hello_cnil"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/hello" />
-    </ScrollView>
+    <TextView
+        android:id="@+id/textview_hello_credit_status"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:singleLine="true"
+        android:ellipsize="marquee"
+        android:text="@string/textview_json" />
+
+    <TextView
+        android:id="@+id/textview_hello_image"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/textview_image" />
 
 </LinearLayout>
