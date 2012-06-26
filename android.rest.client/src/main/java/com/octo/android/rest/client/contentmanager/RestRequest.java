@@ -10,7 +10,7 @@ import java.lang.reflect.ParameterizedType;
 
 import android.os.Bundle;
 
-import com.octo.android.rest.client.contentservice.AbstractContentService;
+import com.octo.android.rest.client.contentservice.ContentService;
 import com.octo.android.rest.client.webservice.WebService;
 
 public abstract class RestRequest<ACTIVITY, RESULT> implements Serializable {
@@ -83,12 +83,12 @@ public abstract class RestRequest<ACTIVITY, RESULT> implements Serializable {
 	 * @return true if request is finished or false if it is still pending.
 	 */
 	public boolean isRequestFinished() {
-		return mRequestId == AbstractContentManager.FINISHED_REQUEST_ID;
+		return mRequestId == ContentManager.FINISHED_REQUEST_ID;
 	}
 
 	public final void onRequestFinished(int requestId, int resultCode, RESULT result) {
 		if( requestId == getRequestId() ) {
-			if( resultCode == AbstractContentService.RESULT_OK && result != null) {
+			if( resultCode == ContentService.RESULT_OK && result != null) {
 				onRequestSuccess(result );
 			} else {
 				onRequestFailure(resultCode );

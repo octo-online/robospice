@@ -1,4 +1,4 @@
-package com.octo.android.rest.client.custom.cnil;
+package com.octo.android.rest.client.model;
 
 import java.io.IOException;
 

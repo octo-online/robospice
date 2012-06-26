@@ -20,7 +20,7 @@
         </activity>
 
         <service android:name=".custom.cnil.CnilLegalMentionsContentService" />
-        <service android:name=".contentservice.AbstractContentService" />
+        <service android:name=".contentservice.ContentService" />
     </application>
 
 </manifest>

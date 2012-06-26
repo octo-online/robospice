@@ -15,7 +15,7 @@ import org.apache.commons.io.IOUtils;
 import android.os.Bundle;
 import android.util.Log;
 
-import com.octo.android.rest.client.contentservice.AbstractContentService;
+import com.octo.android.rest.client.contentservice.ContentService;
 
 public class ContentRequestBundleUtils {
 
@@ -49,7 +49,7 @@ public class ContentRequestBundleUtils {
 	}
 
 	public static int getResultCodeFromBundle(Bundle bundle) {
-		return bundle.getInt(BUNDLE_RESULT_CODE, AbstractContentService.RESULT_ERROR);
+		return bundle.getInt(BUNDLE_RESULT_CODE, ContentService.RESULT_ERROR);
 	}
 
 	public static void setResultObjectInBundle(Bundle bundle, Object object) throws IOException {

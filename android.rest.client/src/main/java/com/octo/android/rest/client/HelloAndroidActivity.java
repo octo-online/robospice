@@ -10,11 +10,11 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.inject.Inject;
-import com.octo.android.rest.client.contentmanager.AbstractContentManager;
+import com.octo.android.rest.client.contentmanager.ContentManager;
 import com.octo.android.rest.client.contentmanager.AbstractImageRequest;
 import com.octo.android.rest.client.contentmanager.AbstractTextRequest;
 import com.octo.android.rest.client.contentmanager.RestRequest;
-import com.octo.android.rest.client.custom.cnil.ClientRequestStatus;
+import com.octo.android.rest.client.model.ClientRequestStatus;
 import com.octo.android.rest.client.utils.EnvironmentConfigService;
 import com.octo.android.rest.client.webservice.WebService;
 import com.octo.android.rest.client.webservice.WebService.Urls;
@@ -30,7 +30,7 @@ public class HelloAndroidActivity extends RoboActivity {
 	TextView mImageTextView;
 
 	@Inject
-	private AbstractContentManager mContentManager;
+	private ContentManager mContentManager;
 
 	@Inject
 	EnvironmentConfigService environmentConfigService;

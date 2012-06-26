@@ -2,16 +2,10 @@ package com.octo.android.rest.client.contentservice;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
-
-import org.codehaus.jackson.JsonParseException;
-import org.codehaus.jackson.map.JsonMappingException;
 
 import roboguice.service.RoboIntentService;
 import android.content.Intent;
@@ -20,7 +14,7 @@ import android.os.ResultReceiver;
 import android.util.Log;
 
 import com.google.inject.Inject;
-import com.octo.android.rest.client.contentmanager.AbstractContentManager;
+import com.octo.android.rest.client.contentmanager.ContentManager;
 import com.octo.android.rest.client.contentmanager.RestRequest;
 import com.octo.android.rest.client.contentservice.loader.BinaryContentLoader;
 import com.octo.android.rest.client.contentservice.loader.DataContentLoader;
@@ -39,7 +33,7 @@ import com.octo.android.rest.client.webservice.WebService;
  * 
  * @author jva
  */
-public class AbstractContentService extends RoboIntentService {
+public class ContentService extends RoboIntentService {
 
 	// ============================================================================================
 	// CONSTANTS
@@ -76,7 +70,7 @@ public class AbstractContentService extends RoboIntentService {
 	 * 
 	 * @param name
 	 */
-	public AbstractContentService() {
+	public ContentService() {
 		super("AbstractContentService");
 		dataContentLoaderList.add(stringContentLoader);
 		dataContentLoaderList.add(jSonContentLoader);
@@ -95,11 +89,11 @@ public class AbstractContentService extends RoboIntentService {
 	 */
 	protected void onHandleIntent(Intent intent) {
 		//extract class of request from bundle
-		RestRequest<?,?> request = (RestRequest<?,?>) intent.getSerializableExtra(AbstractContentManager.INTENT_EXTRA_REST_REQUEST);
+		RestRequest<?,?> request = (RestRequest<?,?>) intent.getSerializableExtra(ContentManager.INTENT_EXTRA_REST_REQUEST);
 		Class<?> clazz = request.getResultType();
 		Log.d(LOGCAT_TAG, "Result type is " + clazz.getName());
 
-		Bundle bundle = intent.getParcelableExtra(AbstractContentManager.INTENT_EXTRA_REST_REQUEST_BUNDLE);
+		Bundle bundle = intent.getParcelableExtra(ContentManager.INTENT_EXTRA_REST_REQUEST_BUNDLE);
 
 		String cacheKey = request.getCacheKey();
 		Log.d(LOGCAT_TAG, "Loading content for key : " + cacheKey);
@@ -181,7 +175,7 @@ public class AbstractContentService extends RoboIntentService {
 
 		if (extras != null) {
 
-			ResultReceiver resultReceiver = (ResultReceiver) extras.get(AbstractContentManager.INTENT_EXTRA_RECEIVER);
+			ResultReceiver resultReceiver = (ResultReceiver) extras.get(ContentManager.INTENT_EXTRA_RECEIVER);
 
 			if (resultReceiver != null) {
 				try {
