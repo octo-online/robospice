@@ -1,14 +1,18 @@
 package com.octo.android.rest.client.contentservice;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.List;
+
+import org.springframework.web.client.RestClientException;
 
 import roboguice.service.RoboIntentService;
+import android.content.Context;
 import android.content.Intent;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.os.ResultReceiver;
 import android.util.Log;
@@ -16,13 +20,11 @@ import android.util.Log;
 import com.google.inject.Inject;
 import com.octo.android.rest.client.contentmanager.ContentManager;
 import com.octo.android.rest.client.contentmanager.RestRequest;
-import com.octo.android.rest.client.contentservice.loader.BinaryContentLoader;
-import com.octo.android.rest.client.contentservice.loader.DataContentLoader;
-import com.octo.android.rest.client.contentservice.loader.JSonContentLoader;
-import com.octo.android.rest.client.contentservice.loader.StringContentLoader;
-import com.octo.android.rest.client.utils.CacheFileUtils;
+import com.octo.android.rest.client.contentservice.persistence.BinaryContentManager;
+import com.octo.android.rest.client.contentservice.persistence.DataClassPersistenceManager;
+import com.octo.android.rest.client.contentservice.persistence.DataPersistenceManager;
+import com.octo.android.rest.client.contentservice.persistence.StringPersistenceManager;
 import com.octo.android.rest.client.utils.ContentRequestBundleUtils;
-import com.octo.android.rest.client.utils.DeviceUtils;
 import com.octo.android.rest.client.webservice.WebService;
 
 
@@ -51,16 +53,16 @@ public class ContentService extends RoboIntentService {
 	// ATTRIBUTES
 	// ============================================================================================
 
-	@Inject private StringContentLoader stringContentLoader;
-
-	@Inject private JSonContentLoader jSonContentLoader;
-
-	@Inject private BinaryContentLoader binaryContentLoader;
-
-	List<DataContentLoader<?>> dataContentLoaderList = new ArrayList<DataContentLoader<?>>();
-	
 	@Inject private WebService webService;
 	
+	@Inject
+	private DataPersistenceManager dataPersistenceManager;
+	
+	@Inject StringPersistenceManager stringPersistenceManager;
+	
+	@Inject BinaryContentManager binaryContentManager;
+	
+	@Inject JSonPersistenceManageFactory jSonPersistenceManageFactory;
 	
 	// ============================================================================================
 	// CONSTRUCTOR
@@ -72,9 +74,6 @@ public class ContentService extends RoboIntentService {
 	 */
 	public ContentService() {
 		super("AbstractContentService");
-		dataContentLoaderList.add(stringContentLoader);
-		dataContentLoaderList.add(jSonContentLoader);
-		dataContentLoaderList.add(binaryContentLoader);
 	}
 
 	// ============================================================================================
@@ -88,6 +87,10 @@ public class ContentService extends RoboIntentService {
 	 * Cache is disabled by default, to enable it add <code>bundle.putBoolean(ContentService.BUNDLE_EXTRA_CACHE_ENABLED, true);</code> to the intent 
 	 */
 	protected void onHandleIntent(Intent intent) {
+		dataPersistenceManager.registerDataClassPersistenceManager( stringPersistenceManager );
+		dataPersistenceManager.registerDataClassPersistenceManager( binaryContentManager );
+		dataPersistenceManager.registerDataClassPersistenceManagerFactory( jSonPersistenceManageFactory );
+
 		//extract class of request from bundle
 		RestRequest<?,?> request = (RestRequest<?,?>) intent.getSerializableExtra(ContentManager.INTENT_EXTRA_REST_REQUEST);
 		Class<?> clazz = request.getResultType();
@@ -105,30 +108,33 @@ public class ContentService extends RoboIntentService {
 
 		if (isCacheEnabled) {
 			// first check in the cache (file in private file system)
-			lastModifiedDateForCache = CacheFileUtils.getModifiedDateForFile(this, cacheFilename);
-		}
-
-
-		// if file is found, check the date : if the cache did not expired, return data
-		if (lastModifiedDateForCache != null && isCacheExpired(new Date(), lastModifiedDateForCache) == false) {
-			Log.d(LOGCAT_TAG,"Content available in cache and not expired");
-
-			try {
-				result = loadDataFromCache(clazz, cacheFilename);
-			} catch (FileNotFoundException e) {
-				Log.e(getClass().getName(),"Cache file cacheFilename not found:"+cacheFilename,e);
-				return;
-			} catch (IOException e) {
-				e.printStackTrace();
-				return;
+			File file = new File(this.getCacheDir(), cacheFilename);
+			if (file.exists()) {
+				lastModifiedDateForCache =  new Date(file.lastModified());
+			}
+			// if file is found, check the date : if the cache did not expired, return data
+			if (lastModifiedDateForCache != null && isCacheExpired(new Date(), lastModifiedDateForCache) == false) {
+				Log.d(LOGCAT_TAG,"Content available in cache and not expired");
+				
+				try {
+					result = loadDataFromCache(clazz, cacheFilename);
+				} catch (FileNotFoundException e) {
+					Log.e(getClass().getName(),"Cache file cacheFilename not found:"+cacheFilename,e);
+					return;
+				} catch (IOException e) {
+					e.printStackTrace();
+					return;
+				}
 			}
 		}
-		else {
+
+		if( result == null ) 
+		{
 			// if file is not found or the date is a day after or cache disabled, call the web service
 			Log.d(LOGCAT_TAG,"Cache content not available or expired or disabled");
 
 			try {
-				if (!DeviceUtils.isNetworkAvailable(this)) {
+				if (!isNetworkAvailable(this)) {
 					Log.e(LOGCAT_TAG,"Network is down.");
 				}
 				else {
@@ -145,8 +151,12 @@ public class ContentService extends RoboIntentService {
 					}
 				}
 			}
-			catch (Exception e) {
-				Log.e(LOGCAT_TAG,"An exception occured during service execution :"+e.getMessage(), e);
+			catch (RestClientException e) {
+				Log.e(LOGCAT_TAG,"A rest client exception occured during service execution :"+e.getMessage(), e);
+			} catch (FileNotFoundException e) {
+				Log.e(LOGCAT_TAG,"A file not found exception occured during service execution :"+e.getMessage(), e);
+			} catch (IOException e) {
+				Log.e(LOGCAT_TAG,"An io exception occured during service execution :"+e.getMessage(), e);
 			}
 		}
 
@@ -210,12 +220,6 @@ public class ContentService extends RoboIntentService {
 		return !areDatesInSameDay;
 	}
 
-	protected String getCacheKey(Bundle extraBundle) {
-		//TODO
-		return "default cache key, change this ! AbstractContentService :: 198";
-	}
-
-
 	/**
 	 * Implement this method to get data from local cache system
 	 * 
@@ -224,14 +228,8 @@ public class ContentService extends RoboIntentService {
 	 * @throws IOException 
 	 * @throws FileNotFoundException 
 	 */
-	@SuppressWarnings("unchecked")
 	protected  <T> T loadDataFromCache(Class<T> clazz, String cacheFileName) throws FileNotFoundException, IOException {
-		for( DataContentLoader<T> dataContentLoader : new ArrayList<DataContentLoader<T>>() ) {
-			if( dataContentLoader.canHandleData(clazz)) {
-				return dataContentLoader.loadDataFromCache( clazz, cacheFileName);
-			}
-		}
-		throw new IllegalArgumentException( "Class "+clazz.getName() + " is not handled by any registered loader" );
+		return dataPersistenceManager.getDataClassPersistenceManager(clazz).loadDataFromCache(clazz, cacheFileName);
 	}
 
 	/**
@@ -244,13 +242,24 @@ public class ContentService extends RoboIntentService {
 	 * @throws IOException 
 	 * @throws FileNotFoundException 
 	 */
+	@SuppressWarnings("unchecked")
 	protected <T> T saveDataToCacheAndReturnData(T data, String cacheFileName) throws FileNotFoundException, IOException {
-		for( DataContentLoader<T> dataContentLoader : new ArrayList<DataContentLoader<T>>() ) {
-			if( dataContentLoader.canHandleData(data.getClass())) {
-				return dataContentLoader.saveDataToCacheAndReturnData(data, cacheFileName);
+		DataClassPersistenceManager<T> dataClassPersistenceManager = (DataClassPersistenceManager<T>) dataPersistenceManager.getDataClassPersistenceManager(data.getClass());
+		return dataClassPersistenceManager.saveDataToCacheAndReturnData(data, cacheFileName);
+	}
+
+	/**
+	 * @return true if network is available (at least one way to connect to network is connected or connecting).
+	 */
+	public static boolean isNetworkAvailable(Context context) {
+		ConnectivityManager connectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+		NetworkInfo[] allNetworkInfos = connectivityManager.getAllNetworkInfo();
+		for (NetworkInfo networkInfo : allNetworkInfos) {
+			if (networkInfo.getState() == NetworkInfo.State.CONNECTED || networkInfo.getState() == NetworkInfo.State.CONNECTING) {
+				return true;
 			}
 		}
-		throw new IllegalArgumentException( "Class "+data.getClass().getName() + " is not handled by any registered loader" );
+		return false;
 	}
 
 }

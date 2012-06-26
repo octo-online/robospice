@@ -7,6 +7,7 @@ import java.io.Serializable;
 
 import org.springframework.web.client.RestClientException;
 import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 
 import android.os.Bundle;
 
@@ -34,7 +35,8 @@ public abstract class RestRequest<ACTIVITY, RESULT> implements Serializable {
 
 	@SuppressWarnings("unchecked")
 	public Class<RESULT> getResultType() {
-		return (Class<RESULT>) ((ParameterizedType)getClass().getGenericSuperclass()).getActualTypeArguments()[1];
+		Type[]  types =  ((ParameterizedType)getClass().getGenericSuperclass()).getActualTypeArguments();
+		return (Class<RESULT>) types[types.length-1];
 	}
 
 	public Bundle getBundle() {

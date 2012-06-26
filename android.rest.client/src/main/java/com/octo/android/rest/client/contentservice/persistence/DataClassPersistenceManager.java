@@ -1,4 +1,4 @@
-package com.octo.android.rest.client.contentservice.loader;
+package com.octo.android.rest.client.contentservice.persistence;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -7,7 +7,7 @@ import android.app.Application;
 
 import com.google.inject.Inject;
 
-public abstract class DataContentLoader<DATA> {
+public abstract class DataClassPersistenceManager<DATA> {
 
 	private @Inject Application mApplication;
 	

@@ -61,8 +61,8 @@ public class HelloAndroidActivity extends RoboActivity {
 				"19/12/1976");
 		imageRequest = new ImageRequest(this, "https://developers.google.com/images/developers-logo.png");
 
-		//requestCnilLegalMentions();
-		//requestCreditStatus();
+		requestCnilLegalMentions();
+		requestCreditStatus();
 		requestImage();
 	}
 
@@ -85,6 +85,8 @@ public class HelloAndroidActivity extends RoboActivity {
 	@Override
 	protected void onPause() {
 		mContentManager.removeOnRequestFinishedListener(cnilRequest);
+		mContentManager.removeOnRequestFinishedListener(imageRequest);
+		mContentManager.removeOnRequestFinishedListener(creditStatusRequest);
 		super.onPause();
 	}
 
@@ -127,7 +129,7 @@ public class HelloAndroidActivity extends RoboActivity {
 
 		public CreditStatusRequest(HelloAndroidActivity activity,
 				String requestId, String birthDate) {
-			super(activity, false, false);
+			super(activity, true, false);
 			this.requestId = requestId;
 			this.birthDate = birthDate;
 			getBundle().putString(BUNDLE_EXTRA_REQUEST_ID, requestId);

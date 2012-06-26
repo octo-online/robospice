@@ -19,7 +19,6 @@
             </intent-filter>
         </activity>
 
-        <service android:name=".custom.cnil.CnilLegalMentionsContentService" />
         <service android:name=".contentservice.ContentService" />
     </application>
 

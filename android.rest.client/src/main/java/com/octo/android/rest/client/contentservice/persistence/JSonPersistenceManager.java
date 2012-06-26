@@ -1,11 +1,14 @@
-package com.octo.android.rest.client.contentservice.loader;
+package com.octo.android.rest.client.contentservice.persistence;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.Serializable;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
-import org.codehaus.jackson.JsonGenerationException;
 import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -15,12 +18,11 @@ import android.util.Log;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
-import com.octo.android.rest.client.utils.CacheFileUtils;
 
 @Singleton
-public final class JSonContentLoader<T  extends Serializable> extends DataContentLoader<T> {
+public final class JSonPersistenceManager<T  extends Serializable> extends DataClassPersistenceManager<T> {
 
-	@Inject Application mApplication;
+	Application mApplication;
 
 	// ============================================================================================
 	// ATTRIBUTES
@@ -31,8 +33,9 @@ public final class JSonContentLoader<T  extends Serializable> extends DataConten
 	// ============================================================================================
 	// CONSTRUCTOR
 	// ============================================================================================
-
-	public JSonContentLoader() {
+	@Inject
+	public JSonPersistenceManager( Application application) {
+		this.mApplication = application;
 		this.mJsonMapper = new ObjectMapper();
 	}
 
@@ -43,7 +46,7 @@ public final class JSonContentLoader<T  extends Serializable> extends DataConten
 	public final T loadDataFromCache(Class<T> clazz, String cacheFileName) throws JsonParseException, JsonMappingException, IOException {
 		T result = null;
 		String resultJson = null;
-		resultJson = CacheFileUtils.readStringContentFromFile(mApplication, cacheFileName);
+		resultJson =  IOUtils.toString( new FileInputStream( new File(mApplication.getCacheDir(), cacheFileName) ) );
 
 		if (resultJson != null) {
 			// finally transform json in object
@@ -70,7 +73,7 @@ public final class JSonContentLoader<T  extends Serializable> extends DataConten
 
 		// finally store the json in the cache
 		if (StringUtils.isNotEmpty(resultJson)) {
-			CacheFileUtils.saveStringToFile(mApplication, resultJson, cacheFileName);
+			IOUtils.write(resultJson, new FileOutputStream( new File(mApplication.getCacheDir(), cacheFileName) ) );
 		}
 		else {
 			Log.e(getClass().getName(),"Unable to save web service result into the cache");

@@ -1,4 +1,4 @@
-package com.octo.android.rest.client.contentservice.loader;
+package com.octo.android.rest.client.contentservice.persistence;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -7,7 +7,6 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.Serializable;
 
 import org.apache.commons.io.IOUtils;
 
@@ -17,10 +16,15 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 @Singleton
-public final class BinaryContentLoader extends DataContentLoader<InputStream> {
+public final class BinaryContentManager extends DataClassPersistenceManager<InputStream> {
 
-	@Inject Application application;
+	Application application;
 
+	@Inject
+	public BinaryContentManager( Application application ) {
+		this.application = application;
+	}
+	
 	@Override
 	public InputStream loadDataFromCache(Class<InputStream> clazz, String cacheFileName) throws FileNotFoundException {
 		return new FileInputStream( new File(application.getCacheDir(), cacheFileName) );
