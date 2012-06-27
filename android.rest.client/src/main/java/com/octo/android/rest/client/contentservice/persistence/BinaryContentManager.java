@@ -18,13 +18,9 @@ import com.google.inject.Singleton;
 @Singleton
 public final class BinaryContentManager extends DataClassPersistenceManager<InputStream> {
 
+	@Inject
 	Application application;
 
-	@Inject
-	public BinaryContentManager( Application application ) {
-		this.application = application;
-	}
-	
 	@Override
 	public InputStream loadDataFromCache(Class<InputStream> clazz, String cacheFileName) throws FileNotFoundException {
 		return new FileInputStream( new File(application.getCacheDir(), cacheFileName) );

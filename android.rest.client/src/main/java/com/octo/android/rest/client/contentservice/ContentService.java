@@ -20,10 +20,8 @@ import android.util.Log;
 import com.google.inject.Inject;
 import com.octo.android.rest.client.contentmanager.ContentManager;
 import com.octo.android.rest.client.contentmanager.RestRequest;
-import com.octo.android.rest.client.contentservice.persistence.BinaryContentManager;
 import com.octo.android.rest.client.contentservice.persistence.DataClassPersistenceManager;
 import com.octo.android.rest.client.contentservice.persistence.DataPersistenceManager;
-import com.octo.android.rest.client.contentservice.persistence.StringPersistenceManager;
 import com.octo.android.rest.client.utils.ContentRequestBundleUtils;
 import com.octo.android.rest.client.webservice.WebService;
 
@@ -54,16 +52,10 @@ public class ContentService extends RoboIntentService {
 	// ============================================================================================
 
 	@Inject private WebService webService;
-	
+
 	@Inject
 	private DataPersistenceManager dataPersistenceManager;
-	
-	@Inject StringPersistenceManager stringPersistenceManager;
-	
-	@Inject BinaryContentManager binaryContentManager;
-	
-	@Inject JSonPersistenceManageFactory jSonPersistenceManageFactory;
-	
+
 	// ============================================================================================
 	// CONSTRUCTOR
 	// ============================================================================================
@@ -87,26 +79,23 @@ public class ContentService extends RoboIntentService {
 	 * Cache is disabled by default, to enable it add <code>bundle.putBoolean(ContentService.BUNDLE_EXTRA_CACHE_ENABLED, true);</code> to the intent 
 	 */
 	protected void onHandleIntent(Intent intent) {
-		dataPersistenceManager.registerDataClassPersistenceManager( stringPersistenceManager );
-		dataPersistenceManager.registerDataClassPersistenceManager( binaryContentManager );
-		dataPersistenceManager.registerDataClassPersistenceManagerFactory( jSonPersistenceManageFactory );
-
+		
 		//extract class of request from bundle
 		RestRequest<?,?> request = (RestRequest<?,?>) intent.getSerializableExtra(ContentManager.INTENT_EXTRA_REST_REQUEST);
 		Class<?> clazz = request.getResultType();
 		Log.d(LOGCAT_TAG, "Result type is " + clazz.getName());
 
+		Object result = null;
 		Bundle bundle = intent.getParcelableExtra(ContentManager.INTENT_EXTRA_REST_REQUEST_BUNDLE);
-
 		String cacheKey = request.getCacheKey();
 		Log.d(LOGCAT_TAG, "Loading content for key : " + cacheKey);
-
-		Object result = null;
-		Date lastModifiedDateForCache = null;
 		String cacheFilename = cacheKey + FILE_CACHE_EXTENSION;
+
 		boolean isCacheEnabled = intent.getBooleanExtra(BUNDLE_EXTRA_CACHE_ENABLED, false);
 
 		if (isCacheEnabled) {
+			Date lastModifiedDateForCache = null;
+
 			// first check in the cache (file in private file system)
 			File file = new File(this.getCacheDir(), cacheFilename);
 			if (file.exists()) {
@@ -115,7 +104,7 @@ public class ContentService extends RoboIntentService {
 			// if file is found, check the date : if the cache did not expired, return data
 			if (lastModifiedDateForCache != null && isCacheExpired(new Date(), lastModifiedDateForCache) == false) {
 				Log.d(LOGCAT_TAG,"Content available in cache and not expired");
-				
+
 				try {
 					result = loadDataFromCache(clazz, cacheFilename);
 				} catch (FileNotFoundException e) {

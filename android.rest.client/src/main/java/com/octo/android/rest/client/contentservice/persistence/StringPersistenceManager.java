@@ -16,13 +16,9 @@ import com.google.inject.Singleton;
 @Singleton
 public final class StringPersistenceManager extends DataClassPersistenceManager<String> {
 
+	@Inject
 	Application application;
 
-	@Inject
-	public StringPersistenceManager( Application application ) {
-		this.application = application;
-	}
-	
 	@Override
 	public String loadDataFromCache(Class<String> clazz, String cacheFileName) throws FileNotFoundException, IOException {
 		return IOUtils.toString( new FileInputStream( new File(application.getCacheDir(), cacheFileName) ) );

@@ -16,8 +16,8 @@ import com.octo.android.rest.client.contentmanager.AbstractTextRequest;
 import com.octo.android.rest.client.contentmanager.RestRequest;
 import com.octo.android.rest.client.model.ClientRequestStatus;
 import com.octo.android.rest.client.utils.EnvironmentConfigService;
+import com.octo.android.rest.client.webservice.UrlConstants;
 import com.octo.android.rest.client.webservice.WebService;
-import com.octo.android.rest.client.webservice.WebService.Urls;
 
 public class HelloAndroidActivity extends RoboActivity {
 
@@ -56,8 +56,9 @@ public class HelloAndroidActivity extends RoboActivity {
 		// Log a message (only on dev platform)
 		Log.i(getClass().getName(), "onCreate");
 
-		cnilRequest = new CnilRequest(this, environmentConfigService.getWebServiceUrl() + Urls.CNIL_LEGAL_MENTIONS);
-		creditStatusRequest = new CreditStatusRequest(this, "12345678",
+		String baseUrl = environmentConfigService.getWebServiceUrl() ;
+		cnilRequest = new CnilRequest(this, baseUrl + UrlConstants.CNIL_LEGAL_MENTIONS);
+		creditStatusRequest = new CreditStatusRequest(this, baseUrl, "12345678",
 				"19/12/1976");
 		imageRequest = new ImageRequest(this, "https://developers.google.com/images/developers-logo.png");
 
@@ -126,10 +127,12 @@ public class HelloAndroidActivity extends RoboActivity {
 
 		private String requestId;
 		private String birthDate;
+		private String baseUrl;
 
-		public CreditStatusRequest(HelloAndroidActivity activity,
+		public CreditStatusRequest(HelloAndroidActivity activity, String url,
 				String requestId, String birthDate) {
 			super(activity, true, false);
+			this.baseUrl = url;
 			this.requestId = requestId;
 			this.birthDate = birthDate;
 			getBundle().putString(BUNDLE_EXTRA_REQUEST_ID, requestId);
@@ -143,8 +146,8 @@ public class HelloAndroidActivity extends RoboActivity {
 				Bundle bundle) throws RestClientException {
 			String requestId = bundle.getString(BUNDLE_EXTRA_REQUEST_ID);
 			String birthDate = bundle.getString(BUNDLE_EXTRA_BIRTH_DATE);
-			String url = webService.getBaseUrl()
-					+ String.format(WebService.Urls.REQUEST_STATUS, requestId,
+			String url = this.baseUrl
+					+ String.format(UrlConstants.REQUEST_STATUS, requestId,
 							birthDate.replaceAll("/", ""), "FRANDROIDBK");
 			Log.d(getClass().getName(), "Call web service " + url);
 			return webService.getRestTemplate().getForObject(url,

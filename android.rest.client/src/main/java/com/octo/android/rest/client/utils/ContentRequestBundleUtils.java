@@ -85,7 +85,6 @@ public class ContentRequestBundleUtils {
 			bytes = bos.toByteArray();
 			// TODO : add finally to close out and bos
 			out.close();
-			bos.close();
 		}
 		else {
 			throw new IOException("Unable to convert object into byte array because not serializable");
@@ -107,7 +106,6 @@ public class ContentRequestBundleUtils {
 			ObjectInput in = new ObjectInputStream(bis);
 			object = in.readObject();
 
-			bis.close();
 			in.close();
 		}
 
