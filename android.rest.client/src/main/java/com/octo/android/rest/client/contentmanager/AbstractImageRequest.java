@@ -13,10 +13,8 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
-import android.os.Bundle;
 import android.util.Log;
 
-import com.octo.android.rest.client.webservice.WebService;
 
 public abstract class AbstractImageRequest extends
 RestRequest<InputStream> {
@@ -29,7 +27,7 @@ RestRequest<InputStream> {
 		this.url = url;	}
 
 	@Override
-	public final InputStream loadDataFromNetwork(WebService webService, Bundle bundle)
+	public final InputStream loadDataFromNetwork()
 			throws RestClientException {
 		try {
 			return new URL(url).openStream();

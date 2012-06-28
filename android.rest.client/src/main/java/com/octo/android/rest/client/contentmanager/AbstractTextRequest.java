@@ -3,10 +3,8 @@ package com.octo.android.rest.client.contentmanager;
 import org.springframework.web.client.RestClientException;
 
 import android.content.Context;
-import android.os.Bundle;
 import android.util.Log;
 
-import com.octo.android.rest.client.webservice.WebService;
 
 public abstract class AbstractTextRequest extends RestRequest<String> {
 
@@ -20,10 +18,10 @@ public abstract class AbstractTextRequest extends RestRequest<String> {
 	// can't use activity here or any non serializable field
 	// will be invoked in remote service
 	@Override
-	public final String loadDataFromNetwork(WebService webService, Bundle bundle)
+	public final String loadDataFromNetwork()
 			throws RestClientException {
 		Log.d(getClass().getName(), "Call web service " + url);
-		return webService.getRestTemplate().getForObject(url, String.class);
+		return getRestTemplate().getForObject(url, String.class);
 	}
 
 	// can't use activity here or any non serializable field

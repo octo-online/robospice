@@ -24,7 +24,6 @@ import com.octo.android.rest.client.contentservice.ContentService.ContentService
 import com.octo.android.rest.client.model.ClientRequestStatus;
 import com.octo.android.rest.client.utils.EnvironmentConfigService;
 import com.octo.android.rest.client.webservice.UrlConstants;
-import com.octo.android.rest.client.webservice.WebService;
 
 @ContentView(R.layout.main)
 public class HelloAndroidActivity extends RoboActivity {
@@ -144,13 +143,12 @@ public class HelloAndroidActivity extends RoboActivity {
 		// can't use activity here or any non serializable field
 		// will be invoked in remote service
 		@Override
-		public ClientRequestStatus loadDataFromNetwork(WebService webService,
-				Bundle bundle) throws RestClientException {
+		public ClientRequestStatus loadDataFromNetwork() throws RestClientException {
 			String url = this.baseUrl
 					+ String.format(UrlConstants.REQUEST_STATUS, requestId,
 							birthDate.replaceAll("/", ""), "FRANDROIDBK");
 			Log.d(getClass().getName(), "Call web service " + url);
-			return webService.getRestTemplate().getForObject(url,
+			return getRestTemplate().getForObject(url,
 					ClientRequestStatus.class);
 		}
 

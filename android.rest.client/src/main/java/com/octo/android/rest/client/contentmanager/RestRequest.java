@@ -2,16 +2,12 @@ package com.octo.android.rest.client.contentmanager;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.Serializable;
 
 import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.RestTemplate;
 
 import roboguice.RoboGuice;
-
 import android.content.Context;
-import android.os.Bundle;
 
 import com.google.inject.Inject;
 import com.octo.android.rest.client.contentservice.ContentService;
@@ -26,9 +22,12 @@ public abstract class RestRequest<RESULT> {
 	
 	@Inject
 	private DataPersistenceManager persistenceManager;
-
+	@Inject
+	private WebService webService;
+	
 	public RestRequest( Context context, Class<RESULT> clazz) {
 		this.persistenceManager = RoboGuice.getInjector(context).getInstance(DataPersistenceManager.class);
+		this.webService = RoboGuice.getInjector(context).getInstance(WebService.class);
 		this.resultType = clazz;
 	}
 
@@ -74,8 +73,12 @@ public abstract class RestRequest<RESULT> {
 	public RESULT saveDataToCacheAndReturnData(RESULT data, String cacheFileName) throws FileNotFoundException, IOException {
 		return persistenceManager.getDataClassPersistenceManager(getResultType() ).saveDataToCacheAndReturnData(data, cacheFileName);
 	}
+	
+	protected RestTemplate getRestTemplate() {
+		return webService.getRestTemplate();
+	}
 
-	public abstract RESULT loadDataFromNetwork( WebService webService, Bundle bundle ) throws RestClientException;
+	public abstract RESULT loadDataFromNetwork() throws RestClientException;
 
 	protected abstract void onRequestFailure( int resultCode);
 

@@ -13,8 +13,6 @@ import org.apache.commons.lang.StringUtils;
 import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.map.introspect.BasicClassIntrospector.GetterMethodFilter;
-import org.codehaus.jackson.type.TypeReference;
 
 import android.app.Application;
 import android.util.Log;

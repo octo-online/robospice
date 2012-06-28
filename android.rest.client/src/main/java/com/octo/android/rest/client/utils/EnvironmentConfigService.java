@@ -34,10 +34,8 @@ public final class EnvironmentConfigService {
 	private static final String ENV_KEY = "env";
 	private static final String DEFAULT_ENV_VALUE = "PROD";
 	private static final String WS_URL_KEY = "ws.url";
-	private static final String WEB_URL_KEY = "web.url";
 
 	private static final String WS_URL_KEY_OTHER = "ws.url.other";
-	private static final String WEB_URL_KEY_OTHER = "web.url.other";
 
 	// ============================================================================================
 	// ATTRIBUTES

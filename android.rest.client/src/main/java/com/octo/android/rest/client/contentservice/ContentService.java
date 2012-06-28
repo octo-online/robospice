@@ -8,7 +8,6 @@ import java.util.Date;
 
 import org.springframework.web.client.RestClientException;
 
-import roboguice.service.RoboIntentService;
 import roboguice.service.RoboService;
 import android.content.Context;
 import android.content.Intent;
@@ -17,13 +16,9 @@ import android.net.NetworkInfo;
 import android.os.Binder;
 import android.os.Bundle;
 import android.os.IBinder;
-import android.os.ResultReceiver;
 import android.util.Log;
 
-import com.google.inject.Inject;
 import com.octo.android.rest.client.contentmanager.RestRequest;
-import com.octo.android.rest.client.utils.ContentRequestBundleUtils;
-import com.octo.android.rest.client.webservice.WebService;
 
 
 /**
@@ -49,8 +44,7 @@ public class ContentService extends RoboService {
 	// ============================================================================================
 	// ATTRIBUTES
 	// ============================================================================================
-
-	@Inject private WebService webService;
+	
 	private ContentServiceBinder mContentServiceBinder;
 
 	// ============================================================================================
@@ -115,7 +109,7 @@ public class ContentService extends RoboService {
 			}
 			else {
 				try {
-					result =  request.loadDataFromNetwork(webService, bundle );
+					result =  request.loadDataFromNetwork();
 				} catch (RestClientException e) {
 					Log.e(LOGCAT_TAG,"A rest client exception occured during service execution :"+e.getMessage(), e);
 				}
