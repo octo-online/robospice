@@ -20,7 +20,7 @@ public final class StringPersistenceManager extends DataClassPersistenceManager<
 	Application application;
 
 	@Override
-	public String loadDataFromCache(Class<String> clazz, String cacheFileName) throws FileNotFoundException, IOException {
+	public String loadDataFromCache(String cacheFileName) throws FileNotFoundException, IOException {
 		return IOUtils.toString( new FileInputStream( new File(application.getCacheDir(), cacheFileName) ) );
 	}
 

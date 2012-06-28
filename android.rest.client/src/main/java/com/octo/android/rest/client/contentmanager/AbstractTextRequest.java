@@ -2,22 +2,18 @@ package com.octo.android.rest.client.contentmanager;
 
 import org.springframework.web.client.RestClientException;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.util.Log;
 
 import com.octo.android.rest.client.webservice.WebService;
 
-public abstract class AbstractTextRequest<ACTIVITY> extends
-RestRequest<ACTIVITY, String> {
+public abstract class AbstractTextRequest extends RestRequest<String> {
 
-	private static final long serialVersionUID = -1578679537677496271L;
+	private String url;
 
-	private final static String BUNDLE_EXTRA_URL_TEXT = "BUNDLE_EXTRA_URL_TEXT";
-	protected String url;
-
-	public AbstractTextRequest(ACTIVITY activity, String url) {
-		super(activity, false, false);
-		getBundle().putString( BUNDLE_EXTRA_URL_TEXT, url);
+	public AbstractTextRequest(Context context, String url) {
+		super(context, String.class);
 		this.url = url;	
 	}
 
@@ -26,10 +22,6 @@ RestRequest<ACTIVITY, String> {
 	@Override
 	public final String loadDataFromNetwork(WebService webService, Bundle bundle)
 			throws RestClientException {
-		String url = bundle.getString(BUNDLE_EXTRA_URL_TEXT);
-		if (url == null) {
-			return null;
-		}
 		Log.d(getClass().getName(), "Call web service " + url);
 		return webService.getRestTemplate().getForObject(url, String.class);
 	}
@@ -42,7 +34,7 @@ RestRequest<ACTIVITY, String> {
 
 	@Override
 	public final String getCacheKey() {
-		return url;
+		return url.replace(":", "").replace("/", "_");
 	}
 
 }

@@ -8,6 +8,7 @@ import java.net.URL;
 
 import org.springframework.web.client.RestClientException;
 
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
@@ -17,26 +18,19 @@ import android.util.Log;
 
 import com.octo.android.rest.client.webservice.WebService;
 
-public abstract class AbstractImageRequest<ACTIVITY> extends
-RestRequest<ACTIVITY, InputStream> {
+public abstract class AbstractImageRequest extends
+RestRequest<InputStream> {
 
-	private static final long serialVersionUID = -12286797677496271L;
 	protected static final String BUNDLE_EXTRA_IMAGE_URL = "BUNDLE_EXTRA_IMAGE_URL";
 	protected String url;
 
-	public AbstractImageRequest(ACTIVITY activity, String url) {
-		super(activity, false, false);
-		getBundle().putString( BUNDLE_EXTRA_IMAGE_URL, url);
+	public AbstractImageRequest(Context context, String url) {
+		super(context, InputStream.class);
 		this.url = url;	}
 
 	@Override
 	public final InputStream loadDataFromNetwork(WebService webService, Bundle bundle)
 			throws RestClientException {
-		String url = bundle.getString(BUNDLE_EXTRA_IMAGE_URL);
-		if (url == null) {
-			return null;
-		}
-
 		try {
 			return new URL(url).openStream();
 		} catch (MalformedURLException e) {
@@ -54,7 +48,7 @@ RestRequest<ACTIVITY, InputStream> {
 
 	@Override
 	public final String getCacheKey() {
-		return url;
+		return url.replace(":", "").replace("/", "_");
 	}
 
 	@Override

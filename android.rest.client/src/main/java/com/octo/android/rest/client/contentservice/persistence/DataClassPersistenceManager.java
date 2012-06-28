@@ -17,7 +17,7 @@ public abstract class DataClassPersistenceManager<DATA> {
 
 	public abstract boolean canHandleData( Class<?> clazz );
 	
-	public abstract DATA loadDataFromCache(Class<DATA> clazz, String cacheFileName) throws FileNotFoundException, IOException;
+	public abstract DATA loadDataFromCache(String cacheFileName) throws FileNotFoundException, IOException;
 	public abstract DATA saveDataToCacheAndReturnData(DATA data, String cacheFileName) throws FileNotFoundException, IOException;
 
 }

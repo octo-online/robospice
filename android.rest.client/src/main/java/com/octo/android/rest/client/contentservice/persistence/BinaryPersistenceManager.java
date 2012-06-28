@@ -16,13 +16,13 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 @Singleton
-public final class BinaryContentManager extends DataClassPersistenceManager<InputStream> {
+public final class BinaryPersistenceManager extends DataClassPersistenceManager<InputStream> {
 
 	@Inject
 	Application application;
 
 	@Override
-	public InputStream loadDataFromCache(Class<InputStream> clazz, String cacheFileName) throws FileNotFoundException {
+	public InputStream loadDataFromCache(String cacheFileName) throws FileNotFoundException {
 		return new FileInputStream( new File(application.getCacheDir(), cacheFileName) );
 	}
 

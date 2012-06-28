@@ -6,12 +6,15 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.Serializable;
+import java.lang.reflect.ParameterizedType;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.map.introspect.BasicClassIntrospector.GetterMethodFilter;
+import org.codehaus.jackson.type.TypeReference;
 
 import android.app.Application;
 import android.util.Log;
@@ -43,7 +46,8 @@ public final class JSonPersistenceManager<T  extends Serializable> extends DataC
 	// METHODS
 	// ============================================================================================
 
-	public final T loadDataFromCache(Class<T> clazz, String cacheFileName) throws JsonParseException, JsonMappingException, IOException {
+	@SuppressWarnings("unchecked")
+	public final T loadDataFromCache( String cacheFileName) throws JsonParseException, JsonMappingException, IOException {
 		T result = null;
 		String resultJson = null;
 		resultJson =  IOUtils.toString( new FileInputStream( new File(mApplication.getCacheDir(), cacheFileName) ) );
@@ -51,7 +55,7 @@ public final class JSonPersistenceManager<T  extends Serializable> extends DataC
 		if (resultJson != null) {
 			// finally transform json in object
 			if (StringUtils.isNotEmpty(resultJson)) {
-				result = mJsonMapper.readValue(resultJson, clazz);
+				result = mJsonMapper.readValue(resultJson, (Class<T>) ((ParameterizedType) getClass().getSuperclass().getGenericSuperclass()).getActualTypeArguments()[0]);
 			}
 			else {
 				Log.e(getClass().getName(),"Unable to restore cache content : cache file is empty");

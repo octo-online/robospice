@@ -1,70 +1,39 @@
 package com.octo.android.rest.client.contentmanager;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 
 import org.springframework.web.client.RestClientException;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
 
+import roboguice.RoboGuice;
+
+import android.content.Context;
 import android.os.Bundle;
 
+import com.google.inject.Inject;
 import com.octo.android.rest.client.contentservice.ContentService;
+import com.octo.android.rest.client.contentservice.persistence.DataPersistenceManager;
 import com.octo.android.rest.client.webservice.WebService;
 
-public abstract class RestRequest<ACTIVITY, RESULT> implements Serializable {
-	private static final long serialVersionUID = 1008863412866054970L;
-	private Bundle bundle = new Bundle();
-	private boolean useCache;
-	private boolean isServiceParallelizable;
-	private transient ACTIVITY activity;
+public abstract class RestRequest<RESULT> {
+	private static final int FINISHED_REQUEST_ID = -1;
 	protected int mRequestId;
-
-	public RestRequest() {
-		
-	}
-	public RestRequest( ACTIVITY activity,
-			boolean useCache,
-			boolean isServiceParallelizable) {
-		this.activity = activity;
-		this.useCache = useCache;
-		this.isServiceParallelizable = isServiceParallelizable;
-	}
-
-	@SuppressWarnings("unchecked")
-	public Class<RESULT> getResultType() {
-		Type[]  types =  ((ParameterizedType)getClass().getGenericSuperclass()).getActualTypeArguments();
-		return (Class<RESULT>) types[types.length-1];
-	}
-
-	public Bundle getBundle() {
-		return bundle;
-	}
-
-	public void setBundle(Bundle bundle) {
-		this.bundle = bundle;
-	}
-
-	public boolean isUseCache() {
-		return useCache;
-	}
-
-	public void setUseCache(boolean useCache) {
-		this.useCache = useCache;
-	}
-
-	public boolean isServiceParallelizable() {
-		return isServiceParallelizable;
-	}
-
-	public void setServiceParallelizable(boolean isServiceParallelizable) {
-		this.isServiceParallelizable = isServiceParallelizable;
-	}
+	protected Class<RESULT> resultType;
+	private boolean isCanceled = false;
 	
-	protected ACTIVITY getActivity() {
-		return this.activity;
+	@Inject
+	private DataPersistenceManager persistenceManager;
+
+	public RestRequest( Context context, Class<RESULT> clazz) {
+		this.persistenceManager = RoboGuice.getInjector(context).getInstance(DataPersistenceManager.class);
+		this.resultType = clazz;
+	}
+
+	public Class<RESULT> getResultType() {
+		return resultType;
 	}
 
 	// ============================================================================================
@@ -85,7 +54,7 @@ public abstract class RestRequest<ACTIVITY, RESULT> implements Serializable {
 	 * @return true if request is finished or false if it is still pending.
 	 */
 	public boolean isRequestFinished() {
-		return mRequestId == ContentManager.FINISHED_REQUEST_ID;
+		return mRequestId == FINISHED_REQUEST_ID;
 	}
 
 	public final void onRequestFinished(int requestId, int resultCode, RESULT result) {
@@ -97,6 +66,14 @@ public abstract class RestRequest<ACTIVITY, RESULT> implements Serializable {
 			}
 		}
 	}
+	
+	public RESULT loadDataFromCache( String cacheFileName) throws FileNotFoundException, IOException {
+		return persistenceManager.getDataClassPersistenceManager(getResultType() ).loadDataFromCache(cacheFileName);
+	}
+	
+	public RESULT saveDataToCacheAndReturnData(RESULT data, String cacheFileName) throws FileNotFoundException, IOException {
+		return persistenceManager.getDataClassPersistenceManager(getResultType() ).saveDataToCacheAndReturnData(data, cacheFileName);
+	}
 
 	public abstract RESULT loadDataFromNetwork( WebService webService, Bundle bundle ) throws RestClientException;
 
@@ -106,10 +83,12 @@ public abstract class RestRequest<ACTIVITY, RESULT> implements Serializable {
 
 	public abstract String getCacheKey();
 
-	// do nothing when serializing object
-	private void writeObject(ObjectOutputStream out) throws IOException {}
-	
-	// do nothing when deserializing object
-	private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {}
+	public void cancel() {
+		this.isCanceled = true;
+	}
+
+	public boolean isCanceled() {
+		return this.isCanceled;
+	}
 
 }

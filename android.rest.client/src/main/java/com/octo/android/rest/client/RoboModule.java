@@ -1,7 +1,7 @@
 package com.octo.android.rest.client;
 
 import com.google.inject.AbstractModule;
-import com.octo.android.rest.client.contentservice.persistence.BinaryContentManager;
+import com.octo.android.rest.client.contentservice.persistence.BinaryPersistenceManager;
 import com.octo.android.rest.client.contentservice.persistence.DataPersistenceManager;
 import com.octo.android.rest.client.contentservice.persistence.JSonPersistenceManageFactory;
 import com.octo.android.rest.client.contentservice.persistence.StringPersistenceManager;
@@ -19,7 +19,7 @@ public class RoboModule extends AbstractModule {
 		bind(DataPersistenceManager.class).toInstance( dataPersistenceManager);
 		
 		StringPersistenceManager stringPersistenceManager = new StringPersistenceManager();
-		BinaryContentManager binaryContentManager = new BinaryContentManager();
+		BinaryPersistenceManager binaryContentManager = new BinaryPersistenceManager();
 		JSonPersistenceManageFactory jSonPersistenceManageFactory = new JSonPersistenceManageFactory();
 		
 		//request application injection
