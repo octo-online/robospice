@@ -1,7 +1,9 @@
 package com.octo.android.rest.client.model;
 
+import java.io.Serializable;
 
-public enum ClientStatusType {
+
+public enum ClientStatusType implements Serializable {
 
 	/**
 	 * La spec des differentes type de status: \\ngdata03\projets-versions-dsi-pf\Projets 2011\11MOBILE\12_CFD - STD\SuivDemandeEnLigne

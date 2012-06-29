@@ -2,15 +2,10 @@ package com.octo.android.rest.client;
 
 import org.springframework.web.client.RestClientException;
 
-import roboguice.activity.RoboActivity;
 import roboguice.inject.ContentView;
 import roboguice.inject.InjectView;
-import android.content.ComponentName;
-import android.content.Intent;
-import android.content.ServiceConnection;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
-import android.os.IBinder;
 import android.util.Log;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -19,14 +14,12 @@ import com.google.inject.Inject;
 import com.octo.android.rest.client.contentmanager.AbstractImageRequest;
 import com.octo.android.rest.client.contentmanager.AbstractTextRequest;
 import com.octo.android.rest.client.contentmanager.RestRequest;
-import com.octo.android.rest.client.contentservice.ContentService;
-import com.octo.android.rest.client.contentservice.ContentService.ContentServiceBinder;
 import com.octo.android.rest.client.model.ClientRequestStatus;
 import com.octo.android.rest.client.utils.EnvironmentConfigService;
 import com.octo.android.rest.client.webservice.UrlConstants;
 
 @ContentView(R.layout.main)
-public class HelloAndroidActivity extends RoboActivity {
+public class HelloAndroidActivity extends RestClientActivity {
 
 	// ============================================================================================
 	// ATTRIBUTES
@@ -43,12 +36,9 @@ public class HelloAndroidActivity extends RoboActivity {
 	@Inject
 	EnvironmentConfigService environmentConfigService;
 
-	private CnilRequest cnilRequest;
-	public ContentServiceBinder contentServiceBinder;
-	public ContentService contentService;
-	private ContentServiceConnection contentServiceConnection;
-	private ImageRequest imageRequest;
-	private CreditStatusRequest creditStatusRequest;
+	CnilRequest cnilRequest;
+	ImageRequest imageRequest;
+	CreditStatusRequest creditStatusRequest;
 
 	// ============================================================================================
 	// ACITVITY LIFE CYCLE
@@ -65,40 +55,18 @@ public class HelloAndroidActivity extends RoboActivity {
 		String baseUrl = environmentConfigService.getWebServiceUrl() ;
 		cnilRequest = new CnilRequest( baseUrl + UrlConstants.CNIL_LEGAL_MENTIONS);
 		creditStatusRequest = new CreditStatusRequest(baseUrl, "12345678", "19/12/1976");
-		imageRequest = new ImageRequest("https://developers.google.com/images/developers-logo.png");
+		imageRequest = new ImageRequest("http://media.xda-developers.com/images/icons/breadcrumbs-home.png");
+
 	}
-	
+
 	@Override
 	protected void onResume() {
-		Intent intentService = new Intent(this, ContentService.class);
-		contentServiceConnection = new ContentServiceConnection();
-		bindService(intentService, contentServiceConnection, BIND_AUTO_CREATE);
 		super.onResume();
+		addRequestToQueue(cnilRequest);
+		addRequestToQueue(creditStatusRequest);
+		addRequestToQueue(imageRequest);
 	}
 
-	@Override
-	protected void onPause() {
-		cnilRequest.cancel();
-		imageRequest.cancel();
-		creditStatusRequest.cancel();
-		unbindService(this.contentServiceConnection);
-		super.onPause();
-	}
-	// ============================================================================================
-	// PUBLIC METHODS
-	// ============================================================================================
-
-	public void requestCnilLegalMentions() {
-		contentService.processRequest(cnilRequest, new Bundle(), true, false);
-	}
-
-	public void requestCreditStatus() {
-		contentService.processRequest(creditStatusRequest, new Bundle(), false, false);
-	}
-
-	public void requestImage() {
-		contentService.processRequest(imageRequest, new Bundle(), false, false);
-	}
 
 	// ============================================================================================
 	// INNER CLASSES
@@ -117,16 +85,15 @@ public class HelloAndroidActivity extends RoboActivity {
 		}
 
 		@Override
-		protected void onRequestSuccess(String result) {
+		protected void onRequestSuccess(final String result) {
 			Toast.makeText(HelloAndroidActivity.this, "success", Toast.LENGTH_SHORT).show();
 			String originalText = mCnilTextView.getText()
 					.toString();
-			mCnilTextView.setText(originalText + result);
+			mCnilTextView.setText(originalText + result);		
 		}
 	}
 
-	private final class CreditStatusRequest extends
-	RestRequest< ClientRequestStatus> {
+	private final class CreditStatusRequest extends RestRequest< ClientRequestStatus> {
 
 		private String requestId;
 		private String birthDate;
@@ -166,17 +133,16 @@ public class HelloAndroidActivity extends RoboActivity {
 		}
 
 		@Override
-		protected void onRequestSuccess(ClientRequestStatus result) {
+		protected void onRequestSuccess(final ClientRequestStatus result) {
 			Toast.makeText(HelloAndroidActivity.this, "success", Toast.LENGTH_SHORT).show();
 			String originalText = mCreditStatusTextView.getText()
 					.toString();
 			mCreditStatusTextView.setText(originalText
-					+ result.getStatus().toString());
+					+ result.getStatusDescription().toString());
 		}
 	}
 
-	private final class ImageRequest extends
-	AbstractImageRequest {
+	private final class ImageRequest extends AbstractImageRequest {
 
 		public ImageRequest(String url) {
 			super(HelloAndroidActivity.this, url);
@@ -188,24 +154,12 @@ public class HelloAndroidActivity extends RoboActivity {
 		}
 
 		@Override
-		protected void onRequestSuccess(Drawable result) {
+		protected void onRequestSuccess(final Drawable result) {
+			Toast.makeText(HelloAndroidActivity.this, "success", Toast.LENGTH_SHORT).show();
 			mImageTextView.setBackgroundDrawable(result);
 			mImageTextView.setText("");
 		}
 	}
 
-	public class ContentServiceConnection implements ServiceConnection {
-
-		public void onServiceConnected(ComponentName name, IBinder service) {
-			contentService = ((ContentServiceBinder) service).getContentService();
-			requestCnilLegalMentions();
-			requestCreditStatus();
-			requestImage();
-		}
-
-		public void onServiceDisconnected(ComponentName name) {
-			contentService = null;
-		}
-	}
 }
 

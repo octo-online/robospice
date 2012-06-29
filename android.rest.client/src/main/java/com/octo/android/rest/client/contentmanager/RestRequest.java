@@ -7,6 +7,7 @@ import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import roboguice.RoboGuice;
+import android.app.Activity;
 import android.content.Context;
 
 import com.google.inject.Inject;
@@ -19,6 +20,7 @@ public abstract class RestRequest<RESULT> {
 	protected int mRequestId;
 	protected Class<RESULT> resultType;
 	private boolean isCanceled = false;
+	private Context context;
 	
 	@Inject
 	private DataPersistenceManager persistenceManager;
@@ -26,6 +28,7 @@ public abstract class RestRequest<RESULT> {
 	private WebService webService;
 	
 	public RestRequest( Context context, Class<RESULT> clazz) {
+		this.context = context;
 		this.persistenceManager = RoboGuice.getInjector(context).getInstance(DataPersistenceManager.class);
 		this.webService = RoboGuice.getInjector(context).getInstance(WebService.class);
 		this.resultType = clazz;
@@ -56,7 +59,19 @@ public abstract class RestRequest<RESULT> {
 		return mRequestId == FINISHED_REQUEST_ID;
 	}
 
-	public final void onRequestFinished(int requestId, int resultCode, RESULT result) {
+	public final void onRequestFinished(final int requestId, final int resultCode, final RESULT result) {
+		if( context instanceof Activity) {
+			((Activity)context).runOnUiThread( new Runnable() {
+				public void run() {
+					processResponse(requestId, resultCode, result);
+				}
+			});
+		} else {
+			processResponse(requestId, resultCode, result);
+		}
+	}
+
+	private void processResponse(int requestId, int resultCode, RESULT result) {
 		if( requestId == getRequestId() ) {
 			if( resultCode == ContentService.RESULT_OK && result != null) {
 				onRequestSuccess(result );

@@ -6,7 +6,6 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.Serializable;
-import java.lang.reflect.ParameterizedType;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
@@ -31,12 +30,15 @@ public final class JSonPersistenceManager<T  extends Serializable> extends DataC
 
 	private final ObjectMapper mJsonMapper;
 
+	private Class<T> clazz;
+
 	// ============================================================================================
 	// CONSTRUCTOR
 	// ============================================================================================
 	@Inject
-	public JSonPersistenceManager( Application application) {
+	public JSonPersistenceManager( Application application, Class<T> clazz) {
 		this.mApplication = application;
+		this.clazz = clazz;
 		this.mJsonMapper = new ObjectMapper();
 	}
 
@@ -44,7 +46,6 @@ public final class JSonPersistenceManager<T  extends Serializable> extends DataC
 	// METHODS
 	// ============================================================================================
 
-	@SuppressWarnings("unchecked")
 	public final T loadDataFromCache( String cacheFileName) throws JsonParseException, JsonMappingException, IOException {
 		T result = null;
 		String resultJson = null;
@@ -53,7 +54,7 @@ public final class JSonPersistenceManager<T  extends Serializable> extends DataC
 		if (resultJson != null) {
 			// finally transform json in object
 			if (StringUtils.isNotEmpty(resultJson)) {
-				result = mJsonMapper.readValue(resultJson, (Class<T>) ((ParameterizedType) getClass().getSuperclass().getGenericSuperclass()).getActualTypeArguments()[0]);
+				result = mJsonMapper.readValue(resultJson, clazz);
 			}
 			else {
 				Log.e(getClass().getName(),"Unable to restore cache content : cache file is empty");

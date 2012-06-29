@@ -9,12 +9,12 @@ import java.util.Date;
 import org.springframework.web.client.RestClientException;
 
 import roboguice.service.RoboService;
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Binder;
-import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
 
@@ -65,7 +65,7 @@ public class ContentService extends RoboService {
 
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public void processRequest(RestRequest request, Bundle bundle, boolean isCacheEnabled, boolean isParallelizable) {
+	public void processRequest(RestRequest request, boolean isCacheEnabled, boolean isParallelizable) {
 
 		Class<?> clazz = request.getResultType();
 		Log.d(LOGCAT_TAG, "Result type is " + clazz.getName());

@@ -26,7 +26,7 @@ public class JSonPersistenceManageFactory extends DataClassPersistenceManagerFac
 	@Override
 	public <DATA> DataClassPersistenceManager<DATA> createDataPersistenceManager(
 			Class<DATA> clazz) {
-		return (DataClassPersistenceManager<DATA>)new JSonPersistenceManager( application );
+		return (DataClassPersistenceManager<DATA>)new JSonPersistenceManager( application, clazz );
 	}
 
 }

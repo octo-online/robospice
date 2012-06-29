@@ -46,6 +46,6 @@ public final class BinaryPersistenceManager extends DataClassPersistenceManager<
 		}
 		catch( ClassCastException ex ) {
 			return false;
-		}	}
-
+		}
+	}
 }
