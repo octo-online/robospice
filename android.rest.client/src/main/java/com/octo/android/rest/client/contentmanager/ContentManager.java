@@ -88,6 +88,7 @@ public class ContentManager extends Thread {
 
 	public void shouldStop() {
 		this.isStopped = true;
+		unbindService(context);
 	}
 
 	private void bindService(Context context ) {
