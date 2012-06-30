@@ -22,7 +22,7 @@
 		<dependency>
 			<groupId>com.octo</groupId>
 			<artifactId>android.rest.client</artifactId>
-			<version>${version}</version>
+			<version>${project.version}</version>
 			<type>apklib</type>
 		</dependency>
 	</dependencies>

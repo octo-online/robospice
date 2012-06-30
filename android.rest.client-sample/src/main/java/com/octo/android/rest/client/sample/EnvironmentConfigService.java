@@ -11,7 +11,6 @@ import android.widget.Toast;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
-import com.octo.android.rest.client.sample.BuildConfig;
 
 /**
  * Static class used to load env.properties file to know the actual environment and environment configuration<br />
@@ -77,7 +76,7 @@ public final class EnvironmentConfigService {
 	}
 
 	public String getWebServiceUrl() {
-		String key = BuildConfig.DEBUG ? WS_URL_KEY : WS_URL_KEY_OTHER;
+		String key = getEnvironment()==Environment.PROD ? WS_URL_KEY : WS_URL_KEY_OTHER;
 
 		String url = properties.getProperty(key, null);
 		if (url == null) {
@@ -88,7 +87,7 @@ public final class EnvironmentConfigService {
 	}
 
 	public String getWebUrl() {
-		String key = BuildConfig.DEBUG ? WS_URL_KEY : WS_URL_KEY_OTHER;
+		String key = getEnvironment()==Environment.PROD ? WS_URL_KEY : WS_URL_KEY_OTHER;
 
 		String url = properties.getProperty(key, null);
 		if (url == null) {
