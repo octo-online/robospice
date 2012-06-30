@@ -6,7 +6,7 @@ import android.content.Context;
 import android.util.Log;
 
 
-public abstract class AbstractTextRequest extends CachedRestContentRequest<String> {
+public abstract class AbstractTextRequest extends CachedRestRequest<String> {
 
 	private String url;
 

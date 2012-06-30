@@ -18,7 +18,7 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.util.Log;
 
-import com.octo.android.rest.client.request.simple.CachedRestContentRequest;
+import com.octo.android.rest.client.request.simple.CachedRestRequest;
 
 
 /**
@@ -65,7 +65,7 @@ public class ContentService extends Service {
 	// METHODS
 	// ============================================================================================
 
-	public void addRequest( final CachedRestContentRequest<?> request, final Handler handlerResponse, final boolean useCache ) {
+	public void addRequest( final CachedRestRequest<?> request, final Handler handlerResponse, final boolean useCache ) {
 		mHandler.post( new Runnable() {
 			
 			public void run() {
@@ -75,7 +75,7 @@ public class ContentService extends Service {
 	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	private void processRequest(CachedRestContentRequest request, Handler handlerResponse, boolean isCacheEnabled) {
+	private void processRequest(CachedRestRequest request, Handler handlerResponse, boolean isCacheEnabled) {
 
 		Class<?> clazz = request.getResultType();
 		Log.d(LOGCAT_TAG, "Result type is " + clazz.getName());
@@ -156,12 +156,12 @@ public class ContentService extends Service {
 
 	private class ResultRunnable<T> implements Runnable {
 
-		private CachedRestContentRequest<T> restRequest;
+		private CachedRestRequest<T> restRequest;
 		private int resultCode;
 		private T result;
 		
 		
-		public ResultRunnable(CachedRestContentRequest<T> restRequest, int resultCode, T result) {
+		public ResultRunnable(CachedRestRequest<T> restRequest, int resultCode, T result) {
 			this.restRequest = restRequest;
 			this.resultCode = resultCode;
 			this.result = result;

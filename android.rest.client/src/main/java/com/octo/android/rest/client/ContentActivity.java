@@ -3,7 +3,7 @@ package com.octo.android.rest.client;
 import android.os.Bundle;
 
 import com.google.inject.Inject;
-import com.octo.android.rest.client.request.simple.CachedRestContentRequest;
+import com.octo.android.rest.client.request.simple.CachedRestRequest;
 
 import roboguice.activity.RoboActivity;
 
@@ -19,7 +19,7 @@ public class ContentActivity extends RoboActivity {
 	}
 	
 	
-	public void addRequestToQueue(CachedRestContentRequest<?> request, boolean useCache) {
+	public void addRequestToQueue(CachedRestRequest<?> request, boolean useCache) {
 		contentManager.addRequestToQueue(request,useCache);
 	}
 

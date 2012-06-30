@@ -17,7 +17,7 @@ import android.util.Log;
 
 
 public abstract class AbstractImageRequest extends
-CachedRestContentRequest<InputStream> {
+CachedRestRequest<InputStream> {
 
 	protected static final String BUNDLE_EXTRA_IMAGE_URL = "BUNDLE_EXTRA_IMAGE_URL";
 	protected String url;

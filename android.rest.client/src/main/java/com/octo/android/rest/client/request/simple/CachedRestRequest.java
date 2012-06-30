@@ -15,14 +15,14 @@ import com.octo.android.rest.client.persistence.DataPersistenceManager;
 import com.octo.android.rest.client.request.ContentRequest;
 import com.octo.android.rest.client.restservice.RestTemplateFactory;
 
-public abstract class CachedRestContentRequest<RESULT> extends ContentRequest<RESULT> {
+public abstract class CachedRestRequest<RESULT> extends ContentRequest<RESULT> {
 	private static final int FINISHED_REQUEST_ID = -1;
 	protected int mRequestId;
 	
 	@Inject private DataPersistenceManager persistenceManager;
 	@Inject private RestTemplateFactory webService;
 
-	public CachedRestContentRequest( Context context, Class<RESULT> clazz) {
+	public CachedRestRequest( Context context, Class<RESULT> clazz) {
 		super(clazz);
 		this.persistenceManager = RoboGuice.getInjector(context).getInstance(DataPersistenceManager.class);
 		this.webService = RoboGuice.getInjector(context).getInstance(RestTemplateFactory.class);
