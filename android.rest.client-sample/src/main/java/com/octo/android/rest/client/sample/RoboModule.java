@@ -1,10 +1,10 @@
 package com.octo.android.rest.client.sample;
 
 import com.google.inject.AbstractModule;
-import com.octo.android.rest.client.contentservice.persistence.BinaryPersistenceManager;
-import com.octo.android.rest.client.contentservice.persistence.DataPersistenceManager;
-import com.octo.android.rest.client.contentservice.persistence.JSonPersistenceManageFactory;
-import com.octo.android.rest.client.contentservice.persistence.StringPersistenceManager;
+import com.octo.android.rest.client.persistence.DataPersistenceManager;
+import com.octo.android.rest.client.persistence.json.JSonPersistenceManageFactory;
+import com.octo.android.rest.client.persistence.simple.BinaryPersistenceManager;
+import com.octo.android.rest.client.persistence.simple.StringPersistenceManager;
 
 public class RoboModule extends AbstractModule {
 

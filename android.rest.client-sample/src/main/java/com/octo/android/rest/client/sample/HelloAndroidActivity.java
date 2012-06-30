@@ -11,15 +11,14 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.inject.Inject;
-import com.octo.android.rest.client.RestClientActivity;
-import com.octo.android.rest.client.contentmanager.AbstractImageRequest;
-import com.octo.android.rest.client.contentmanager.AbstractTextRequest;
-import com.octo.android.rest.client.contentmanager.RestRequest;
-import com.octo.android.rest.client.model.ClientRequestStatus;
-import com.octo.android.rest.client.webservice.UrlConstants;
+import com.octo.android.rest.client.ContentActivity;
+import com.octo.android.rest.client.request.simple.AbstractImageRequest;
+import com.octo.android.rest.client.request.simple.AbstractTextRequest;
+import com.octo.android.rest.client.request.simple.CachedRestContentRequest;
+import com.octo.android.rest.client.sample.model.ClientRequestStatus;
 
 @ContentView(R.layout.main)
-public class HelloAndroidActivity extends RestClientActivity {
+public class HelloAndroidActivity extends ContentActivity {
 
 	// ============================================================================================
 	// ATTRIBUTES
@@ -92,7 +91,7 @@ public class HelloAndroidActivity extends RestClientActivity {
 		}
 	}
 
-	private final class CreditStatusRequest extends RestRequest< ClientRequestStatus> {
+	private final class CreditStatusRequest extends CachedRestContentRequest< ClientRequestStatus> {
 
 		private String requestId;
 		private String birthDate;
