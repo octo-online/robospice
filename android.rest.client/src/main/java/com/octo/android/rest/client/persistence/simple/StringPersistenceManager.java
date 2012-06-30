@@ -1,15 +1,14 @@
 package com.octo.android.rest.client.persistence.simple;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
-
-import org.apache.commons.io.IOUtils;
+import java.nio.charset.Charset;
 
 import android.app.Application;
 
+import com.google.common.io.CharStreams;
+import com.google.common.io.Files;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.octo.android.rest.client.persistence.DataClassPersistenceManager;
@@ -22,13 +21,13 @@ public final class StringPersistenceManager extends DataClassPersistenceManager<
 
 	@Override
 	public String loadDataFromCache(String cacheFileName) throws FileNotFoundException, IOException {
-		return IOUtils.toString( new FileInputStream( new File(application.getCacheDir(), cacheFileName) ) );
+		return CharStreams.toString( Files.newReader( new File(application.getCacheDir(), cacheFileName), Charset.forName("UTF-8") ) );
 	}
 
 	@Override
 	public String saveDataToCacheAndReturnData(String data, String cacheFileName)
 			throws FileNotFoundException, IOException {	
-		IOUtils.write(data, new FileOutputStream( new File(application.getCacheDir(), cacheFileName) ) );
+		Files.write(data, new File(application.getCacheDir(), cacheFileName), Charset.forName("UTF-8"));
 		return data;
 	}
 

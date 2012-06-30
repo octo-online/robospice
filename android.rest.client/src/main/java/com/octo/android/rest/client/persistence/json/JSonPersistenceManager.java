@@ -1,13 +1,11 @@
 package com.octo.android.rest.client.persistence.json;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.Serializable;
+import java.nio.charset.Charset;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.map.JsonMappingException;
@@ -16,6 +14,8 @@ import org.codehaus.jackson.map.ObjectMapper;
 import android.app.Application;
 import android.util.Log;
 
+import com.google.common.io.CharStreams;
+import com.google.common.io.Files;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.octo.android.rest.client.persistence.DataClassPersistenceManager;
@@ -50,7 +50,8 @@ public final class JSonPersistenceManager<T  extends Serializable> extends DataC
 	public final T loadDataFromCache( String cacheFileName) throws JsonParseException, JsonMappingException, IOException {
 		T result = null;
 		String resultJson = null;
-		resultJson =  IOUtils.toString( new FileInputStream( new File(mApplication.getCacheDir(), cacheFileName) ) );
+		
+		resultJson =  CharStreams.toString(Files.newReader(new File(mApplication.getCacheDir(), cacheFileName),Charset.forName("UTF-8") ) );
 
 		if (resultJson != null) {
 			// finally transform json in object
@@ -77,7 +78,7 @@ public final class JSonPersistenceManager<T  extends Serializable> extends DataC
 
 		// finally store the json in the cache
 		if (StringUtils.isNotEmpty(resultJson)) {
-			IOUtils.write(resultJson, new FileOutputStream( new File(mApplication.getCacheDir(), cacheFileName) ) );
+			Files.write(resultJson, new File(mApplication.getCacheDir(), cacheFileName), Charset.forName("UTF-8"));
 		}
 		else {
 			Log.e(getClass().getName(),"Unable to save web service result into the cache");
