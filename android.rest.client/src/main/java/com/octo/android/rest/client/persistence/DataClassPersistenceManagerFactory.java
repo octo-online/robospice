@@ -1,4 +1,4 @@
-package com.octo.android.rest.client.contentservice.persistence;
+package com.octo.android.rest.client.persistence;
 
 
 public abstract class DataClassPersistenceManagerFactory {

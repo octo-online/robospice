@@ -1,4 +1,4 @@
-package com.octo.android.rest.client.contentservice.persistence;
+package com.octo.android.rest.client.persistence;
 
 import java.util.Collection;
 import java.util.HashSet;

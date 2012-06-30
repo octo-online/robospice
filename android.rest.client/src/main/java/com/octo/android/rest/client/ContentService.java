@@ -1,4 +1,4 @@
-package com.octo.android.rest.client.contentservice;
+package com.octo.android.rest.client;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -18,7 +18,7 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.util.Log;
 
-import com.octo.android.rest.client.contentmanager.RestRequest;
+import com.octo.android.rest.client.request.simple.CachedRestContentRequest;
 
 
 /**
@@ -65,7 +65,7 @@ public class ContentService extends Service {
 	// METHODS
 	// ============================================================================================
 
-	public void addRequest( final RestRequest<?> request, final Handler handlerResponse, final boolean useCache ) {
+	public void addRequest( final CachedRestContentRequest<?> request, final Handler handlerResponse, final boolean useCache ) {
 		mHandler.post( new Runnable() {
 			
 			public void run() {
@@ -75,7 +75,7 @@ public class ContentService extends Service {
 	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	private void processRequest(RestRequest request, Handler handlerResponse, boolean isCacheEnabled) {
+	private void processRequest(CachedRestContentRequest request, Handler handlerResponse, boolean isCacheEnabled) {
 
 		Class<?> clazz = request.getResultType();
 		Log.d(LOGCAT_TAG, "Result type is " + clazz.getName());
@@ -156,12 +156,12 @@ public class ContentService extends Service {
 
 	private class ResultRunnable<T> implements Runnable {
 
-		private RestRequest<T> restRequest;
+		private CachedRestContentRequest<T> restRequest;
 		private int resultCode;
 		private T result;
 		
 		
-		public ResultRunnable(RestRequest<T> restRequest, int resultCode, T result) {
+		public ResultRunnable(CachedRestContentRequest<T> restRequest, int resultCode, T result) {
 			this.restRequest = restRequest;
 			this.resultCode = resultCode;
 			this.result = result;
@@ -212,7 +212,7 @@ public class ContentService extends Service {
 		return mContentServiceBinder;
 	}
 
-	public class ContentServiceBinder extends Binder implements IContentService {
+	public class ContentServiceBinder extends Binder {
 		public ContentService getContentService() {
 			return ContentService.this;
 		}

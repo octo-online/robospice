@@ -1,4 +1,4 @@
-package com.octo.android.rest.client.contentservice.persistence;
+package com.octo.android.rest.client.persistence.json;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -18,6 +18,7 @@ import android.util.Log;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+import com.octo.android.rest.client.persistence.DataClassPersistenceManager;
 
 @Singleton
 public final class JSonPersistenceManager<T  extends Serializable> extends DataClassPersistenceManager<T> {

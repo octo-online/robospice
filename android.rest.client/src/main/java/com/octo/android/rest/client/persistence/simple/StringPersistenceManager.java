@@ -1,4 +1,4 @@
-package com.octo.android.rest.client.contentservice.persistence;
+package com.octo.android.rest.client.persistence.simple;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -12,6 +12,7 @@ import android.app.Application;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+import com.octo.android.rest.client.persistence.DataClassPersistenceManager;
 
 @Singleton
 public final class StringPersistenceManager extends DataClassPersistenceManager<String> {

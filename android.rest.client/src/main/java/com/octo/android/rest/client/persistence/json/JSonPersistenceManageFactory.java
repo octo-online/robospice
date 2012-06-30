@@ -1,10 +1,12 @@
-package com.octo.android.rest.client.contentservice.persistence;
+package com.octo.android.rest.client.persistence.json;
 
 import java.io.Serializable;
 
 import android.app.Application;
 
 import com.google.inject.Inject;
+import com.octo.android.rest.client.persistence.DataClassPersistenceManager;
+import com.octo.android.rest.client.persistence.DataClassPersistenceManagerFactory;
 
 public class JSonPersistenceManageFactory extends DataClassPersistenceManagerFactory {
 
