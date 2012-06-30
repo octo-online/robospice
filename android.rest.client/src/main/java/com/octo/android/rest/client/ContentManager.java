@@ -14,7 +14,7 @@ import android.os.Handler;
 import android.os.IBinder;
 
 import com.octo.android.rest.client.ContentService.ContentServiceBinder;
-import com.octo.android.rest.client.request.simple.CachedRestRequest;
+import com.octo.android.rest.client.request.ContentRequest;
 
 /**
  * Class used to manage content received from web service. <br/>
@@ -33,8 +33,8 @@ public class ContentManager extends Thread {
 	private Context context;
 
 	private boolean isStopped;
-	private Queue<CachedRestRequest<?>> requestQueue = new LinkedList<CachedRestRequest<?>>();
-	private Map<CachedRestRequest<?>, Boolean> mapRequestToCacheUsageFlag = new HashMap<CachedRestRequest<?>, Boolean>();
+	private Queue<ContentRequest<?>> requestQueue = new LinkedList<ContentRequest<?>>();
+	private Map<ContentRequest<?>, Boolean> mapRequestToCacheUsageFlag = new HashMap<ContentRequest<?>, Boolean>();
 
 	private Object lockQueue = new Object();
 	private Object lockAcquireService = new Object();
@@ -66,7 +66,7 @@ public class ContentManager extends Thread {
 
 		while( !isStopped ) {
 			if( !requestQueue.isEmpty() ) {
-				CachedRestRequest<?> restRequest = requestQueue.poll();
+				ContentRequest<?> restRequest = requestQueue.poll();
 				boolean useCache = mapRequestToCacheUsageFlag.get(restRequest);
 				mapRequestToCacheUsageFlag.remove(restRequest);
 				contentService.addRequest(restRequest, handlerResponse, useCache );
@@ -101,14 +101,14 @@ public class ContentManager extends Thread {
 		context.unbindService(this.contentServiceConnection);
 	}
 
-	public void addRequestToQueue(CachedRestRequest<?> request, boolean useCache) {
+	public void addRequestToQueue(ContentRequest<?> request, boolean useCache) {
 		synchronized (lockQueue) {
 			this.requestQueue.add( request);
 			this.mapRequestToCacheUsageFlag.put(request, useCache);
 		}
 	}
 
-	public void cancel(CachedRestRequest<?> request) {
+	public void cancel(ContentRequest<?> request) {
 		request.cancel();
 	}
 
@@ -127,7 +127,7 @@ public class ContentManager extends Thread {
 	}
 
 	public void cancelAllRequests() {
-		for( CachedRestRequest<?> restRequest : requestQueue ) {
+		for( ContentRequest<?> restRequest : requestQueue ) {
 			restRequest.cancel();
 		}
 	}
