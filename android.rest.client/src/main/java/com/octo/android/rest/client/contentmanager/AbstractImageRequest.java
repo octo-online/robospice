@@ -51,7 +51,7 @@ RestRequest<InputStream> {
 
 	@Override
 	protected final void onRequestSuccess(InputStream result) {
-		Bitmap bitmap = BitmapFactory.decodeStream(new FlushedInputStream( result));
+		Bitmap bitmap = BitmapFactory.decodeStream(result);
 		BitmapDrawable drawable = new BitmapDrawable(bitmap);
 		onRequestSuccess( drawable);
 	}

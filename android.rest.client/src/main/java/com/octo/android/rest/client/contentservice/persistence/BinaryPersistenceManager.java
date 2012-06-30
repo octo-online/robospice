@@ -34,7 +34,8 @@ public final class BinaryPersistenceManager extends DataClassPersistenceManager<
 		// 1) we save it in file asynchronously
 		// 2) the result will be a new InputStream on the byte[]
 		byte[] byteArray = IOUtils.toByteArray(data);
-		IOUtils.copy(data, new FileOutputStream( new File(application.getCacheDir(), cacheFileName) ) );
+		FileOutputStream fileOutputStream = new FileOutputStream( new File(application.getCacheDir(), cacheFileName) );
+		IOUtils.write(byteArray, fileOutputStream );
 		return new ByteArrayInputStream(byteArray);		
 	}
 

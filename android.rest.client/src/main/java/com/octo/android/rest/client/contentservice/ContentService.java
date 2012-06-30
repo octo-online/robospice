@@ -8,13 +8,13 @@ import java.util.Date;
 
 import org.springframework.web.client.RestClientException;
 
-import roboguice.service.RoboService;
-import android.app.Activity;
+import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Binder;
+import android.os.Handler;
 import android.os.IBinder;
 import android.util.Log;
 
@@ -28,7 +28,7 @@ import com.octo.android.rest.client.contentmanager.RestRequest;
  * 
  * @author jva
  */
-public class ContentService extends RoboService {
+public class ContentService extends Service {
 
 	// ============================================================================================
 	// CONSTANTS
@@ -39,14 +39,15 @@ public class ContentService extends RoboService {
 
 	protected static final String FILE_CACHE_EXTENSION = ".store";
 	private static final String LOGCAT_TAG = "AbstractContentService";
-
+	
 
 	// ============================================================================================
 	// ATTRIBUTES
 	// ============================================================================================
 	
 	private ContentServiceBinder mContentServiceBinder;
-
+	private Handler mHandler = new Handler();
+	
 	// ============================================================================================
 	// CONSTRUCTOR
 	// ============================================================================================
@@ -57,21 +58,31 @@ public class ContentService extends RoboService {
 	 */
 	public ContentService() {
 		mContentServiceBinder = new ContentServiceBinder();
+		mHandler = new Handler();
 	}
 
 	// ============================================================================================
 	// METHODS
 	// ============================================================================================
 
+	public void addRequest( final RestRequest<?> request, final Handler handlerResponse, final boolean useCache ) {
+		mHandler.post( new Runnable() {
+			
+			public void run() {
+				processRequest(request, handlerResponse, useCache);
+			}
+		});
+	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public void processRequest(RestRequest request, boolean isCacheEnabled, boolean isParallelizable) {
+	private void processRequest(RestRequest request, Handler handlerResponse, boolean isCacheEnabled) {
 
 		Class<?> clazz = request.getResultType();
 		Log.d(LOGCAT_TAG, "Result type is " + clazz.getName());
 
 		Object result = null;
 		String cacheKey = request.getCacheKey();
+		isCacheEnabled = isCacheEnabled && cacheKey != null;
 		Log.d(LOGCAT_TAG, "Loading content for key : " + cacheKey);
 		String cacheFilename = cacheKey + FILE_CACHE_EXTENSION;
 
@@ -139,11 +150,29 @@ public class ContentService extends RoboService {
 		}
 
 		if( !request.isCanceled() ) {
-			request.onRequestFinished(request.getRequestId(), resultCode, result);
+			handlerResponse.post( new ResultRunnable(request,resultCode,result) );
 		}
 	}
 
+	private class ResultRunnable<T> implements Runnable {
 
+		private RestRequest<T> restRequest;
+		private int resultCode;
+		private T result;
+		
+		
+		public ResultRunnable(RestRequest<T> restRequest, int resultCode, T result) {
+			this.restRequest = restRequest;
+			this.resultCode = resultCode;
+			this.result = result;
+		}
+
+
+		public void run() {
+			restRequest.onRequestFinished(resultCode, result);
+		}
+		
+	}
 	/**
 	 * Check if the data in the cache is expired. To achieve that, check the last modified date of the file is today or not.<br/>
 	 * If the file was modified a day or more before today, the cache is expired, otherwise the cache can be used

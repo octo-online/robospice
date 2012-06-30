@@ -1,4 +1,4 @@
-package com.octo.android.rest.client;
+package com.octo.android.rest.client.sample;
 
 import com.google.inject.AbstractModule;
 import com.octo.android.rest.client.contentservice.persistence.BinaryPersistenceManager;

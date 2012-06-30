@@ -1,13 +1,16 @@
 package com.octo.android.rest.client.contentmanager;
 
+import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.Map;
 import java.util.Queue;
-import java.util.Stack;
 
+import android.app.Service;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.os.Handler;
 import android.os.IBinder;
 
 import com.octo.android.rest.client.contentservice.ContentService;
@@ -31,9 +34,12 @@ public class ContentManager extends Thread {
 
 	private boolean isStopped;
 	private Queue<RestRequest<?>> requestQueue = new LinkedList<RestRequest<?>>();
-	
+	private Map<RestRequest<?>, Boolean> mapRequestToCacheUsageFlag = new HashMap<RestRequest<?>, Boolean>();
+
 	private Object lockQueue = new Object();
 	private Object lockAcquireService = new Object();
+	
+	Handler handlerResponse = new Handler();
 
 	@Override
 	public final synchronized void start() {
@@ -61,9 +67,9 @@ public class ContentManager extends Thread {
 		while( !isStopped ) {
 			if( !requestQueue.isEmpty() ) {
 				RestRequest<?> restRequest = requestQueue.poll();
-				if( !restRequest.isCanceled() ) {
-					contentService.processRequest(restRequest, true, false);
-				}
+				boolean useCache = mapRequestToCacheUsageFlag.get(restRequest);
+				mapRequestToCacheUsageFlag.remove(restRequest);
+				contentService.addRequest(restRequest, handlerResponse, useCache );
 			}
 
 			synchronized (lockQueue) {
@@ -94,18 +100,15 @@ public class ContentManager extends Thread {
 		context.unbindService(this.contentServiceConnection);
 	}
 
-	public void addRequestToQueue(RestRequest<?> request) {
+	public void addRequestToQueue(RestRequest<?> request, boolean useCache) {
 		synchronized (lockQueue) {
 			this.requestQueue.add( request);
+			this.mapRequestToCacheUsageFlag.put(request, useCache);
 		}
 	}
-	
+
 	public void cancel(RestRequest<?> request) {
-		request.isCanceled();
-		synchronized (lockQueue) {
-			this.requestQueue.remove( request);
-			lockQueue.notifyAll();
-		}
+		request.cancel();
 	}
 
 	public class ContentServiceConnection implements ServiceConnection {

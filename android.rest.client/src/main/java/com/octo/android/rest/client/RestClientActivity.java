@@ -20,8 +20,8 @@ public class RestClientActivity extends RoboActivity {
 	}
 	
 	
-	public void addRequestToQueue(RestRequest<?> request) {
-		contentManager.addRequestToQueue(request);
+	public void addRequestToQueue(RestRequest<?> request, boolean useCache) {
+		contentManager.addRequestToQueue(request,useCache);
 	}
 
 
@@ -30,4 +30,11 @@ public class RestClientActivity extends RoboActivity {
 		contentManager.cancelAllRequests();
 		super.onPause();
 	}
+	
+	@Override
+	protected void onDestroy() {
+		contentManager.shouldStop();
+		super.onDestroy();
+	}
+	
 }

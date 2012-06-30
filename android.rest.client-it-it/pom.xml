@@ -27,13 +27,13 @@
 		</dependency>
 		<dependency>
 			<groupId>com.octo</groupId>
-			<artifactId>android.rest.client</artifactId>
+			<artifactId>android.rest.client-sample</artifactId>
 			<type>apk</type>
 			<version>0.0.1-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>com.octo</groupId>
-			<artifactId>android.rest.client</artifactId>
+			<artifactId>android.rest.client-sample</artifactId>
 			<type>jar</type>
 			<version>0.0.1-SNAPSHOT</version>
 		</dependency>

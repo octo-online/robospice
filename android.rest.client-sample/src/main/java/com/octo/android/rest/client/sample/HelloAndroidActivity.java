@@ -1,4 +1,4 @@
-package com.octo.android.rest.client;
+package com.octo.android.rest.client.sample;
 
 import org.springframework.web.client.RestClientException;
 
@@ -11,11 +11,11 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.inject.Inject;
+import com.octo.android.rest.client.RestClientActivity;
 import com.octo.android.rest.client.contentmanager.AbstractImageRequest;
 import com.octo.android.rest.client.contentmanager.AbstractTextRequest;
 import com.octo.android.rest.client.contentmanager.RestRequest;
 import com.octo.android.rest.client.model.ClientRequestStatus;
-import com.octo.android.rest.client.utils.EnvironmentConfigService;
 import com.octo.android.rest.client.webservice.UrlConstants;
 
 @ContentView(R.layout.main)
@@ -55,16 +55,15 @@ public class HelloAndroidActivity extends RestClientActivity {
 		String baseUrl = environmentConfigService.getWebServiceUrl() ;
 		cnilRequest = new CnilRequest( baseUrl + UrlConstants.CNIL_LEGAL_MENTIONS);
 		creditStatusRequest = new CreditStatusRequest(baseUrl, "12345678", "19/12/1976");
-		imageRequest = new ImageRequest("http://media.xda-developers.com/images/icons/breadcrumbs-home.png");
-
+		imageRequest = new ImageRequest("http://cdn1.iconfinder.com/data/icons/softicons/PNG/Programming.png");
 	}
 
 	@Override
 	protected void onResume() {
 		super.onResume();
-		addRequestToQueue(cnilRequest);
-		addRequestToQueue(creditStatusRequest);
-		addRequestToQueue(imageRequest);
+		addRequestToQueue(cnilRequest,true);
+		addRequestToQueue(creditStatusRequest,true);
+		addRequestToQueue(imageRequest,true);
 	}
 
 

@@ -1,4 +1,4 @@
-package com.octo.android.rest.client.utils;
+package com.octo.android.rest.client.sample;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -11,7 +11,7 @@ import android.widget.Toast;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
-import com.octo.android.rest.client.BuildConfig;
+import com.octo.android.rest.client.sample.BuildConfig;
 
 /**
  * Static class used to load env.properties file to know the actual environment and environment configuration<br />

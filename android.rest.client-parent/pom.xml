@@ -11,7 +11,8 @@
     <modules>
         <module>../android.rest.client</module>
         <module>../android.rest.client-it-it</module>
-    </modules>
+    <module>android.rest.client-sample</module>
+  </modules>
 
     <properties>
         <platform.version>2.1.2</platform.version>
