@@ -2,6 +2,8 @@ package com.octo.android.rest.client.request.simple;
 
 import org.springframework.web.client.RestClientException;
 
+import com.octo.android.rest.client.request.json.CachedRestRequest;
+
 import android.content.Context;
 import android.util.Log;
 

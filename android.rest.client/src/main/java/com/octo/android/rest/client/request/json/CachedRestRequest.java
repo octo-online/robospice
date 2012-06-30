@@ -1,4 +1,4 @@
-package com.octo.android.rest.client.request.simple;
+package com.octo.android.rest.client.request.json;
 
 
 import java.io.FileNotFoundException;

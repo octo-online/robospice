@@ -14,7 +14,7 @@ import com.google.inject.Inject;
 import com.octo.android.rest.client.ContentActivity;
 import com.octo.android.rest.client.request.simple.AbstractImageRequest;
 import com.octo.android.rest.client.request.simple.AbstractTextRequest;
-import com.octo.android.rest.client.request.simple.CachedRestRequest;
+import com.octo.android.rest.client.request.json.CachedRestRequest;
 import com.octo.android.rest.client.sample.model.ClientRequestStatus;
 
 @ContentView(R.layout.main)

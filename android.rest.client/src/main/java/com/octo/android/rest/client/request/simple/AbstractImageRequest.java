@@ -8,6 +8,8 @@ import java.net.URL;
 
 import org.springframework.web.client.RestClientException;
 
+import com.octo.android.rest.client.request.json.CachedRestRequest;
+
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
