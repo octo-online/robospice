@@ -9,6 +9,5 @@
 	</classpathentry>
 	<classpathentry kind="src" output="bin/classes" path="src/main/java"/>
 	<classpathentry exported="true" kind="con" path="org.eclipse.m2e.MAVEN2_CLASSPATH_CONTAINER"/>
-	<classpathentry kind="src" path="/android.rest.client"/>
 	<classpathentry kind="output" path="bin/classes"/>
 </classpath>
