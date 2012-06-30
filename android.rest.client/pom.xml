@@ -12,7 +12,6 @@
 
 	<groupId>com.octo</groupId>
 	<artifactId>android.rest.client</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
 	<packaging>apklib</packaging>
 	<name>android.rest.client - Application</name>
 
