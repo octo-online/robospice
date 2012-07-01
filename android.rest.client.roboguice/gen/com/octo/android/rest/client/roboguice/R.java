@@ -5,7 +5,7 @@
  * should not be modified by hand.
  */
 
-package com.octo.android.rest.client;
+package com.octo.android.rest.client.roboguice;
 
 public final class R {
     public static final class attr {
@@ -13,11 +13,11 @@ public final class R {
     public static final class drawable {
         public static int icon=0x7f020000;
     }
+    public static final class layout {
+        public static int main=0x7f030000;
+    }
     public static final class string {
-        public static int app_name=0x7f030001;
-        public static int hello=0x7f030000;
-        public static int textview_image=0x7f030004;
-        public static int textview_json=0x7f030003;
-        public static int textview_text=0x7f030002;
+        public static int app_name=0x7f040001;
+        public static int hello=0x7f040000;
     }
 }

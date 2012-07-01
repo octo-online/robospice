@@ -11,7 +11,7 @@
 	<groupId>com.octo</groupId>
 	<artifactId>android.rest.client.roboguice</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<packaging>apklib</packaging>
+	<packaging>jar</packaging>
 	<name>android.rest.client.roboguice</name>
 
 	<properties>
@@ -28,7 +28,7 @@
 			<groupId>com.octo</groupId>
 			<artifactId>android.rest.client</artifactId>
 			<version>${project.version}</version>
-			<type>apklib</type>
+			<type>jar</type>
 		</dependency>
 		<dependency>
 			<groupId>org.roboguice</groupId>
