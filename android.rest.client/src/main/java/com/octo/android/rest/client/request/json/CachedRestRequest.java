@@ -7,10 +7,8 @@ import java.io.IOException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
-import roboguice.RoboGuice;
 import android.content.Context;
 
-import com.google.inject.Inject;
 import com.octo.android.rest.client.persistence.DataPersistenceManager;
 import com.octo.android.rest.client.request.ContentRequest;
 import com.octo.android.rest.client.restservice.RestTemplateFactory;
@@ -18,14 +16,14 @@ import com.octo.android.rest.client.restservice.RestTemplateFactory;
 public abstract class CachedRestRequest<RESULT> extends ContentRequest<RESULT> {
 	private static final int FINISHED_REQUEST_ID = -1;
 	protected int mRequestId;
-	
-	@Inject private DataPersistenceManager persistenceManager;
-	@Inject private RestTemplateFactory webService;
 
-	public CachedRestRequest( Context context, Class<RESULT> clazz) {
+	private DataPersistenceManager persistenceManager;
+	private RestTemplateFactory restTemplateFactory;
+
+	public CachedRestRequest( Context context, Class<RESULT> clazz, DataPersistenceManager persistenceManager, RestTemplateFactory restTemplateFactory) {
 		super(clazz);
-		this.persistenceManager = RoboGuice.getInjector(context).getInstance(DataPersistenceManager.class);
-		this.webService = RoboGuice.getInjector(context).getInstance(RestTemplateFactory.class);
+		this.persistenceManager = persistenceManager;
+		this.restTemplateFactory = restTemplateFactory;
 	}
 
 
@@ -52,7 +50,7 @@ public abstract class CachedRestRequest<RESULT> extends ContentRequest<RESULT> {
 	}
 
 	protected RestTemplate getRestTemplate() {
-		return webService.createRestTemplate();
+		return restTemplateFactory.createRestTemplate();
 	}
 
 	@Override
@@ -78,7 +76,7 @@ public abstract class CachedRestRequest<RESULT> extends ContentRequest<RESULT> {
 	@Override
 	protected void onRequestFailure(int resultCode) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 
@@ -86,7 +84,7 @@ public abstract class CachedRestRequest<RESULT> extends ContentRequest<RESULT> {
 	@Override
 	protected void onRequestSuccess(RESULT result) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 
@@ -96,6 +94,6 @@ public abstract class CachedRestRequest<RESULT> extends ContentRequest<RESULT> {
 		// TODO Auto-generated method stub
 		return null;
 	}
-	
+
 
 }

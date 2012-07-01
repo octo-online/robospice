@@ -2,18 +2,20 @@ package com.octo.android.rest.client.request.simple;
 
 import org.springframework.web.client.RestClientException;
 
-import com.octo.android.rest.client.request.json.CachedRestRequest;
-
 import android.content.Context;
 import android.util.Log;
+
+import com.octo.android.rest.client.persistence.DataPersistenceManager;
+import com.octo.android.rest.client.request.json.CachedRestRequest;
+import com.octo.android.rest.client.restservice.RestTemplateFactory;
 
 
 public abstract class AbstractTextRequest extends CachedRestRequest<String> {
 
 	private String url;
 
-	public AbstractTextRequest(Context context, String url) {
-		super(context, String.class);
+	public AbstractTextRequest(Context context, String url, DataPersistenceManager dataPersistenceManager, RestTemplateFactory restTemplateFactory) {
+		super(context, String.class, dataPersistenceManager, restTemplateFactory);
 		this.url = url;	
 	}
 

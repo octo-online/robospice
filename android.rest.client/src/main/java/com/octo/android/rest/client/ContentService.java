@@ -8,7 +8,7 @@ import java.util.Date;
 
 import org.springframework.web.client.RestClientException;
 
-import roboguice.service.RoboService;
+import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.net.ConnectivityManager;
@@ -28,7 +28,7 @@ import com.octo.android.rest.client.request.ContentRequest;
  * 
  * @author jva
  */
-public class ContentService extends RoboService {
+public class ContentService extends Service {
 
 	// ============================================================================================
 	// CONSTANTS

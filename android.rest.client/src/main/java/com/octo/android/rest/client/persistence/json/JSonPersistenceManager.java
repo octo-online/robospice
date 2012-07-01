@@ -16,14 +16,9 @@ import android.util.Log;
 import com.google.common.base.Strings;
 import com.google.common.io.CharStreams;
 import com.google.common.io.Files;
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
 import com.octo.android.rest.client.persistence.DataClassPersistenceManager;
 
-@Singleton
 public final class JSonPersistenceManager<T  extends Serializable> extends DataClassPersistenceManager<T> {
-
-	Application mApplication;
 
 	// ============================================================================================
 	// ATTRIBUTES
@@ -36,9 +31,8 @@ public final class JSonPersistenceManager<T  extends Serializable> extends DataC
 	// ============================================================================================
 	// CONSTRUCTOR
 	// ============================================================================================
-	@Inject
 	public JSonPersistenceManager( Application application, Class<T> clazz) {
-		this.mApplication = application;
+		super(application);
 		this.clazz = clazz;
 		this.mJsonMapper = new ObjectMapper();
 	}
@@ -50,8 +44,8 @@ public final class JSonPersistenceManager<T  extends Serializable> extends DataC
 	public final T loadDataFromCache( String cacheFileName) throws JsonParseException, JsonMappingException, IOException {
 		T result = null;
 		String resultJson = null;
-		
-		resultJson =  CharStreams.toString(Files.newReader(new File(mApplication.getCacheDir(), cacheFileName),Charset.forName("UTF-8") ) );
+
+		resultJson =  CharStreams.toString(Files.newReader(new File(getApplication().getCacheDir(), cacheFileName),Charset.forName("UTF-8") ) );
 
 		if (resultJson != null) {
 			// finally transform json in object
@@ -78,7 +72,7 @@ public final class JSonPersistenceManager<T  extends Serializable> extends DataC
 
 		// finally store the json in the cache
 		if (!Strings.isNullOrEmpty(resultJson)) {
-			Files.write(resultJson, new File(mApplication.getCacheDir(), cacheFileName), Charset.forName("UTF-8"));
+			Files.write(resultJson, new File(getApplication().getCacheDir(), cacheFileName), Charset.forName("UTF-8"));
 		}
 		else {
 			Log.e(getClass().getName(),"Unable to save web service result into the cache");

@@ -4,14 +4,16 @@ import java.io.Serializable;
 
 import android.app.Application;
 
-import com.google.inject.Inject;
 import com.octo.android.rest.client.persistence.DataClassPersistenceManager;
 import com.octo.android.rest.client.persistence.DataClassPersistenceManagerFactory;
 
 public class JSonPersistenceManageFactory extends DataClassPersistenceManagerFactory {
 
-	@Inject
 	Application application;
+	
+	public JSonPersistenceManageFactory(Application application) {
+		this.application = application;
+	}
 	
 	@Override
 	public boolean canHandleData(Class<?> clazz) {

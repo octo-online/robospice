@@ -26,17 +26,18 @@
 			<artifactId>android-test</artifactId>
 		</dependency>
 		<dependency>
-			<!-- APK for maven -->
+			<!-- JAR for eclipse, provided for maven not to re-include it -->
 			<groupId>com.octo</groupId>
 			<artifactId>android.rest.client-sample</artifactId>
-			<type>apk</type>
+			<type>jar</type>
+			<scope>provided</scope>
 			<version>0.0.1-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<!-- JAR for eclipse, provided for maven not to re-include it -->
 			<groupId>com.octo</groupId>
-			<artifactId>android.rest.client-sample</artifactId>
-			<type>jar</type>
+			<artifactId>android.rest.client</artifactId>
+			<type>apklib</type>
 			<scope>provided</scope>
 			<version>0.0.1-SNAPSHOT</version>
 		</dependency>
@@ -51,7 +52,7 @@
 			<artifactId>spring-android-rest-template</artifactId>
 			<version>1.0.0.RELEASE</version>
 			<scope>provided</scope>
-		</dependency>		
+		</dependency>
 		<dependency>
 			<groupId>org.roboguice</groupId>
 			<artifactId>roboguice</artifactId>

@@ -8,7 +8,9 @@ import java.net.URL;
 
 import org.springframework.web.client.RestClientException;
 
+import com.octo.android.rest.client.persistence.DataPersistenceManager;
 import com.octo.android.rest.client.request.json.CachedRestRequest;
+import com.octo.android.rest.client.restservice.RestTemplateFactory;
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -24,8 +26,8 @@ CachedRestRequest<InputStream> {
 	protected static final String BUNDLE_EXTRA_IMAGE_URL = "BUNDLE_EXTRA_IMAGE_URL";
 	protected String url;
 
-	public AbstractImageRequest(Context context, String url) {
-		super(context, InputStream.class);
+	public AbstractImageRequest(Context context, String url, DataPersistenceManager persistenceManager, RestTemplateFactory restTemplateFactory) {
+		super(context, InputStream.class, persistenceManager, restTemplateFactory);
 		this.url = url;	}
 
 	@Override

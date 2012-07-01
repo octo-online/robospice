@@ -1,16 +1,13 @@
 package com.octo.android.rest.client;
 
+import android.app.Activity;
 import android.os.Bundle;
 
-import com.google.inject.Inject;
 import com.octo.android.rest.client.request.ContentRequest;
 
-import roboguice.activity.RoboActivity;
+public class ContentActivity extends Activity {
 
-public class ContentActivity extends RoboActivity {
-
-	@Inject
-	private ContentManager contentManager;
+	private ContentManager contentManager = new ContentManager();
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {

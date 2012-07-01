@@ -5,11 +5,13 @@ import java.io.IOException;
 
 import android.app.Application;
 
-import com.google.inject.Inject;
-
 public abstract class DataClassPersistenceManager<DATA> {
 
-	private @Inject Application mApplication;
+	private Application mApplication;
+	
+	public DataClassPersistenceManager(Application application) {
+		this.mApplication = application;
+	}
 	
 	protected final Application getApplication() {
 		return mApplication;

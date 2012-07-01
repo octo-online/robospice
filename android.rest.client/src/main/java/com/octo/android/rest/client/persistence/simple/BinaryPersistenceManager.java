@@ -11,19 +11,18 @@ import android.app.Application;
 
 import com.google.common.io.ByteStreams;
 import com.google.common.io.Files;
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
 import com.octo.android.rest.client.persistence.DataClassPersistenceManager;
 
-@Singleton
 public final class BinaryPersistenceManager extends DataClassPersistenceManager<InputStream> {
 
-	@Inject
-	Application application;
+
+	public BinaryPersistenceManager(Application application) {
+		super(application);
+	}
 
 	@Override
 	public InputStream loadDataFromCache(String cacheFileName) throws FileNotFoundException {
-		return new FileInputStream( new File(application.getCacheDir(), cacheFileName) );
+		return new FileInputStream( new File(getApplication().getCacheDir(), cacheFileName) );
 	}
 
 	@Override
@@ -34,7 +33,7 @@ public final class BinaryPersistenceManager extends DataClassPersistenceManager<
 		// 1) we save it in file asynchronously
 		// 2) the result will be a new InputStream on the byte[]
 		byte[] byteArray = ByteStreams.toByteArray(data);
-		ByteStreams.write(byteArray, Files.newOutputStreamSupplier(new File(application.getCacheDir(), cacheFileName)) );
+		ByteStreams.write(byteArray, Files.newOutputStreamSupplier(new File(getApplication().getCacheDir(), cacheFileName)) );
 		return new ByteArrayInputStream(byteArray);		
 	}
 

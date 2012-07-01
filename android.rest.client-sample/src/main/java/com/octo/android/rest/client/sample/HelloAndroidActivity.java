@@ -4,6 +4,7 @@ import org.springframework.web.client.RestClientException;
 
 import roboguice.inject.ContentView;
 import roboguice.inject.InjectView;
+import android.app.Application;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.util.Log;
@@ -12,13 +13,18 @@ import android.widget.Toast;
 
 import com.google.inject.Inject;
 import com.octo.android.rest.client.ContentActivity;
+import com.octo.android.rest.client.persistence.DataPersistenceManager;
+import com.octo.android.rest.client.persistence.json.JSonPersistenceManageFactory;
+import com.octo.android.rest.client.persistence.simple.BinaryPersistenceManager;
+import com.octo.android.rest.client.persistence.simple.StringPersistenceManager;
 import com.octo.android.rest.client.request.simple.AbstractImageRequest;
 import com.octo.android.rest.client.request.simple.AbstractTextRequest;
 import com.octo.android.rest.client.request.json.CachedRestRequest;
+import com.octo.android.rest.client.restservice.RestTemplateFactory;
 import com.octo.android.rest.client.sample.model.ClientRequestStatus;
 
 @ContentView(R.layout.main)
-public class HelloAndroidActivity extends ContentActivity {
+public class HelloAndroidActivity extends RoboContentActivity {
 
 	// ============================================================================================
 	// ATTRIBUTES
@@ -34,6 +40,10 @@ public class HelloAndroidActivity extends ContentActivity {
 
 	@Inject
 	EnvironmentConfigService environmentConfigService;
+	
+	@Inject private DataPersistenceManager dataPersistenceManager;
+	
+	@Inject private RestTemplateFactory restTemplateFactory;
 
 	public CnilRequest cnilRequest;
 	ImageRequest imageRequest;
@@ -73,7 +83,7 @@ public class HelloAndroidActivity extends ContentActivity {
 	public final class CnilRequest extends AbstractTextRequest {
 
 		public CnilRequest(String url) {
-			super(HelloAndroidActivity.this, url);
+			super(HelloAndroidActivity.this, url, dataPersistenceManager, restTemplateFactory);
 		}
 
 		@Override
@@ -98,7 +108,7 @@ public class HelloAndroidActivity extends ContentActivity {
 
 		public CreditStatusRequest(String url,
 				String requestId, String birthDate) {
-			super(HelloAndroidActivity.this, ClientRequestStatus.class);
+			super(HelloAndroidActivity.this, ClientRequestStatus.class, dataPersistenceManager, restTemplateFactory);
 			this.baseUrl = url;
 			this.requestId = requestId;
 			this.birthDate = birthDate;
@@ -142,7 +152,7 @@ public class HelloAndroidActivity extends ContentActivity {
 	public final class ImageRequest extends AbstractImageRequest {
 
 		public ImageRequest(String url) {
-			super(HelloAndroidActivity.this, url);
+			super(HelloAndroidActivity.this, url, dataPersistenceManager, restTemplateFactory);
 		}
 
 		@Override

@@ -3,9 +3,6 @@ package com.octo.android.rest.client.persistence;
 import java.util.Collection;
 import java.util.HashSet;
 
-import com.google.inject.Singleton;
-
-@Singleton
 public class DataPersistenceManager {
 
 	private Collection<DataClassPersistenceManager<?>> dataPersistenceManagerList = new HashSet<DataClassPersistenceManager<?>>();
