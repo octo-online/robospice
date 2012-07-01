@@ -30,6 +30,7 @@
 			<groupId>com.octo</groupId>
 			<artifactId>android.rest.client-sample</artifactId>
 			<type>apk</type>
+			<scope>provided</scope>
 			<version>0.0.1-SNAPSHOT</version>
 		</dependency>
 		<dependency>
