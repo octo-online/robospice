@@ -1,4 +1,4 @@
-package com.octo.android.rest.client.request.simple;
+package com.octo.android.rest.client.roboguice;
 
 import java.io.FilterInputStream;
 import java.io.IOException;
@@ -20,14 +20,14 @@ import android.graphics.drawable.Drawable;
 import android.util.Log;
 
 
-public abstract class AbstractImageRequest extends
+public abstract class RoboImageRequest extends
 CachedRestRequest<InputStream> {
 
 	protected static final String BUNDLE_EXTRA_IMAGE_URL = "BUNDLE_EXTRA_IMAGE_URL";
 	protected String url;
 
-	public AbstractImageRequest(Context context, String url, DataPersistenceManager persistenceManager, RestTemplateFactory restTemplateFactory) {
-		super(context, InputStream.class, persistenceManager, restTemplateFactory);
+	public RoboImageRequest(Context context, String url) {
+		super(context, InputStream.class);
 		this.url = url;
 	}
 

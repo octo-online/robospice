@@ -1,26 +1,26 @@
-package com.octo.android.rest.client.request.json;
-
+package com.octo.android.rest.client.roboguice;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
 import org.springframework.web.client.RestTemplate;
 
-import android.content.Context;
+import roboguice.RoboGuice;
 
 import com.octo.android.rest.client.persistence.DataPersistenceManager;
 import com.octo.android.rest.client.request.ContentRequest;
 import com.octo.android.rest.client.restservice.RestTemplateFactory;
 
-public abstract class CachedRestRequest<RESULT> extends ContentRequest<RESULT> {
+import android.content.Context;
 
+public abstract class RoboCachedRestRequest<RESULT> extends ContentRequest<RESULT> {
 	private DataPersistenceManager persistenceManager;
 	private RestTemplateFactory restTemplateFactory;
 
-	public CachedRestRequest( Context context, Class<RESULT> clazz, DataPersistenceManager persistenceManager, RestTemplateFactory restTemplateFactory) {
+	public RoboCachedRestRequest(Context context, Class<RESULT> clazz) {
 		super(clazz);
-		this.persistenceManager = persistenceManager;
-		this.restTemplateFactory = restTemplateFactory;
+		this.persistenceManager = RoboGuice.getInjector(context).getInstance(DataPersistenceManager.class);
+		this.restTemplateFactory = RoboGuice.getInjector(context).getInstance(RestTemplateFactory.class);
 	}
 
 	protected RestTemplate getRestTemplate() {
