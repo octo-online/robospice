@@ -1,4 +1,4 @@
-package com.octo.android.rest.client.sample;
+package com.octo.android.rest.client.roboguice;
 
 import android.os.Bundle;
 
