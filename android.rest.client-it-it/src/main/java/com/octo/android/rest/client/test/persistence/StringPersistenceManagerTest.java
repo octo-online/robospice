@@ -22,8 +22,7 @@ public class StringPersistenceManagerTest extends ActivityInstrumentationTestCas
 	@Override
 	protected void setUp() throws Exception {
 		super.setUp();
-		stringPersistenceManager = new StringPersistenceManager();
-		RoboGuice.getBaseApplicationInjector(getActivity().getApplication()).injectMembers(stringPersistenceManager);
+		stringPersistenceManager = new StringPersistenceManager(getActivity().getApplication());
 	}
 
 	public void test_canHandleStrings() {

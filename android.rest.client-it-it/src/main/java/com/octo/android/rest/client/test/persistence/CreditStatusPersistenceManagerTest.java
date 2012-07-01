@@ -23,8 +23,7 @@ public class CreditStatusPersistenceManagerTest extends ActivityInstrumentationT
 	@Override
 	protected void setUp() throws Exception {
 		super.setUp();
-		JSonPersistenceManageFactory factory = new JSonPersistenceManageFactory();
-		RoboGuice.injectMembers(getActivity(), factory);
+		JSonPersistenceManageFactory factory = new JSonPersistenceManageFactory(getActivity().getApplication());
 		dataPersistenceManager = factory.createDataPersistenceManager(ClientRequestStatus.class);
 	}
 

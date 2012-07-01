@@ -25,8 +25,7 @@ public class BinaryPersistenceManagerTest extends ActivityInstrumentationTestCas
 	@Override
 	protected void setUp() throws Exception {
 		super.setUp();
-		binaryPersistenceManager = new BinaryPersistenceManager();
-		RoboGuice.getBaseApplicationInjector(getActivity().getApplication()).injectMembers(binaryPersistenceManager);
+		binaryPersistenceManager = new BinaryPersistenceManager(getActivity().getApplication());
 	}
 
 	public void test_canHandleInputStreams() {

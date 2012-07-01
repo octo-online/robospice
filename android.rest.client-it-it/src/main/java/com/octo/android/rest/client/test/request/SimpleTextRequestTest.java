@@ -3,11 +3,11 @@ package com.octo.android.rest.client.test.request;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
+import com.octo.android.rest.client.sample.HelloAndroidActivity;
+
 import android.test.ActivityInstrumentationTestCase2;
 import android.test.suitebuilder.annotation.LargeTest;
 import android.test.suitebuilder.annotation.SmallTest;
-
-import com.octo.android.rest.client.sample.HelloAndroidActivity;
 
 public class SimpleTextRequestTest extends ActivityInstrumentationTestCase2<HelloAndroidActivity> {
 

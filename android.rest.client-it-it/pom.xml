@@ -29,6 +29,13 @@
 			<!-- JAR for eclipse, provided for maven not to re-include it -->
 			<groupId>com.octo</groupId>
 			<artifactId>android.rest.client-sample</artifactId>
+			<type>apk</type>
+			<scope>provided</scope>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>		<dependency>
+			<!-- JAR for eclipse, provided for maven not to re-include it -->
+			<groupId>com.octo</groupId>
+			<artifactId>android.rest.client-sample</artifactId>
 			<type>jar</type>
 			<scope>provided</scope>
 			<version>0.0.1-SNAPSHOT</version>
@@ -37,6 +44,14 @@
 			<!-- JAR for eclipse, provided for maven not to re-include it -->
 			<groupId>com.octo</groupId>
 			<artifactId>android.rest.client.roboguice</artifactId>
+			<type>jar</type>
+			<scope>provided</scope>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<!-- JAR for eclipse, provided for maven not to re-include it -->
+			<groupId>com.octo</groupId>
+			<artifactId>android.rest.client</artifactId>
 			<type>jar</type>
 			<scope>provided</scope>
 			<version>0.0.1-SNAPSHOT</version>
