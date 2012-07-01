@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.nio.charset.Charset;
 
-import org.apache.commons.lang.StringUtils;
 import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -14,6 +13,7 @@ import org.codehaus.jackson.map.ObjectMapper;
 import android.app.Application;
 import android.util.Log;
 
+import com.google.common.base.Strings;
 import com.google.common.io.CharStreams;
 import com.google.common.io.Files;
 import com.google.inject.Inject;
@@ -55,7 +55,7 @@ public final class JSonPersistenceManager<T  extends Serializable> extends DataC
 
 		if (resultJson != null) {
 			// finally transform json in object
-			if (StringUtils.isNotEmpty(resultJson)) {
+			if (!Strings.isNullOrEmpty(resultJson)) {
 				result = mJsonMapper.readValue(resultJson, clazz);
 			}
 			else {
@@ -77,7 +77,7 @@ public final class JSonPersistenceManager<T  extends Serializable> extends DataC
 		resultJson = mJsonMapper.writeValueAsString(data);
 
 		// finally store the json in the cache
-		if (StringUtils.isNotEmpty(resultJson)) {
+		if (!Strings.isNullOrEmpty(resultJson)) {
 			Files.write(resultJson, new File(mApplication.getCacheDir(), cacheFileName), Charset.forName("UTF-8"));
 		}
 		else {
