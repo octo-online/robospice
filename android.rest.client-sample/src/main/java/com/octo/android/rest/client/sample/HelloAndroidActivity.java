@@ -35,7 +35,7 @@ public class HelloAndroidActivity extends ContentActivity {
 	@Inject
 	EnvironmentConfigService environmentConfigService;
 
-	CnilRequest cnilRequest;
+	public CnilRequest cnilRequest;
 	ImageRequest imageRequest;
 	CreditStatusRequest creditStatusRequest;
 
@@ -52,7 +52,7 @@ public class HelloAndroidActivity extends ContentActivity {
 		Log.i(getClass().getName(), "onCreate");
 
 		String baseUrl = environmentConfigService.getWebServiceUrl() ;
-		cnilRequest = new CnilRequest( baseUrl + UrlConstants.CNIL_LEGAL_MENTIONS);
+		cnilRequest = new CnilRequest( "http://www.loremipsum.de/downloads/original.txt");
 		creditStatusRequest = new CreditStatusRequest(baseUrl, "12345678", "19/12/1976");
 		imageRequest = new ImageRequest("http://cdn1.iconfinder.com/data/icons/softicons/PNG/Programming.png");
 	}
@@ -70,8 +70,7 @@ public class HelloAndroidActivity extends ContentActivity {
 	// INNER CLASSES
 	// ============================================================================================
 
-	private final class CnilRequest extends
-	AbstractTextRequest {
+	public final class CnilRequest extends AbstractTextRequest {
 
 		public CnilRequest(String url) {
 			super(HelloAndroidActivity.this, url);
@@ -91,7 +90,7 @@ public class HelloAndroidActivity extends ContentActivity {
 		}
 	}
 
-	private final class CreditStatusRequest extends CachedRestRequest< ClientRequestStatus> {
+	public final class CreditStatusRequest extends CachedRestRequest< ClientRequestStatus> {
 
 		private String requestId;
 		private String birthDate;
@@ -140,7 +139,7 @@ public class HelloAndroidActivity extends ContentActivity {
 		}
 	}
 
-	private final class ImageRequest extends AbstractImageRequest {
+	public final class ImageRequest extends AbstractImageRequest {
 
 		public ImageRequest(String url) {
 			super(HelloAndroidActivity.this, url);

@@ -1,11 +1,14 @@
 package com.octo.android.rest.client.test;
 
 import android.test.ActivityInstrumentationTestCase2;
+import android.test.suitebuilder.annotation.SmallTest;
+
 import com.octo.android.rest.client.sample.HelloAndroidActivity;
 
-public class HelloAndroidActivityTest extends ActivityInstrumentationTestCase2<HelloAndroidActivity> {
+@SmallTest
+public class HelloAndroidTest extends ActivityInstrumentationTestCase2<HelloAndroidActivity> {
 
-    public HelloAndroidActivityTest() {
+    public HelloAndroidTest() {
         super("com.octo.android.rest.client.sample", HelloAndroidActivity.class);
     }
 

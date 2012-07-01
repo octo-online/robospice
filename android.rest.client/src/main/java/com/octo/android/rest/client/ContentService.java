@@ -45,7 +45,7 @@ public class ContentService extends Service {
 	// ATTRIBUTES
 	// ============================================================================================
 	
-	private ContentServiceBinder mContentServiceBinder;
+	public ContentServiceBinder mContentServiceBinder;
 	private Handler mHandler = new Handler();
 	
 	// ============================================================================================
