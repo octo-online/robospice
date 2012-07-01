@@ -8,7 +8,7 @@ import android.util.Log;
 import com.octo.android.rest.client.request.json.CachedRestRequest;
 
 
-public abstract class RoboTextRequest extends CachedRestRequest<String> {
+public abstract class RoboTextRequest extends RoboCachedRestRequest<String> {
 
 	private String url;
 

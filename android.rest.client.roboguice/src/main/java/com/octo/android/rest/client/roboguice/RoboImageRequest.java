@@ -21,7 +21,7 @@ import android.util.Log;
 
 
 public abstract class RoboImageRequest extends
-CachedRestRequest<InputStream> {
+RoboCachedRestRequest<InputStream> {
 
 	protected static final String BUNDLE_EXTRA_IMAGE_URL = "BUNDLE_EXTRA_IMAGE_URL";
 	protected String url;
