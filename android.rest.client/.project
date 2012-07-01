@@ -3,6 +3,8 @@
 	<name>android.rest.client</name>
 	<comment></comment>
 	<projects>
+		<project>android.rest.client-it-it</project>
+		<project>android.rest.client-sample</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

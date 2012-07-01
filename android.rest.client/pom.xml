@@ -59,7 +59,6 @@
 					<sdk>
 						<platform>7</platform>
 					</sdk>
-					<undeployBeforeDeploy>true</undeployBeforeDeploy>
 				</configuration>
 				<extensions>true</extensions>
 			</plugin>

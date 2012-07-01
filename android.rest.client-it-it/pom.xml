@@ -26,40 +26,36 @@
 			<artifactId>android-test</artifactId>
 		</dependency>
 		<dependency>
+			<!-- APK for maven -->
 			<groupId>com.octo</groupId>
 			<artifactId>android.rest.client-sample</artifactId>
 			<type>apk</type>
 			<version>0.0.1-SNAPSHOT</version>
 		</dependency>
 		<dependency>
+			<!-- JAR for eclipse, provided for maven not to re-include it -->
 			<groupId>com.octo</groupId>
 			<artifactId>android.rest.client-sample</artifactId>
 			<type>jar</type>
+			<scope>provided</scope>
 			<version>0.0.1-SNAPSHOT</version>
 		</dependency>
 		<dependency>
+			<!-- JAR for eclipse, provided for maven not to re-include it -->
 			<groupId>com.octo</groupId>
 			<artifactId>android.rest.client</artifactId>
-			<scope>provided</scope>
-			<version>${project.version}</version>
-			<type>apklib</type>
-		</dependency>
-		<dependency>
-			<groupId>com.octo</groupId>
-			<artifactId>android.rest.client</artifactId>
-			<scope>provided</scope>
 			<type>jar</type>
-			<version>${project.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
+			<scope>provided</scope>
+			<version>0.0.1-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>org.roboguice</groupId>
 			<artifactId>roboguice</artifactId>
 			<version>2.0</version>
-			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
 		</dependency>
 	</dependencies>
 	<build>
@@ -75,7 +71,6 @@
 					<sdk>
 						<platform>7</platform>
 					</sdk>
-					<undeployBeforeDeploy>true</undeployBeforeDeploy>
 				</configuration>
 				<extensions>true</extensions>
 			</plugin>
