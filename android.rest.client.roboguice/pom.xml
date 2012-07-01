@@ -23,6 +23,12 @@
             <artifactId>android</artifactId>
             <scope>provided</scope>
         </dependency>
+		<dependency>
+			<groupId>com.octo</groupId>
+			<artifactId>android.rest.client</artifactId>
+			<version>${project.version}</version>
+			<type>apklib</type>
+		</dependency>
     </dependencies>
 
     <build>
