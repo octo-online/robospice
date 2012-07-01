@@ -25,5 +25,5 @@
 	<classpathentry kind="var" path="M2_REPO/com/google/inject/guice/3.0/guice-3.0-no_aop.jar"/>
 	<classpathentry kind="var" path="M2_REPO/aopalliance/aopalliance/1.0/aopalliance-1.0.jar"/>
 	<classpathentry kind="var" path="M2_REPO/com/google/guava/guava/13.0-rc1/guava-13.0-rc1.jar"/>
-	<classpathentry kind="output" path="target/classes"/>
+	<classpathentry kind="output" path="bin/classes"/>
 </classpath>
