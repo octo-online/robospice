@@ -1,5 +1,7 @@
 package com.octo.android.rest.client.test;
 
+import com.octo.android.rest.client.sample.HelloAndroidActivity;
+
 import android.test.ActivityInstrumentationTestCase2;
 import android.test.suitebuilder.annotation.SmallTest;
 
