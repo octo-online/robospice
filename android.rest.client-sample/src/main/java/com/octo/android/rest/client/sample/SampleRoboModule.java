@@ -2,10 +2,10 @@ package com.octo.android.rest.client.sample;
 
 import android.app.Application;
 import android.content.Context;
+import android.rest.client.persistence.json.JSonPersistenceManageFactory;
 
 import com.google.inject.AbstractModule;
 import com.octo.android.rest.client.persistence.DataPersistenceManager;
-import com.octo.android.rest.client.persistence.json.JSonPersistenceManageFactory;
 import com.octo.android.rest.client.persistence.simple.BinaryPersistenceManager;
 import com.octo.android.rest.client.persistence.simple.StringPersistenceManager;
 

@@ -1,12 +1,9 @@
 package com.octo.android.rest.client.request.simple;
 
-import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
-
-import org.springframework.web.client.RestClientException;
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -32,7 +29,7 @@ CachedContentRequest<InputStream> {
 
 	@Override
 	public final InputStream loadDataFromNetwork()
-			throws RestClientException {
+			throws Exception {
 		try {
 			return new URL(url).openStream();
 		} catch (MalformedURLException e) {

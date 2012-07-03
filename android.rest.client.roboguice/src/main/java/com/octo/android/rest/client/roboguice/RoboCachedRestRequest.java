@@ -9,9 +9,9 @@ import roboguice.RoboGuice;
 
 import com.octo.android.rest.client.persistence.DataPersistenceManager;
 import com.octo.android.rest.client.request.ContentRequest;
-import com.octo.android.rest.client.request.json.RestTemplateFactory;
 
 import android.content.Context;
+import android.rest.client.request.json.RestTemplateFactory;
 
 public abstract class RoboCachedRestRequest<RESULT> extends ContentRequest<RESULT> {
 	private DataPersistenceManager persistenceManager;

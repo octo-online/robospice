@@ -31,6 +31,12 @@
 			<type>jar</type>
 		</dependency>
 		<dependency>
+			<groupId>com.octo</groupId>
+			<artifactId>android.rest.client.json</artifactId>
+			<version>${project.version}</version>
+			<type>jar</type>
+		</dependency>
+		<dependency>
 			<groupId>org.roboguice</groupId>
 			<artifactId>roboguice</artifactId>
 			<version>2.0</version>

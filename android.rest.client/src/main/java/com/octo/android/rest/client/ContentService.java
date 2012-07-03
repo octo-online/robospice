@@ -6,8 +6,6 @@ import java.io.IOException;
 import java.util.Calendar;
 import java.util.Date;
 
-import org.springframework.web.client.RestClientException;
-
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
@@ -121,7 +119,7 @@ public class ContentService extends Service {
 			else {
 				try {
 					result =  request.loadDataFromNetwork();
-				} catch (RestClientException e) {
+				} catch (Exception e) {
 					Log.e(LOGCAT_TAG,"A rest client exception occured during service execution :"+e.getMessage(), e);
 				}
 

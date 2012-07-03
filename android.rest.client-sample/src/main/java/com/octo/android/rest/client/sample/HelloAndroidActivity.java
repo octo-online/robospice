@@ -6,13 +6,13 @@ import roboguice.inject.ContentView;
 import roboguice.inject.InjectView;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.rest.client.request.json.RestTemplateFactory;
 import android.util.Log;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.inject.Inject;
 import com.octo.android.rest.client.persistence.DataPersistenceManager;
-import com.octo.android.rest.client.request.json.RestTemplateFactory;
 import com.octo.android.rest.client.roboguice.RoboCachedRestRequest;
 import com.octo.android.rest.client.roboguice.RoboContentActivity;
 import com.octo.android.rest.client.roboguice.RoboImageRequest;

@@ -4,11 +4,11 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 
 import roboguice.RoboGuice;
+import android.rest.client.persistence.json.JSonPersistenceManageFactory;
 import android.test.ActivityInstrumentationTestCase2;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import com.octo.android.rest.client.persistence.DataClassPersistenceManager;
-import com.octo.android.rest.client.persistence.json.JSonPersistenceManageFactory;
 import com.octo.android.rest.client.sample.HelloAndroidActivity;
 import com.octo.android.rest.client.sample.model.ClientRequestStatus;
 

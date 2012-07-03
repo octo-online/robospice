@@ -10,9 +10,10 @@
 
     <modules>
         <module>../android.rest.client</module>
-        <module>../android.rest.client-it-it</module>
-    	<module>../android.rest.client-sample</module>
+    	<module>../android.rest.client.json</module>
         <module>../android.rest.client.roboguice</module>
+    	<module>../android.rest.client-sample</module>
+        <module>../android.rest.client-it-it</module>
   </modules>
 
     <properties>

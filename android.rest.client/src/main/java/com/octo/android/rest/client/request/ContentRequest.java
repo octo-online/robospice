@@ -3,8 +3,6 @@ package com.octo.android.rest.client.request;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
-import org.springframework.web.client.RestClientException;
-
 import com.octo.android.rest.client.ContentService;
 
 public abstract class ContentRequest<RESULT> {
@@ -33,7 +31,7 @@ public abstract class ContentRequest<RESULT> {
 
 	public abstract RESULT saveDataToCacheAndReturnData(RESULT data, String cacheFileName) throws FileNotFoundException, IOException ;
 	
-	public abstract RESULT loadDataFromNetwork() throws RestClientException;
+	public abstract RESULT loadDataFromNetwork() throws Exception;
 
 	protected abstract void onRequestFailure(int resultCode);
 

@@ -5,8 +5,6 @@ import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 
-import org.springframework.web.client.RestClientException;
-
 import android.content.Context;
 import android.util.Log;
 
@@ -28,7 +26,7 @@ public abstract class AbstractTextRequest extends CachedContentRequest<String> {
 	// will be invoked in remote service
 	@Override
 	public final String loadDataFromNetwork()
-			throws RestClientException {
+			throws Exception {
 		try {
 			Log.d(getClass().getName(), "Call web service " + url);
 			return CharStreams.toString( new InputStreamReader( new URL(url).openStream(), "UTF-8" ) );  
