@@ -1,4 +1,4 @@
-package com.octo.android.rest.client.restservice;
+package com.octo.android.rest.client.request.json;
 
 import java.util.ArrayList;
 import java.util.List;

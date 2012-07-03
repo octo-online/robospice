@@ -8,10 +8,6 @@ import java.net.URL;
 
 import org.springframework.web.client.RestClientException;
 
-import com.octo.android.rest.client.persistence.DataPersistenceManager;
-import com.octo.android.rest.client.request.json.CachedRestRequest;
-import com.octo.android.rest.client.restservice.RestTemplateFactory;
-
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -19,15 +15,18 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.util.Log;
 
+import com.octo.android.rest.client.persistence.DataPersistenceManager;
+import com.octo.android.rest.client.request.CachedContentRequest;
+
 
 public abstract class AbstractImageRequest extends
-CachedRestRequest<InputStream> {
+CachedContentRequest<InputStream> {
 
 	protected static final String BUNDLE_EXTRA_IMAGE_URL = "BUNDLE_EXTRA_IMAGE_URL";
 	protected String url;
 
-	public AbstractImageRequest(Context context, String url, DataPersistenceManager persistenceManager, RestTemplateFactory restTemplateFactory) {
-		super(context, InputStream.class, persistenceManager, restTemplateFactory);
+	public AbstractImageRequest(Context context, String url, DataPersistenceManager persistenceManager) {
+		super(context, InputStream.class, persistenceManager);
 		this.url = url;
 	}
 
@@ -65,33 +64,3 @@ CachedRestRequest<InputStream> {
 
 }
 
-/**
- * Image Decoder Bug correction FilterInputStream. Permit to decode JPG image with BitmapFactory.decodeStream() method, what fails in Android 1.6.
- * 
- * @author octo_mwa
- * 
- */
-class FlushedInputStream extends FilterInputStream {
-	public FlushedInputStream(InputStream inputStream) {
-		super(inputStream);
-	}
-
-	@Override
-	public long skip(long n) throws IOException {
-		long totalBytesSkipped = 0L;
-		while (totalBytesSkipped < n) {
-			long bytesSkipped = in.skip(n - totalBytesSkipped);
-			if (bytesSkipped == 0L) {
-				int bytes = read();
-				if (bytes < 0) {
-					break; // we reached EOF
-				}
-				else {
-					bytesSkipped = 1; // we read one byte
-				}
-			}
-			totalBytesSkipped += bytesSkipped;
-		}
-		return totalBytesSkipped;
-	}
-}

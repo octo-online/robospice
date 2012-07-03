@@ -5,7 +5,7 @@ import org.springframework.web.client.RestClientException;
 import android.content.Context;
 import android.util.Log;
 
-import com.octo.android.rest.client.request.json.CachedRestRequest;
+import com.octo.android.rest.client.request.json.CachedRestContentRequest;
 
 
 public abstract class RoboTextRequest extends RoboCachedRestRequest<String> {

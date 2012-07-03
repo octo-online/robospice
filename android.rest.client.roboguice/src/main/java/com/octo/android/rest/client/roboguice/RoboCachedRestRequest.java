@@ -9,7 +9,7 @@ import roboguice.RoboGuice;
 
 import com.octo.android.rest.client.persistence.DataPersistenceManager;
 import com.octo.android.rest.client.request.ContentRequest;
-import com.octo.android.rest.client.restservice.RestTemplateFactory;
+import com.octo.android.rest.client.request.json.RestTemplateFactory;
 
 import android.content.Context;
 

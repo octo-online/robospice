@@ -9,8 +9,8 @@ import java.net.URL;
 import org.springframework.web.client.RestClientException;
 
 import com.octo.android.rest.client.persistence.DataPersistenceManager;
-import com.octo.android.rest.client.request.json.CachedRestRequest;
-import com.octo.android.rest.client.restservice.RestTemplateFactory;
+import com.octo.android.rest.client.request.json.CachedRestContentRequest;
+import com.octo.android.rest.client.request.json.RestTemplateFactory;
 
 import android.content.Context;
 import android.graphics.Bitmap;
