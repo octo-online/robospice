@@ -3,10 +3,7 @@ package com.octo.android.rest.client.roboguice;
 import org.springframework.web.client.RestClientException;
 
 import android.content.Context;
-import android.rest.client.request.json.CachedRestContentRequest;
 import android.util.Log;
-
-
 
 public abstract class RoboTextRequest extends RoboCachedRestRequest<String> {
 

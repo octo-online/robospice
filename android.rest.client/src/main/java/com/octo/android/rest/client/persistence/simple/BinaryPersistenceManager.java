@@ -21,19 +21,19 @@ public final class BinaryPersistenceManager extends DataClassPersistenceManager<
 	}
 
 	@Override
-	public InputStream loadDataFromCache(String cacheFileName) throws FileNotFoundException {
-		return new FileInputStream( new File(getApplication().getCacheDir(), cacheFileName) );
+	public InputStream loadDataFromCache(Object cacheFileName) throws FileNotFoundException {
+		return new FileInputStream( new File(getApplication().getCacheDir(), cacheFileName.toString()) );
 	}
 
 	@Override
 	public InputStream saveDataToCacheAndReturnData(InputStream data,
-			String cacheFileName) throws FileNotFoundException, IOException {
+			Object cacheFileName) throws FileNotFoundException, IOException {
 		// special case for inputstream object : as it can be read only once,
 		// 0) we extract the content of the input stream as a byte[]
 		// 1) we save it in file asynchronously
 		// 2) the result will be a new InputStream on the byte[]
 		byte[] byteArray = ByteStreams.toByteArray(data);
-		ByteStreams.write(byteArray, Files.newOutputStreamSupplier(new File(getApplication().getCacheDir(), cacheFileName)) );
+		ByteStreams.write(byteArray, Files.newOutputStreamSupplier(new File(getApplication().getCacheDir(), cacheFileName.toString())) );
 		return new ByteArrayInputStream(byteArray);		
 	}
 

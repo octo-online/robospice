@@ -6,20 +6,18 @@ import java.io.IOException;
 import org.springframework.web.client.RestTemplate;
 
 import roboguice.RoboGuice;
-
-import com.octo.android.rest.client.persistence.DataPersistenceManager;
-import com.octo.android.rest.client.request.ContentRequest;
-
 import android.content.Context;
 import android.rest.client.request.json.RestTemplateFactory;
 
-public abstract class RoboCachedRestRequest<RESULT> extends ContentRequest<RESULT> {
-	private DataPersistenceManager persistenceManager;
+import com.octo.android.rest.client.persistence.DataPersistenceManager;
+import com.octo.android.rest.client.request.CachedContentRequest;
+
+public abstract class RoboCachedRestRequest<RESULT> extends CachedContentRequest<RESULT> {
+	
 	private RestTemplateFactory restTemplateFactory;
 
 	public RoboCachedRestRequest(Context context, Class<RESULT> clazz) {
-		super(clazz);
-		this.persistenceManager = RoboGuice.getInjector(context).getInstance(DataPersistenceManager.class);
+		super(context, clazz, RoboGuice.getInjector(context).getInstance(DataPersistenceManager.class));
 		this.restTemplateFactory = RoboGuice.getInjector(context).getInstance(RestTemplateFactory.class);
 	}
 
@@ -28,15 +26,16 @@ public abstract class RoboCachedRestRequest<RESULT> extends ContentRequest<RESUL
 	}
 
 	@Override
-	public RESULT loadDataFromCache(String cacheFileName)
+	public RESULT loadDataFromCache(Object cacheFileName)
 			throws FileNotFoundException, IOException {
-		return persistenceManager.getDataClassPersistenceManager(getResultType()).loadDataFromCache(cacheFileName);
+		return getDataPersistenceManager().getDataClassPersistenceManager(getResultType()).loadDataFromCache(cacheFileName);
 	}
 
 	@Override
-	public RESULT saveDataToCacheAndReturnData(RESULT data, String cacheFileName)
+	public RESULT saveDataToCacheAndReturnData(RESULT data, Object cacheFileName)
 			throws FileNotFoundException, IOException {
-		return persistenceManager.getDataClassPersistenceManager(getResultType()).saveDataToCacheAndReturnData(data, cacheFileName);
+		return getDataPersistenceManager().getDataClassPersistenceManager(getResultType()).saveDataToCacheAndReturnData(data, cacheFileName);
 	}
+	
 
 }

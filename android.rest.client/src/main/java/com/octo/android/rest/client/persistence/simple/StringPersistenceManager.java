@@ -18,14 +18,14 @@ public final class StringPersistenceManager extends DataClassPersistenceManager<
 	}
 
 	@Override
-	public String loadDataFromCache(String cacheFileName) throws FileNotFoundException, IOException {
-		return CharStreams.toString( Files.newReader( new File(getApplication().getCacheDir(), cacheFileName), Charset.forName("UTF-8") ) );
+	public String loadDataFromCache(Object cacheFileName) throws FileNotFoundException, IOException {
+		return CharStreams.toString( Files.newReader( new File(getApplication().getCacheDir(), cacheFileName.toString()), Charset.forName("UTF-8") ) );
 	}
 
 	@Override
-	public String saveDataToCacheAndReturnData(String data, String cacheFileName)
+	public String saveDataToCacheAndReturnData(String data, Object cacheFileName)
 			throws FileNotFoundException, IOException {	
-		Files.write(data, new File(getApplication().getCacheDir(), cacheFileName), Charset.forName("UTF-8"));
+		Files.write(data, new File(getApplication().getCacheDir(), cacheFileName.toString()), Charset.forName("UTF-8"));
 		return data;
 	}
 

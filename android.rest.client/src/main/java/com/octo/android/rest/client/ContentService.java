@@ -1,8 +1,5 @@
 package com.octo.android.rest.client;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -75,72 +72,14 @@ public class ContentService extends Service {
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	private void processRequest(ContentRequest request, Handler handlerResponse, boolean isCacheEnabled) {
 
-		Class<?> clazz = request.getResultType();
-		Log.d(LOGCAT_TAG, "Result type is " + clazz.getName());
-
 		Object result = null;
-		String cacheKey = request.getCacheKey();
-		isCacheEnabled = isCacheEnabled && cacheKey != null;
-		Log.d(LOGCAT_TAG, "Loading content for key : " + cacheKey);
-		String cacheFilename = cacheKey + FILE_CACHE_EXTENSION;
-
-
-		if (isCacheEnabled) {
-			Date lastModifiedDateForCache = null;
-
-			// first check in the cache (file in private file system)
-			File file = new File(this.getCacheDir(), cacheFilename);
-			if (file.exists()) {
-				lastModifiedDateForCache =  new Date(file.lastModified());
-			}
-			// if file is found, check the date : if the cache did not expired, return data
-			if (lastModifiedDateForCache != null && isCacheExpired(new Date(), lastModifiedDateForCache) == false) {
-				Log.d(LOGCAT_TAG,"Content available in cache and not expired");
-
-				try {
-					result = request.loadDataFromCache(cacheFilename);
-				} catch (FileNotFoundException e) {
-					Log.e(getClass().getName(),"Cache file cacheFilename not found:"+cacheFilename,e);
-					return;
-				} catch (IOException e) {
-					e.printStackTrace();
-					return;
-				}
-			}
+		try {
+			Log.d(LOGCAT_TAG,"Getting content...");
+			result = request.loadData();
+		} catch (Exception e) {
+			Log.e(LOGCAT_TAG,"An exception occured during service execution :"+e.getMessage(), e);
 		}
-
-		if( result == null ) 
-		{
-			// if file is not found or the date is a day after or cache disabled, call the web service
-			Log.d(LOGCAT_TAG,"Cache content not available or expired or disabled");
-			if (!isNetworkAvailable(this)) {
-				Log.e(LOGCAT_TAG,"Network is down.");
-			}
-			else {
-				try {
-					result =  request.loadDataFromNetwork();
-				} catch (Exception e) {
-					Log.e(LOGCAT_TAG,"A rest client exception occured during service execution :"+e.getMessage(), e);
-				}
-
-				if (result == null) {
-					Log.e(LOGCAT_TAG,"Unable to get web service result : " + clazz );
-				}
-				else {
-					if (isCacheEnabled) {
-						try {
-							Log.d(LOGCAT_TAG,"Start caching content...");
-							result = request.saveDataToCacheAndReturnData(result, cacheFilename);
-						} catch (FileNotFoundException e) {
-							Log.e(LOGCAT_TAG,"A file not found exception occured during service execution :"+e.getMessage(), e);
-						} catch (IOException e) {
-							Log.e(LOGCAT_TAG,"An io exception occured during service execution :"+e.getMessage(), e);
-						}
-					}
-				}
-			}
-		}
-
+		
 		// set result code
 		int resultCode = RESULT_ERROR;
 		if (result != null) {

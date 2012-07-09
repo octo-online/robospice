@@ -1,8 +1,5 @@
 package com.octo.android.rest.client.request;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-
 import com.octo.android.rest.client.ContentService;
 
 public abstract class ContentRequest<RESULT> {
@@ -27,17 +24,11 @@ public abstract class ContentRequest<RESULT> {
 		}
 	}
 
-	public abstract RESULT loadDataFromCache(String cacheFileName) throws FileNotFoundException, IOException ;
-
-	public abstract RESULT saveDataToCacheAndReturnData(RESULT data, String cacheFileName) throws FileNotFoundException, IOException ;
-	
-	public abstract RESULT loadDataFromNetwork() throws Exception;
+	public abstract RESULT loadData() throws Exception;
 
 	protected abstract void onRequestFailure(int resultCode);
 
 	protected abstract void onRequestSuccess(RESULT result);
-
-	public abstract String getCacheKey();
 
 	public void cancel() {
 		this.isCanceled = true;

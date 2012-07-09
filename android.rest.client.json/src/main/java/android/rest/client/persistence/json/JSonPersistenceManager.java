@@ -41,11 +41,11 @@ public final class JSonPersistenceManager<T  extends Serializable> extends DataC
 	// METHODS
 	// ============================================================================================
 
-	public final T loadDataFromCache( String cacheFileName) throws JsonParseException, JsonMappingException, IOException {
+	public final T loadDataFromCache( Object cacheKey) throws JsonParseException, JsonMappingException, IOException {
 		T result = null;
 		String resultJson = null;
 
-		resultJson =  CharStreams.toString(Files.newReader(new File(getApplication().getCacheDir(), cacheFileName),Charset.forName("UTF-8") ) );
+		resultJson =  CharStreams.toString(Files.newReader(new File(getApplication().getCacheDir(), cacheKey.toString()),Charset.forName("UTF-8") ) );
 
 		if (resultJson != null) {
 			// finally transform json in object
@@ -63,7 +63,7 @@ public final class JSonPersistenceManager<T  extends Serializable> extends DataC
 	}
 
 	@Override
-	public T saveDataToCacheAndReturnData(T data, String cacheFileName)
+	public T saveDataToCacheAndReturnData(T data, Object cacheFileName)
 			throws FileNotFoundException, IOException {
 		String resultJson = null;
 
@@ -72,7 +72,7 @@ public final class JSonPersistenceManager<T  extends Serializable> extends DataC
 
 		// finally store the json in the cache
 		if (!Strings.isNullOrEmpty(resultJson)) {
-			Files.write(resultJson, new File(getApplication().getCacheDir(), cacheFileName), Charset.forName("UTF-8"));
+			Files.write(resultJson, new File(getApplication().getCacheDir(), cacheFileName.toString()), Charset.forName("UTF-8"));
 		}
 		else {
 			Log.e(getClass().getName(),"Unable to save web service result into the cache");
