@@ -3,10 +3,10 @@ package com.octo.android.rest.client.test.persistence;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
-import roboguice.RoboGuice;
 import android.test.ActivityInstrumentationTestCase2;
 import android.test.suitebuilder.annotation.SmallTest;
 
+import com.octo.android.rest.client.persistence.CacheExpiredException;
 import com.octo.android.rest.client.persistence.simple.StringPersistenceManager;
 import com.octo.android.rest.client.sample.HelloAndroidActivity;
 
@@ -36,10 +36,10 @@ public class StringPersistenceManagerTest extends ActivityInstrumentationTestCas
 		assertEquals("coucou", stringReturned);
 	}
 
-	public void test_loadDataFromCache() throws FileNotFoundException, IOException {
+	public void test_loadDataFromCache() throws FileNotFoundException, IOException, CacheExpiredException {
 		final String FILE_NAME = "toto";
 		stringPersistenceManager.saveDataToCacheAndReturnData("coucou",FILE_NAME);
-		String stringReturned = stringPersistenceManager.loadDataFromCache(FILE_NAME);
+		String stringReturned = stringPersistenceManager.loadDataFromCache(FILE_NAME, 0);
 		assertEquals("coucou", stringReturned);
 	}
 

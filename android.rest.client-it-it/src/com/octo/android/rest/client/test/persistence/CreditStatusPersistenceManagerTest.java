@@ -3,10 +3,10 @@ package com.octo.android.rest.client.test.persistence;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
-import roboguice.RoboGuice;
 import android.test.ActivityInstrumentationTestCase2;
 import android.test.suitebuilder.annotation.SmallTest;
 
+import com.octo.android.rest.client.persistence.CacheExpiredException;
 import com.octo.android.rest.client.persistence.DataClassPersistenceManager;
 import com.octo.android.rest.client.persistence.json.JSonPersistenceManageFactory;
 import com.octo.android.rest.client.sample.HelloAndroidActivity;
@@ -40,12 +40,12 @@ public class CreditStatusPersistenceManagerTest extends ActivityInstrumentationT
 		assertEquals("2", clientRequestStatusReturned.getDuration());
 	}
 
-	public void test_loadDataFromCache() throws FileNotFoundException, IOException {
+	public void test_loadDataFromCache() throws FileNotFoundException, IOException, CacheExpiredException {
 		ClientRequestStatus clientRequestStatus = new ClientRequestStatus();
 		clientRequestStatus.setDuration("2");
 		final String FILE_NAME = "toto";
 		dataPersistenceManager.saveDataToCacheAndReturnData(clientRequestStatus,FILE_NAME);
-		ClientRequestStatus clientRequestStatusReturned = dataPersistenceManager.loadDataFromCache(FILE_NAME);
+		ClientRequestStatus clientRequestStatusReturned = dataPersistenceManager.loadDataFromCache(FILE_NAME, 0);
 		assertEquals("2", clientRequestStatusReturned.getDuration());
 	}
 }

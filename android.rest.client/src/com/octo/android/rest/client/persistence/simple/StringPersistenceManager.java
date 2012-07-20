@@ -9,6 +9,7 @@ import android.app.Application;
 
 import com.google.common.io.CharStreams;
 import com.google.common.io.Files;
+import com.octo.android.rest.client.persistence.CacheExpiredException;
 import com.octo.android.rest.client.persistence.DataClassPersistenceManager;
 
 public final class StringPersistenceManager extends DataClassPersistenceManager<String> {
@@ -18,14 +19,28 @@ public final class StringPersistenceManager extends DataClassPersistenceManager<
 	}
 
 	@Override
-	public String loadDataFromCache(Object cacheFileName) throws FileNotFoundException, IOException {
-		return CharStreams.toString( Files.newReader( new File(getApplication().getCacheDir(), cacheFileName.toString()), Charset.forName("UTF-8") ) );
+	public String loadDataFromCache(Object cacheKey, long maxTimeInCacheBeforeExpiry) throws FileNotFoundException, IOException, CacheExpiredException {
+		File file = getCacheFile(cacheKey);
+		if( file.exists() ) {
+			long timeInCache = System.currentTimeMillis() - file.lastModified();
+			if( maxTimeInCacheBeforeExpiry == 0 || timeInCache <= maxTimeInCacheBeforeExpiry ) {
+				return CharStreams.toString( Files.newReader( file, Charset.forName("UTF-8") ) );
+			} else {
+				throw new CacheExpiredException( "Cache content is expired since " + (maxTimeInCacheBeforeExpiry-timeInCache) );
+			}
+		}
+		throw new FileNotFoundException( "File was not found in cache: " + file.getAbsolutePath() );
+		
+	}
+	
+	private File getCacheFile( Object cacheKey) {
+		return new File(getApplication().getCacheDir(), cacheKey.toString());
 	}
 
 	@Override
-	public String saveDataToCacheAndReturnData(String data, Object cacheFileName)
+	public String saveDataToCacheAndReturnData(String data, Object cacheKey)
 			throws FileNotFoundException, IOException {	
-		Files.write(data, new File(getApplication().getCacheDir(), cacheFileName.toString()), Charset.forName("UTF-8"));
+		Files.write(data, getCacheFile(cacheKey), Charset.forName("UTF-8"));
 		return data;
 	}
 

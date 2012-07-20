@@ -8,6 +8,7 @@ import org.springframework.web.client.RestTemplate;
 import roboguice.RoboGuice;
 import android.content.Context;
 
+import com.octo.android.rest.client.persistence.CacheExpiredException;
 import com.octo.android.rest.client.persistence.DataPersistenceManager;
 import com.octo.android.rest.client.request.CachedContentRequest;
 import com.octo.android.rest.client.request.json.RestTemplateFactory;
@@ -27,8 +28,8 @@ public abstract class RoboCachedRestRequest<RESULT> extends CachedContentRequest
 
 	@Override
 	public RESULT loadDataFromCache(Object cacheFileName)
-			throws FileNotFoundException, IOException {
-		return getDataPersistenceManager().getDataClassPersistenceManager(getResultType()).loadDataFromCache(cacheFileName);
+			throws FileNotFoundException, IOException, CacheExpiredException {
+		return getDataPersistenceManager().getDataClassPersistenceManager(getResultType()).loadDataFromCache(cacheFileName, getMaxTimeInCacheBeforeExpiry());
 	}
 
 	@Override

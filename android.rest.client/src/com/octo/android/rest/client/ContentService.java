@@ -2,6 +2,8 @@ package com.octo.android.rest.client;
 
 import java.util.Calendar;
 import java.util.Date;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import android.app.Service;
 import android.content.Context;
@@ -34,15 +36,16 @@ public class ContentService extends Service {
 
 	protected static final String FILE_CACHE_EXTENSION = ".store";
 	private static final String LOGCAT_TAG = "AbstractContentService";
-	
+
 
 	// ============================================================================================
 	// ATTRIBUTES
 	// ============================================================================================
-	
+
 	public ContentServiceBinder mContentServiceBinder;
-	private Handler mHandler = new Handler();
-	
+	/** Thanks Olivier Croiser from Zenika for his excellent <a href="http://blog.zenika.com/index.php?post/2012/04/11/Introduction-programmation-concurrente-Java-2sur2. ">blog article</a>. */
+	private ExecutorService executorService = Executors.newSingleThreadExecutor();
+
 	// ============================================================================================
 	// CONSTRUCTOR
 	// ============================================================================================
@@ -53,7 +56,6 @@ public class ContentService extends Service {
 	 */
 	public ContentService() {
 		mContentServiceBinder = new ContentServiceBinder();
-		mHandler = new Handler();
 	}
 
 	// ============================================================================================
@@ -61,15 +63,9 @@ public class ContentService extends Service {
 	// ============================================================================================
 
 	public void addRequest( final ContentRequest<?> request, final Handler handlerResponse, final boolean useCache ) {
-		mHandler.post( new Runnable() {
-			
+		executorService.execute( new Runnable() {
 			public void run() {
-				new Thread() {
-					@Override
-					public void run() {
-						processRequest(request, handlerResponse, useCache);
-					}
-				}.start();
+				processRequest(request, handlerResponse, useCache);
 			}
 		});
 	}
@@ -84,7 +80,7 @@ public class ContentService extends Service {
 		} catch (Exception e) {
 			Log.e(LOGCAT_TAG,"An exception occured during service execution :"+e.getMessage(), e);
 		}
-		
+
 		// set result code
 		int resultCode = RESULT_ERROR;
 		if (result != null) {
@@ -101,8 +97,8 @@ public class ContentService extends Service {
 		private ContentRequest<T> restRequest;
 		private int resultCode;
 		private T result;
-		
-		
+
+
 		public ResultRunnable(ContentRequest<T> restRequest, int resultCode, T result) {
 			this.restRequest = restRequest;
 			this.resultCode = resultCode;
@@ -113,7 +109,7 @@ public class ContentService extends Service {
 		public void run() {
 			restRequest.onRequestFinished(resultCode, result);
 		}
-		
+
 	}
 	/**
 	 * Check if the data in the cache is expired. To achieve that, check the last modified date of the file is today or not.<br/>

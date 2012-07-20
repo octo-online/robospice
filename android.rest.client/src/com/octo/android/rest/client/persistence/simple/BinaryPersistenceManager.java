@@ -11,6 +11,7 @@ import android.app.Application;
 
 import com.google.common.io.ByteStreams;
 import com.google.common.io.Files;
+import com.octo.android.rest.client.persistence.CacheExpiredException;
 import com.octo.android.rest.client.persistence.DataClassPersistenceManager;
 
 public final class BinaryPersistenceManager extends DataClassPersistenceManager<InputStream> {
@@ -21,19 +22,32 @@ public final class BinaryPersistenceManager extends DataClassPersistenceManager<
 	}
 
 	@Override
-	public InputStream loadDataFromCache(Object cacheFileName) throws FileNotFoundException {
-		return new FileInputStream( new File(getApplication().getCacheDir(), cacheFileName.toString()) );
+	public InputStream loadDataFromCache(Object cacheKey, long maxTimeInCacheBeforeExpiry ) throws FileNotFoundException, CacheExpiredException {
+		File file = getCacheFile(cacheKey);
+		if( file.exists() ) {
+			long timeInCache = System.currentTimeMillis() - file.lastModified();
+			if( maxTimeInCacheBeforeExpiry == 0 || timeInCache <= maxTimeInCacheBeforeExpiry ) {
+				return new FileInputStream( file );
+			} else {
+				throw new CacheExpiredException( "Cache content is expired since " + (maxTimeInCacheBeforeExpiry-timeInCache) );
+			}
+		}
+		throw new FileNotFoundException( "File was not found in cache: " + file.getAbsolutePath() );
+	}
+
+	private File getCacheFile( Object cacheKey) {
+		return new File(getApplication().getCacheDir(), cacheKey.toString());
 	}
 
 	@Override
 	public InputStream saveDataToCacheAndReturnData(InputStream data,
-			Object cacheFileName) throws FileNotFoundException, IOException {
+			Object cacheKey) throws FileNotFoundException, IOException {
 		// special case for inputstream object : as it can be read only once,
 		// 0) we extract the content of the input stream as a byte[]
 		// 1) we save it in file asynchronously
 		// 2) the result will be a new InputStream on the byte[]
 		byte[] byteArray = ByteStreams.toByteArray(data);
-		ByteStreams.write(byteArray, Files.newOutputStreamSupplier(new File( cacheFileName.toString())) );
+		ByteStreams.write(byteArray, Files.newOutputStreamSupplier(getCacheFile(cacheKey)) );
 		return new ByteArrayInputStream(byteArray);		
 	}
 

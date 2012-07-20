@@ -11,6 +11,7 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.util.Log;
 
+import com.octo.android.rest.client.persistence.CacheExpiredException;
 import com.octo.android.rest.client.persistence.DataPersistenceManager;
 
 public abstract class CachedContentRequest<RESULT > extends ContentRequest<RESULT> {
@@ -32,10 +33,19 @@ public abstract class CachedContentRequest<RESULT > extends ContentRequest<RESUL
 	}
 
 	public abstract Object getCacheKey();
+	
+	/**
+	 * Return the maximimum time a data can be cached before being considered expired.
+	 * @return the maximimum time a data can be cached before being considered expired.
+	 */
+	public long getMaxTimeInCacheBeforeExpiry() {
+		return 0;
+	}
+
 
 	public RESULT loadDataFromCache(Object cacheKey) throws FileNotFoundException,
-	IOException {
-		return persistenceManager.getDataClassPersistenceManager(getResultType()).loadDataFromCache(cacheKey);
+	IOException, CacheExpiredException {
+		return persistenceManager.getDataClassPersistenceManager(getResultType()).loadDataFromCache(cacheKey, getMaxTimeInCacheBeforeExpiry() );
 	}
 
 	public RESULT saveDataToCacheAndReturnData(RESULT data, Object cacheKey)
@@ -47,7 +57,7 @@ public abstract class CachedContentRequest<RESULT > extends ContentRequest<RESUL
 		return null;
 	}
 	
-	private File getCacheFile() {
+	protected File getCacheFile() {
 		String cacheFilename = getCacheKey() + FILE_CACHE_EXTENSION;
 
 		// first check in the cache (file in private file system)
@@ -60,21 +70,17 @@ public abstract class CachedContentRequest<RESULT > extends ContentRequest<RESUL
 
 		RESULT result = null;
 
-		File file = getCacheFile();
-		String cacheFilename = file.getAbsolutePath();
-		if (file.exists() && !isExpired(file)) {
-			Log.d(LOGCAT_TAG,"Content available in cache and not expired");
-
-			try {
-				result = loadDataFromCache(cacheFilename);
-				if( result != null ) {
-					return result;
-				}
-			} catch (FileNotFoundException e) {
-				Log.e(getClass().getName(),"Cache file cacheFilename not found:"+cacheFilename,e);
-			} catch (IOException e) {
-				Log.e(getClass().getName(),"Cache file cacheFilename could not be read:"+cacheFilename,e);
+		try {
+			result = loadDataFromCache(getCacheKey());
+			if( result != null ) {
+				return result;
 			}
+		} catch (FileNotFoundException e) {
+			Log.d(getClass().getName(),"Cache file not found.",e);
+		} catch (IOException e) {
+			Log.d(getClass().getName(),"Cache file could not be read.",e);
+		} catch (CacheExpiredException e) {
+			Log.d(getClass().getName(),"Cache file has expired.",e);
 		}
 
 
@@ -98,7 +104,7 @@ public abstract class CachedContentRequest<RESULT > extends ContentRequest<RESUL
 
 			try {
 				Log.d(LOGCAT_TAG,"Start caching content...");
-				result = saveDataToCacheAndReturnData(result, cacheFilename);
+				result = saveDataToCacheAndReturnData(result, getCacheKey());
 				return result;
 			} catch (FileNotFoundException e) {
 				Log.e(LOGCAT_TAG,"A file not found exception occured during service execution :"+e.getMessage(), e);

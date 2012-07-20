@@ -3,6 +3,7 @@ package com.octo.android.rest.client.test.request;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
+import com.octo.android.rest.client.persistence.CacheExpiredException;
 import com.octo.android.rest.client.sample.HelloAndroidActivity;
 
 import android.test.ActivityInstrumentationTestCase2;
@@ -31,7 +32,7 @@ public class SimpleTextRequestTest extends ActivityInstrumentationTestCase2<Hell
 	}
 
 	@SmallTest
-	public void test_loadDataFromCache() throws FileNotFoundException, IOException {
+	public void test_loadDataFromCache() throws FileNotFoundException, IOException, CacheExpiredException {
 		final String FILE_NAME = "toto";
 		cnilRequest.saveDataToCacheAndReturnData("coucou",FILE_NAME);
 		String stringReturned = cnilRequest.loadDataFromCache(FILE_NAME);
