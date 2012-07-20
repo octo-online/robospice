@@ -21,19 +21,20 @@
 		</dependency>
 		<dependency>
 			<groupId>com.octo</groupId>
-			<artifactId>android.rest.client.roboguice</artifactId>
+			<artifactId>android.rest.client.json</artifactId>
 			<version>${project.version}</version>
 			<type>jar</type>
 		</dependency>
 		<dependency>
 			<groupId>com.octo</groupId>
-			<artifactId>android.rest.client.json</artifactId>
+			<artifactId>android.rest.client.roboguice</artifactId>
 			<version>${project.version}</version>
 			<type>jar</type>
 		</dependency>
 	</dependencies>
 
 	<build>
+	    <sourceDirectory>src/</sourceDirectory>
 		<plugins>
 			<plugin>
 				<groupId>com.jayway.maven.plugins.android.generation2</groupId>
