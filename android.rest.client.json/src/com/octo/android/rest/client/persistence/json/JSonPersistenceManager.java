@@ -16,6 +16,7 @@ import android.util.Log;
 import com.google.common.base.Strings;
 import com.google.common.io.CharStreams;
 import com.google.common.io.Files;
+import com.octo.android.rest.client.persistence.CacheExpiredException;
 import com.octo.android.rest.client.persistence.DataClassPersistenceManager;
 
 public final class JSonPersistenceManager<T  extends Serializable> extends DataClassPersistenceManager<T> {
@@ -41,29 +42,39 @@ public final class JSonPersistenceManager<T  extends Serializable> extends DataC
 	// METHODS
 	// ============================================================================================
 
-	public final T loadDataFromCache( Object cacheKey, long maxTimeInCache ) throws JsonParseException, JsonMappingException, IOException {
+	@Override
+	public final T loadDataFromCache( Object cacheKey, long maxTimeInCacheBeforeExpiry ) throws JsonParseException, JsonMappingException, IOException, CacheExpiredException {
 		T result = null;
 		String resultJson = null;
 
 		File file = getCacheFile(cacheKey);
-		resultJson =  CharStreams.toString(Files.newReader(file,Charset.forName("UTF-8") ) );
+		if( file.exists() ) {
+			long timeInCache = System.currentTimeMillis() - file.lastModified();
+			if( maxTimeInCacheBeforeExpiry == 0 || timeInCache <= maxTimeInCacheBeforeExpiry ) {
+				resultJson =  CharStreams.toString(Files.newReader(file,Charset.forName("UTF-8") ) );
+				if (resultJson != null) {
+					// finally transform json in object
+					if (!Strings.isNullOrEmpty(resultJson)) {
+						result = mJsonMapper.readValue(resultJson, clazz);
+					}
+					else {
+						Log.e(getClass().getName(),"Unable to restore cache content : cache file is empty");
+					}
+				}
+				else {
+					Log.e(getClass().getName(),"Unable to restore cache content");
+				}
+				return result;
+			} else {
+				throw new CacheExpiredException( "Cache content is expired since " + (maxTimeInCacheBeforeExpiry-timeInCache) );
+			}
+		}
+		throw new FileNotFoundException( "File was not found in cache: " + file.getAbsolutePath() );
 
-		if (resultJson != null) {
-			// finally transform json in object
-			if (!Strings.isNullOrEmpty(resultJson)) {
-				result = mJsonMapper.readValue(resultJson, clazz);
-			}
-			else {
-				Log.e(getClass().getName(),"Unable to restore cache content : cache file is empty");
-			}
-		}
-		else {
-			Log.e(getClass().getName(),"Unable to restore cache content");
-		}
-		return result;
+
 	}
 
-	
+
 	private File getCacheFile( Object cacheKey) {
 		return new File(getApplication().getCacheDir(), cacheKey.toString());
 	}
