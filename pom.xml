@@ -9,16 +9,16 @@
     <name>android.rest.client - Parent</name>
 
     <modules>
-        <module>../android.rest.client</module>
-    	<module>../android.rest.client.json</module>
-        <module>../android.rest.client.roboguice</module>
-    	<module>../android.rest.client-sample</module>
-        <module>../android.rest.client-it-it</module>
+        <module>android.rest.client</module>
+    	<module>android.rest.client.json</module>
+        <module>android.rest.client.roboguice</module>
+    	<module>android.rest.client-sample</module>
+        <module>android.rest.client-it-it</module>
   </modules>
 
     <properties>
         <platform.version>2.1.2</platform.version>
-        <android.sdk.path>/Users/stephanenicolas/android-sdks/</android.sdk.path>
+        <!-- <android.sdk.path>/Users/stephanenicolas/android-sdks/</android.sdk.path> -->
     </properties>
 
     <dependencyManagement>
