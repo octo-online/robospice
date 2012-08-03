@@ -7,12 +7,9 @@
 		<groupId>com.octo</groupId>
 		<artifactId>android.rest.client-parent</artifactId>
 		<version>0.0.1-SNAPSHOT</version>
-		<relativePath>../android.rest.client-parent/pom.xml</relativePath>
 	</parent>
 
-	<groupId>com.octo</groupId>
 	<artifactId>android.rest.client-it-it</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
 	<packaging>apk</packaging>
 	<name>android.rest.client-it - Integration tests</name>
 
