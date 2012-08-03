@@ -4,12 +4,12 @@
 
     <groupId>com.octo</groupId>
     <artifactId>android.rest.client-parent</artifactId>
-    <version>0.0.1</version>
+    <version>0.0.1-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>android.rest.client - Parent</name>
     <scm>
-       <developerConnection>scm:git:ssh://git@git.octo.com:~/team_mobility/OctoContentManagerForAndroid.git</developerConnection>
-       <url>https://intranet.octo.com/ia/git_repository_folders/6/git_repositories/88</url>
+       <developerConnection>scm:git:ssh://git@git.octo.com:covea/mma-cfe-android.git</developerConnection>
+       <url>https://intranet.octo.com/ia/git_repository_folders/20/git_repositories/85</url>
   </scm>
 
     <modules>
