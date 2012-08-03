@@ -8,7 +8,7 @@
     <packaging>pom</packaging>
     <name>android.rest.client - Parent</name>
     <scm>
-       <developerConnection>scm:git:ssh://git@git.octo.com:~/team_mobility/OctoContentManagerForAndroid.git</developerConnection>
+       <developerConnection>scm:git:ssh://git@git.octo.com:team_mobility/OctoContentManagerForAndroid.git</developerConnection>
        <url>https://intranet.octo.com/ia/git_repository_folders/6/git_repositories/88</url>
   </scm>
 
