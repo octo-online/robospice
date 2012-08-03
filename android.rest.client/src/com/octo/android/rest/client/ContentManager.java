@@ -105,8 +105,8 @@ public class ContentManager extends Thread {
 
     public void addRequestToQueue( ContentRequest< ? > request, boolean useCache ) {
         synchronized ( lockQueue ) {
-            this.requestQueue.add( request );
             this.mapRequestToCacheUsageFlag.put( request, useCache );
+            this.requestQueue.add( request );
             lockQueue.notifyAll();
         }
     }
