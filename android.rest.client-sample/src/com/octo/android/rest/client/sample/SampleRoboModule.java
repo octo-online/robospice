@@ -11,30 +11,31 @@ import com.octo.android.rest.client.persistence.simple.StringPersistenceManager;
 
 public class SampleRoboModule extends AbstractModule {
 
-	private Application application;
+    private Application application;
 
-	public SampleRoboModule(Context context) {
-		super();
-		this.application = (Application)context;
-	}
+    public SampleRoboModule( Context context ) {
+        super();
+        this.application = (Application) context;
+    }
 
-	@Override
-	protected void configure() {
-		registerDataPersistenceManagers();
-	}
+    @Override
+    protected void configure() {
+        registerDataPersistenceManagers();
+    }
 
-	private void registerDataPersistenceManagers() {
-		DataPersistenceManager dataPersistenceManager = new DataPersistenceManager();
-		bind(DataPersistenceManager.class).toInstance( dataPersistenceManager);
-		
-		//init 
-		StringPersistenceManager stringPersistenceManager = new StringPersistenceManager(application);
-		BinaryPersistenceManager binaryPersistenceManager = new BinaryPersistenceManager(application);
-		JSonPersistenceManageFactory jSonPersistenceManageFactory = new JSonPersistenceManageFactory(application);
+    private void registerDataPersistenceManagers() {
+        DataPersistenceManager dataPersistenceManager = new DataPersistenceManager();
+        bind( DataPersistenceManager.class ).toInstance( dataPersistenceManager );
 
-		//request application injection
-		dataPersistenceManager.registerDataClassPersistenceManager(stringPersistenceManager);
-		dataPersistenceManager.registerDataClassPersistenceManager(binaryPersistenceManager);
-		dataPersistenceManager.registerDataClassPersistenceManagerFactory(jSonPersistenceManageFactory);	}
+        // init
+        StringPersistenceManager stringPersistenceManager = new StringPersistenceManager( application );
+        BinaryPersistenceManager binaryPersistenceManager = new BinaryPersistenceManager( application );
+        JSonPersistenceManageFactory jSonPersistenceManageFactory = new JSonPersistenceManageFactory( application );
+
+        // request application injection
+        dataPersistenceManager.registerDataClassPersistenceManager( stringPersistenceManager );
+        dataPersistenceManager.registerDataClassPersistenceManager( binaryPersistenceManager );
+        dataPersistenceManager.registerDataClassPersistenceManagerFactory( jSonPersistenceManageFactory );
+    }
 
 }
