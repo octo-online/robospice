@@ -100,7 +100,9 @@ public class ContentManager extends Thread {
     }
 
     private void unbindService( Context context ) {
-        context.unbindService( this.contentServiceConnection );
+        if ( contentService != null ) {
+            context.unbindService( this.contentServiceConnection );
+        }
     }
 
     public void addRequestToQueue( ContentRequest< ? > request, boolean useCache ) {
