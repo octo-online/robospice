@@ -4,7 +4,7 @@
 
     <groupId>com.octo</groupId>
     <artifactId>android.rest.client-parent</artifactId>
-    <version>0.0.3-SNAPSHOT</version>
+    <version>0.0.1-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>android.rest.client - Parent</name>
     <scm>
