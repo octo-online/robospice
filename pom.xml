@@ -25,6 +25,21 @@
         <!-- <android.sdk.path>/Users/stephanenicolas/android-sdks/</android.sdk.path> -->
     </properties>
 
+    <distributionManagement>
+     <repository>
+       <id>nexus.octo</id>
+       <name>Maven OCTO Release Repository</name>
+       <url>https://forge.octo.com/nexus/content/repositories/releases/</url>
+     </repository>
+
+     <snapshotRepository>
+       <id>nexus.octo</id>
+       <name>Maven OCTO Snapshots Repository</name>
+       <url>https://forge.octo.com/nexus/content/repositories/snapshots/</url>
+       <uniqueVersion>false</uniqueVersion>
+     </snapshotRepository>
+    </distributionManagement>
+
     <dependencyManagement>
         <dependencies>
             <dependency>
