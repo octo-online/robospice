@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.octo.android.content-manager</groupId>
+    <artifactId>content-manager-parent</artifactId>
+    <version>0.0.3-SNAPSHOT</version>
+    <packaging>pom</packaging>
+    <name>Octo Content Manager - Parent</name>
+    <scm>
+       <developerConnection>scm:git:ssh://git@git.octo.com/team_mobility/OctoContentManagerForAndroid.git</developerConnection>
+       <url>https://intranet.octo.com/ia/git_repository_folders/6/git_repositories/88</url>
+  </scm>
+
+    <modules>
+        <module>content-manager</module>
+    	<module>content-manager-json</module>
+        <module>content-manager-roboguice</module>
+    	<module>content-manager-sample</module>
+        <module>content-manager-it</module>
+  </modules>
+
+    <properties>
+        <platform.version>2.1.2</platform.version>
+        <!-- <android.sdk.path>/Users/stephanenicolas/android-sdks/</android.sdk.path> -->
+    </properties>
+
+    <distributionManagement>
+     <repository>
+       <id>nexus.octo</id>
+       <name>Maven OCTO Release Repository</name>
+       <url>https://forge.octo.com/nexus/content/repositories/releases/</url>
+     </repository>
+
+     <snapshotRepository>
+       <id>nexus.octo</id>
+       <name>Maven OCTO Snapshots Repository</name>
+       <url>https://forge.octo.com/nexus/content/repositories/snapshots/</url>
+       <uniqueVersion>false</uniqueVersion>
+     </snapshotRepository>
+    </distributionManagement>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>com.google.android</groupId>
+                <artifactId>android</artifactId>
+                <version>${platform.version}</version>
+                <scope>provided</scope>
+            </dependency>
+            <dependency>
+                <groupId>com.google.android</groupId>
+                <artifactId>android-test</artifactId>
+                <version>${platform.version}</version>
+                <scope>provided</scope>
+            </dependency>
+			<dependency>
+			  <groupId>com.google.android</groupId>
+			  <artifactId>support-v4</artifactId>
+			  <version>r6</version>
+			</dependency>
+            <!-- Androlog is a logging and reporting library for Android -->
+            <dependency>
+                <groupId>de.akquinet.android.androlog</groupId>
+                <artifactId>androlog</artifactId>
+                <version>1.0.5</version>
+            </dependency>
+            <dependency>
+                <groupId>junit</groupId>
+                <artifactId>junit</artifactId>
+                <version>4.10</version>
+                <scope>provided</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>com.jayway.maven.plugins.android.generation2</groupId>
+                    <artifactId>android-maven-plugin</artifactId>
+                    <version>3.1.1</version>
+                </plugin>
+                <plugin>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>2.3.2</version>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
+</project>
