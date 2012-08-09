@@ -2,8 +2,8 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.octo</groupId>
-    <artifactId>android.rest.client-parent</artifactId>
+    <groupId>com.octo.android.content-manager</groupId>
+    <artifactId>content-manager-parent</artifactId>
     <version>0.0.3-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>android.rest.client - Parent</name>
@@ -13,11 +13,11 @@
   </scm>
 
     <modules>
-        <module>android.rest.client</module>
-    	<module>android.rest.client.json</module>
-        <module>android.rest.client.roboguice</module>
-    	<module>android.rest.client-sample</module>
-        <module>android.rest.client-it-it</module>
+        <module>content-manager</module>
+    	<module>content-manager-json</module>
+        <module>content-manager-roboguice</module>
+    	<module>content-manager-sample</module>
+        <module>content-manager-it</module>
   </modules>
 
     <properties>
