@@ -6,18 +6,13 @@ import java.net.MalformedURLException;
 import java.net.URL;
 
 import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.util.Log;
 
 import com.octo.android.rest.client.persistence.DataPersistenceManager;
 import com.octo.android.rest.client.request.CachedContentRequest;
 
-
-public abstract class AbstractImageRequest extends
-CachedContentRequest<InputStream> {
+public abstract class AbstractImageRequest extends CachedContentRequest<InputStream> {
 
 	protected static final String BUNDLE_EXTRA_IMAGE_URL = "BUNDLE_EXTRA_IMAGE_URL";
 	protected String url;
@@ -28,14 +23,15 @@ CachedContentRequest<InputStream> {
 	}
 
 	@Override
-	public final InputStream loadDataFromNetwork()
-			throws Exception {
+	public final InputStream loadDataFromNetwork() throws Exception {
 		try {
 			return new URL(url).openStream();
-		} catch (MalformedURLException e) {
+		}
+		catch (MalformedURLException e) {
 			Log.e(getClass().getName(), "Unable to create image URL");
 			return null;
-		} catch (IOException e) {
+		}
+		catch (IOException e) {
 			Log.e(getClass().getName(), "Unable to download image");
 			return null;
 		}
@@ -50,14 +46,13 @@ CachedContentRequest<InputStream> {
 		return url.replace(":", "").replace("/", "_");
 	}
 
-	@Override
-	protected final void onRequestSuccess(InputStream result) {
-		Bitmap bitmap = BitmapFactory.decodeStream(result);
-		BitmapDrawable drawable = new BitmapDrawable(bitmap);
-		onRequestSuccess( drawable);
-	}
+	// @Override
+	// protected final void onRequestSuccess(InputStream result) {
+	// Bitmap bitmap = BitmapFactory.decodeStream(result);
+	// BitmapDrawable drawable = new BitmapDrawable(bitmap);
+	// onRequestSuccess(drawable);
+	// }
 
 	protected abstract void onRequestSuccess(Drawable result);
 
 }
-

@@ -2,6 +2,7 @@ package com.octo.android.rest.client;
 
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -16,7 +17,7 @@ import android.os.IBinder;
 import android.util.Log;
 
 import com.octo.android.rest.client.request.ContentRequest;
-
+import com.octo.android.rest.client.request.RequestListener;
 
 /**
  * This is an abstract class used to manage the cache and provide web service result to an activity. <br/>
@@ -36,7 +37,6 @@ public class ContentService extends Service {
 
 	protected static final String FILE_CACHE_EXTENSION = ".store";
 	private static final String LOGCAT_TAG = "AbstractContentService";
-
 
 	// ============================================================================================
 	// ATTRIBUTES
@@ -62,23 +62,24 @@ public class ContentService extends Service {
 	// METHODS
 	// ============================================================================================
 
-	public void addRequest( final ContentRequest<?> request, final Handler handlerResponse, final boolean useCache ) {
-		executorService.execute( new Runnable() {
+	public void addRequest(final ContentRequest<?> request, final List<RequestListener<?>> listeners, final boolean useCache) {
+		executorService.execute(new Runnable() {
 			public void run() {
-				processRequest(request, handlerResponse, useCache);
+				processRequest(request, listeners, useCache);
 			}
 		});
 	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	private void processRequest(ContentRequest request, Handler handlerResponse, boolean isCacheEnabled) {
+	private void processRequest(ContentRequest request, List<RequestListener<?>> listeners, boolean isCacheEnabled) {
 
 		Object result = null;
 		try {
-			Log.d(LOGCAT_TAG,"Getting content...");
+			Log.d(LOGCAT_TAG, "Getting content...");
 			result = request.loadData();
-		} catch (Exception e) {
-			Log.e(LOGCAT_TAG,"An exception occured during service execution :"+e.getMessage(), e);
+		}
+		catch (Exception e) {
+			Log.e(LOGCAT_TAG, "An exception occured during service execution :" + e.getMessage(), e);
 		}
 
 		// set result code
@@ -87,30 +88,37 @@ public class ContentService extends Service {
 			resultCode = RESULT_OK;
 		}
 
-		if( !request.isCanceled() ) {
-			handlerResponse.post( new ResultRunnable(request,resultCode,result) );
+		if (!request.isCanceled()) {
+			Handler handlerResponse = new Handler();
+			handlerResponse.post(new ResultRunnable(listeners, resultCode, result));
 		}
 	}
 
 	private class ResultRunnable<T> implements Runnable {
 
-		private ContentRequest<T> restRequest;
 		private int resultCode;
 		private T result;
+		private List<RequestListener<T>> listeners;
 
-
-		public ResultRunnable(ContentRequest<T> restRequest, int resultCode, T result) {
-			this.restRequest = restRequest;
+		public ResultRunnable(List<RequestListener<T>> listeners, int resultCode, T result) {
 			this.resultCode = resultCode;
 			this.result = result;
+			this.listeners = listeners;
 		}
 
-
 		public void run() {
-			restRequest.onRequestFinished(resultCode, result);
+			for (RequestListener<T> listener : listeners) {
+				if (resultCode == ContentService.RESULT_OK && result != null) {
+					listener.onRequestSuccess(result);
+				}
+				else {
+					listener.onRequestFailure(resultCode);
+				}
+			}
 		}
 
 	}
+
 	/**
 	 * Check if the data in the cache is expired. To achieve that, check the last modified date of the file is today or not.<br/>
 	 * If the file was modified a day or more before today, the cache is expired, otherwise the cache can be used
@@ -143,8 +151,6 @@ public class ContentService extends Service {
 		return false;
 	}
 
-
-
 	@Override
 	public IBinder onBind(Intent intent) {
 		return mContentServiceBinder;
@@ -155,6 +161,5 @@ public class ContentService extends Service {
 			return ContentService.this;
 		}
 	}
-
 
 }
