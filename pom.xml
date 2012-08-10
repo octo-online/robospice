@@ -38,6 +38,7 @@
        <url>https://forge.octo.com/nexus/content/repositories/snapshots/</url>
        <uniqueVersion>false</uniqueVersion>
      </snapshotRepository>
+
     </distributionManagement>
 
     <dependencyManagement>
