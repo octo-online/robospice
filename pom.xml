@@ -22,7 +22,6 @@
 
     <properties>
         <platform.version>2.1.2</platform.version>
-        <!-- <android.sdk.path>/Users/stephanenicolas/android-sdks/</android.sdk.path> -->
     </properties>
 
     <distributionManagement>
