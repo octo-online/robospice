@@ -1,16 +1,18 @@
 package com.octo.android.rest.client;
 
-import java.util.HashMap;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.Queue;
+import java.util.Set;
 
 import android.app.Service;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
-import android.os.Handler;
 import android.os.IBinder;
 
 import com.octo.android.rest.client.ContentService.ContentServiceBinder;
@@ -37,12 +39,11 @@ public class ContentManager extends Thread {
 
     private boolean isStopped;
     private Queue< CachedContentRequest< ? >> requestQueue = new LinkedList< CachedContentRequest< ? >>();
-    private Map< CachedContentRequest< ? >, RequestListener< ? > > mapRequestToRequestListener = new HashMap< CachedContentRequest< ? >, RequestListener< ? > >();
+    private Map< CachedContentRequest< ? >, Set< RequestListener< ? >>> mapRequestToRequestListener = Collections
+            .synchronizedMap( new IdentityHashMap< CachedContentRequest< ? >, Set< RequestListener< ? >>>() );
 
     private Object lockQueue = new Object();
     private Object lockAcquireService = new Object();
-
-    Handler handlerResponse = new Handler();
 
     @Override
     public final synchronized void start() {
@@ -72,9 +73,9 @@ public class ContentManager extends Thread {
             synchronized ( lockQueue ) {
                 if ( !requestQueue.isEmpty() ) {
                     CachedContentRequest< ? > restRequest = requestQueue.poll();
-                    RequestListener< ? > requestListener = mapRequestToRequestListener.get( restRequest );
+                    Set< RequestListener< ? >> listRequestListener = mapRequestToRequestListener.get( restRequest );
                     mapRequestToRequestListener.remove( restRequest );
-                    contentService.addRequest( restRequest, restRequest.getRequestCacheKey(), restRequest.getCacheDuration(), requestListener );
+                    contentService.addRequest( restRequest, listRequestListener );
                 }
 
                 while ( requestQueue.isEmpty() ) {
@@ -110,16 +111,30 @@ public class ContentManager extends Thread {
     public < T > void execute( ContentRequest< T > request, String requestCacheKey, long cacheDuration, RequestListener< T > requestListener ) {
         synchronized ( lockQueue ) {
             CachedContentRequest< T > cachedContentRequest = new CachedContentRequest< T >( request, requestCacheKey, cacheDuration );
-            this.mapRequestToRequestListener.put( cachedContentRequest, requestListener );
+            // add listener to listeners list for this request
+            Set< RequestListener< ? >> listeners = mapRequestToRequestListener.get( request );
+            if ( listeners == null ) {
+                listeners = new HashSet< RequestListener< ? >>();
+                this.mapRequestToRequestListener.put( cachedContentRequest, listeners );
+            }
+            listeners.add( requestListener );
+
             this.requestQueue.add( cachedContentRequest );
             lockQueue.notifyAll();
         }
     }
 
-    public < T > void execute( CachedContentRequest< T > request, RequestListener< T > requestListener ) {
+    public < T > void execute( CachedContentRequest< T > cachedContentRequest, RequestListener< T > requestListener ) {
         synchronized ( lockQueue ) {
-            this.mapRequestToRequestListener.put( request, requestListener );
-            this.requestQueue.add( request );
+            // add listener to listeners list for this request
+            Set< RequestListener< ? >> listeners = mapRequestToRequestListener.get( cachedContentRequest );
+            if ( listeners == null ) {
+                listeners = new HashSet< RequestListener< ? >>();
+            } else if ( !listeners.contains( requestListener ) ) {
+                listeners.add( requestListener );
+            }
+            this.mapRequestToRequestListener.put( cachedContentRequest, listeners );
+            this.requestQueue.add( cachedContentRequest );
             lockQueue.notifyAll();
         }
     }

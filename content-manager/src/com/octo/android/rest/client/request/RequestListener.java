@@ -1,5 +1,7 @@
 package com.octo.android.rest.client.request;
 
+import com.octo.android.rest.client.exception.ContentManagerException;
+
 /**
  * Interface used to deal with request result. Two cases : request failed or succeed.
  * 
@@ -11,7 +13,7 @@ package com.octo.android.rest.client.request;
  */
 public interface RequestListener< RESULT > {
 
-    void onRequestFailure( int resultCode );
+    void onRequestFailure( ContentManagerException contentManagerException );
 
     void onRequestSuccess( RESULT result );
 }

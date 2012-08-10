@@ -3,7 +3,12 @@ package com.octo.android.rest.client;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.IdentityHashMap;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -19,6 +24,10 @@ import android.os.IBinder;
 import android.os.Looper;
 import android.util.Log;
 
+import com.octo.android.rest.client.exception.ContentManagerException;
+import com.octo.android.rest.client.exception.NetworkException;
+import com.octo.android.rest.client.exception.NoNetworkException;
+import com.octo.android.rest.client.exception.SaveToCacheException;
 import com.octo.android.rest.client.persistence.CacheExpiredException;
 import com.octo.android.rest.client.persistence.DataClassPersistenceManager;
 import com.octo.android.rest.client.persistence.DataPersistenceManager;
@@ -61,6 +70,9 @@ public abstract class ContentService extends Service {
     /** Used to post results on the UI thread of the activity. */
     private Handler handlerResponse;
 
+    private Map< CachedContentRequest< ? >, Set< RequestListener< ? >>> mapRequestToRequestListener = Collections
+            .synchronizedMap( new IdentityHashMap< CachedContentRequest< ? >, Set< RequestListener< ? >>>() );
+
     // ============================================================================================
     // CONSTRUCTOR
     // ============================================================================================
@@ -81,21 +93,30 @@ public abstract class ContentService extends Service {
 
     public abstract DataPersistenceManager createDataPersistenceManager( Application application );
 
-    public void addRequest( final CachedContentRequest< ? > request, final String requestCacheKey, final long maxTimeInCacheBeforeExpiry,
-            RequestListener< ? > requestListener ) {
+    public void addRequest( final CachedContentRequest< ? > request, Set< RequestListener< ? >> listRequestListener ) {
+        Set< RequestListener< ? >> listRequestListenerForThisRequest = mapRequestToRequestListener.get( request );
+
+        if ( listRequestListenerForThisRequest == null ) {
+            listRequestListenerForThisRequest = new HashSet< RequestListener< ? >>();
+            this.mapRequestToRequestListener.put( request, listRequestListenerForThisRequest );
+        }
+
+        listRequestListenerForThisRequest.addAll( listRequestListener );
+
         executorService.execute( new Runnable() {
             public void run() {
-                processRequest( request, requestCacheKey, maxTimeInCacheBeforeExpiry );
+                processRequest( request );
             }
         } );
     }
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    private < T > void processRequest( CachedContentRequest< T > request, String requestCacheKey, long maxTimeInCacheBeforeExpiry ) {
+    private < T > void processRequest( CachedContentRequest< T > request ) {
 
         T result = null;
+        Set< RequestListener< ? >> requestListeners = mapRequestToRequestListener.get( request );
         try {
-            result = loadDataFromCache( request.getResultType(), requestCacheKey, maxTimeInCacheBeforeExpiry );
+            result = loadDataFromCache( request.getResultType(), request.getRequestCacheKey(), request.getCacheDuration() );
         } catch ( FileNotFoundException e ) {
             Log.d( getClass().getName(), "Cache file not found.", e );
         } catch ( IOException e ) {
@@ -109,34 +130,40 @@ public abstract class ContentService extends Service {
             Log.d( LOGCAT_TAG, "Cache content not available or expired or disabled" );
             if ( !isNetworkAvailable( getApplicationContext() ) ) {
                 Log.e( LOGCAT_TAG, "Network is down." );
-                handlerResponse.post( new ResultRunnable( request, -1, result ) );
+                handlerResponse.post( new ResultRunnable( requestListeners, new NoNetworkException() ) );
                 return;
             } else {
                 try {
                     result = request.loadDataFromNetwork();
                     if ( result == null ) {
                         Log.e( LOGCAT_TAG, "Unable to get web service result : " + request.getResultType() );
-                        handlerResponse.post( new ResultRunnable( request, -1, result ) );
+                        handlerResponse.post( new ResultRunnable( requestListeners, (T) null ) );
                         return;
                     }
                 } catch ( Exception e ) {
                     Log.e( LOGCAT_TAG, "A rest client exception occured during service execution :" + e.getMessage(), e );
+                    handlerResponse
+                            .post( new ResultRunnable( requestListeners, new NetworkException( "Exception occured during invocation of web service.", e ) ) );
+                    return;
                 }
 
+                // request worked and result is not null
                 try {
                     Log.d( LOGCAT_TAG, "Start caching content..." );
-                    result = saveDataToCacheAndReturnData( result, requestCacheKey );
-                    handlerResponse.post( new ResultRunnable( request, 0, result ) );
+                    result = saveDataToCacheAndReturnData( result, request.getRequestCacheKey() );
+                    handlerResponse.post( new ResultRunnable( requestListeners, result ) );
                     return;
                 } catch ( FileNotFoundException e ) {
                     Log.e( LOGCAT_TAG, "A file not found exception occured during service execution :" + e.getMessage(), e );
+                    handlerResponse
+                            .post( new ResultRunnable( requestListeners, new SaveToCacheException( "Exception occured during cache write of data.", e ) ) );
                 } catch ( IOException e ) {
                     Log.e( LOGCAT_TAG, "An io exception occured during service execution :" + e.getMessage(), e );
                 }
             }
         }
         // we reached that point so write in cache didn't work but network worked.
-        handlerResponse.post( new ResultRunnable( request, 0, result ) );
+        handlerResponse.post( new ResultRunnable( requestListeners, result ) );
     }
 
     public < T > T loadDataFromCache( Class< T > clazz, Object cacheKey, long maxTimeInCacheBeforeExpiry ) throws FileNotFoundException, IOException,
@@ -153,22 +180,28 @@ public abstract class ContentService extends Service {
 
     private class ResultRunnable< T > implements Runnable {
 
-        private RequestListener< T > requestListener;
         private ContentManagerException contentManagerException;
         private T result;
+        private Set< RequestListener< T >> listeners;
 
-        public ResultRunnable( RequestListener< T > requestListener, T result ) {
-            this.requestListener = requestListener;
+        public ResultRunnable( Set< RequestListener< T >> listeners, T result ) {
             this.result = result;
+            this.listeners = listeners;
         }
 
-        public ResultRunnable( RequestListener< T > requestListener, ContentManagerException ex ) {
-            this.requestListener = requestListener;
-            this.result = result;
+        public ResultRunnable( Set< RequestListener< T >> listeners, ContentManagerException contentManagerException ) {
+            this.listeners = listeners;
+            this.contentManagerException = contentManagerException;
         }
 
         public void run() {
-            restRequest.onRequestFinished( resultCode, result );
+            for ( RequestListener< T > listener : listeners ) {
+                if ( contentManagerException == null ) {
+                    listener.onRequestSuccess( result );
+                } else {
+                    listener.onRequestFailure( contentManagerException );
+                }
+            }
         }
 
     }
@@ -217,5 +250,4 @@ public abstract class ContentService extends Service {
             return ContentService.this;
         }
     }
-
 }
