@@ -14,7 +14,9 @@ import android.os.Handler;
 import android.os.IBinder;
 
 import com.octo.android.rest.client.ContentService.ContentServiceBinder;
+import com.octo.android.rest.client.request.CachedContentRequest;
 import com.octo.android.rest.client.request.ContentRequest;
+import com.octo.android.rest.client.request.RequestListener;
 
 /**
  * Class used to manage content received from web service. <br/>
@@ -34,8 +36,8 @@ public class ContentManager extends Thread {
     private Context context;
 
     private boolean isStopped;
-    private Queue< ContentRequest< ? >> requestQueue = new LinkedList< ContentRequest< ? >>();
-    private Map< ContentRequest< ? >, Boolean > mapRequestToCacheUsageFlag = new HashMap< ContentRequest< ? >, Boolean >();
+    private Queue< CachedContentRequest< ? >> requestQueue = new LinkedList< CachedContentRequest< ? >>();
+    private Map< CachedContentRequest< ? >, RequestListener< ? > > mapRequestToRequestListener = new HashMap< CachedContentRequest< ? >, RequestListener< ? > >();
 
     private Object lockQueue = new Object();
     private Object lockAcquireService = new Object();
@@ -69,10 +71,10 @@ public class ContentManager extends Thread {
         while ( !isStopped ) {
             synchronized ( lockQueue ) {
                 if ( !requestQueue.isEmpty() ) {
-                    ContentRequest< ? > restRequest = requestQueue.poll();
-                    boolean useCache = mapRequestToCacheUsageFlag.get( restRequest );
-                    mapRequestToCacheUsageFlag.remove( restRequest );
-                    contentService.addRequest( restRequest, handlerResponse, useCache );
+                    CachedContentRequest< ? > restRequest = requestQueue.poll();
+                    RequestListener< ? > requestListener = mapRequestToRequestListener.get( restRequest );
+                    mapRequestToRequestListener.remove( restRequest );
+                    contentService.addRequest( restRequest, restRequest.getRequestCacheKey(), restRequest.getCacheDuration(), requestListener );
                 }
 
                 while ( requestQueue.isEmpty() ) {
@@ -105,9 +107,18 @@ public class ContentManager extends Thread {
         }
     }
 
-    public void execute( ContentRequest< ? > request, boolean useCache ) {
+    public < T > void execute( ContentRequest< T > request, String requestCacheKey, long cacheDuration, RequestListener< T > requestListener ) {
         synchronized ( lockQueue ) {
-            this.mapRequestToCacheUsageFlag.put( request, useCache );
+            CachedContentRequest< T > cachedContentRequest = new CachedContentRequest< T >( request, requestCacheKey, cacheDuration );
+            this.mapRequestToRequestListener.put( cachedContentRequest, requestListener );
+            this.requestQueue.add( cachedContentRequest );
+            lockQueue.notifyAll();
+        }
+    }
+
+    public < T > void execute( CachedContentRequest< T > request, RequestListener< T > requestListener ) {
+        synchronized ( lockQueue ) {
+            this.mapRequestToRequestListener.put( request, requestListener );
             this.requestQueue.add( request );
             lockQueue.notifyAll();
         }

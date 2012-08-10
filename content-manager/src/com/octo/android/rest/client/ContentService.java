@@ -23,7 +23,7 @@ import com.octo.android.rest.client.persistence.CacheExpiredException;
 import com.octo.android.rest.client.persistence.DataClassPersistenceManager;
 import com.octo.android.rest.client.persistence.DataPersistenceManager;
 import com.octo.android.rest.client.request.CachedContentRequest;
-import com.octo.android.rest.client.request.ContentRequest;
+import com.octo.android.rest.client.request.RequestListener;
 
 /**
  * This is an abstract class used to manage the cache and provide web service result to an activity. <br/>
@@ -81,7 +81,8 @@ public abstract class ContentService extends Service {
 
     public abstract DataPersistenceManager createDataPersistenceManager( Application application );
 
-    public void addRequest( final CachedContentRequest< ? > request, final String requestCacheKey, final long maxTimeInCacheBeforeExpiry ) {
+    public void addRequest( final CachedContentRequest< ? > request, final String requestCacheKey, final long maxTimeInCacheBeforeExpiry,
+            RequestListener< ? > requestListener ) {
         executorService.execute( new Runnable() {
             public void run() {
                 processRequest( request, requestCacheKey, maxTimeInCacheBeforeExpiry );
@@ -152,13 +153,17 @@ public abstract class ContentService extends Service {
 
     private class ResultRunnable< T > implements Runnable {
 
-        private ContentRequest< T > restRequest;
-        private int resultCode;
+        private RequestListener< T > requestListener;
+        private ContentManagerException contentManagerException;
         private T result;
 
-        public ResultRunnable( ContentRequest< T > restRequest, int resultCode, T result ) {
-            this.restRequest = restRequest;
-            this.resultCode = resultCode;
+        public ResultRunnable( RequestListener< T > requestListener, T result ) {
+            this.requestListener = requestListener;
+            this.result = result;
+        }
+
+        public ResultRunnable( RequestListener< T > requestListener, ContentManagerException ex ) {
+            this.requestListener = requestListener;
             this.result = result;
         }
 

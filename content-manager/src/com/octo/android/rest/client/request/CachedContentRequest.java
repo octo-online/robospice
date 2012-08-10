@@ -32,11 +32,11 @@ public class CachedContentRequest< RESULT > extends ContentRequest< RESULT > {
         return contentRequest.isCanceled();
     }
 
-    protected String getRequestCacheKey() {
+    public String getRequestCacheKey() {
         return requestCacheKey;
     }
 
-    protected long getCacheDuration() {
+    public long getCacheDuration() {
         return cacheDuration;
     }
 
