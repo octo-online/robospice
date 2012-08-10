@@ -9,10 +9,9 @@ package com.octo.android.rest.client.request;
  * 
  * @param <RESULT>
  */
-public interface RequestListener<RESULT> {
+public interface RequestListener< RESULT > {
 
-	void onRequestFailure(int resultCode);
+    void onRequestFailure( int resultCode );
 
-	void onRequestSuccess(RESULT result);
-
+    void onRequestSuccess( RESULT result );
 }
