@@ -1,31 +1,18 @@
-package com.octo.android.rest.client.sample;
+package com.octo.android.rest.client.sample.service;
 
 import android.app.Application;
-import android.content.Context;
 
-import com.google.inject.AbstractModule;
+import com.octo.android.rest.client.ContentService;
 import com.octo.android.rest.client.persistence.DataPersistenceManager;
 import com.octo.android.rest.client.persistence.json.JSonPersistenceManageFactory;
 import com.octo.android.rest.client.persistence.simple.BinaryPersistenceManager;
 import com.octo.android.rest.client.persistence.simple.StringPersistenceManager;
 
-public class SampleRoboModule extends AbstractModule {
-
-    private Application application;
-
-    public SampleRoboModule( Context context ) {
-        super();
-        this.application = (Application) context;
-    }
+public class SampleService extends ContentService {
 
     @Override
-    protected void configure() {
-        registerDataPersistenceManagers();
-    }
-
-    private void registerDataPersistenceManagers() {
+    public DataPersistenceManager createDataPersistenceManager( Application application ) {
         DataPersistenceManager dataPersistenceManager = new DataPersistenceManager();
-        bind( DataPersistenceManager.class ).toInstance( dataPersistenceManager );
 
         // init
         StringPersistenceManager stringPersistenceManager = new StringPersistenceManager( application );
@@ -36,6 +23,7 @@ public class SampleRoboModule extends AbstractModule {
         dataPersistenceManager.registerDataClassPersistenceManager( stringPersistenceManager );
         dataPersistenceManager.registerDataClassPersistenceManager( binaryPersistenceManager );
         dataPersistenceManager.registerDataClassPersistenceManagerFactory( jSonPersistenceManageFactory );
+        return dataPersistenceManager;
     }
 
 }

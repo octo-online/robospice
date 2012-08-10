@@ -18,7 +18,7 @@
             </intent-filter>
         </activity>
 
-        <service android:name="com.octo.android.rest.client.ContentService" />
+        <service android:name="com.octo.android.rest.client.sample.SampleService" />
     </application>
 
 </manifest>
