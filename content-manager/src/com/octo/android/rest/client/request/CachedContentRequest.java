@@ -10,6 +10,7 @@ public class CachedContentRequest< RESULT > extends ContentRequest< RESULT > {
         super( contentRequest.getResultType() );
         this.requestCacheKey = requestCacheKey;
         this.cacheDuration = cacheDuration;
+        this.contentRequest = contentRequest;
     }
 
     @Override
@@ -38,6 +39,15 @@ public class CachedContentRequest< RESULT > extends ContentRequest< RESULT > {
 
     public long getCacheDuration() {
         return cacheDuration;
+    }
+
+    public ContentRequest< RESULT > getContentRequest() {
+        return contentRequest;
+    }
+
+    @Override
+    public String toString() {
+        return "CachedContentRequest [requestCacheKey=" + requestCacheKey + ", cacheDuration=" + cacheDuration + ", contentRequest=" + contentRequest + "]";
     }
 
 }

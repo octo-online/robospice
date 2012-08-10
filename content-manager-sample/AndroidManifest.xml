@@ -14,11 +14,16 @@
         <activity android:name=".HelloAndroidActivity" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
 
-        <service android:name="com.octo.android.rest.client.sample.SampleService" />
+        <service android:name="com.octo.android.rest.client.sample.service.SampleService" >
+            <intent-filter>
+                <action android:name="com.octo.android.rest.client.ContentService" />
+            </intent-filter>
+        </service>
     </application>
 
 </manifest>

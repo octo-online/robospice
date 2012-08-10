@@ -2,9 +2,7 @@ package com.octo.android.rest.client;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.Calendar;
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.Map;
@@ -25,6 +23,7 @@ import android.os.Looper;
 import android.util.Log;
 
 import com.octo.android.rest.client.exception.ContentManagerException;
+import com.octo.android.rest.client.exception.LoadFromCacheException;
 import com.octo.android.rest.client.exception.NetworkException;
 import com.octo.android.rest.client.exception.NoNetworkException;
 import com.octo.android.rest.client.exception.SaveToCacheException;
@@ -43,6 +42,8 @@ import com.octo.android.rest.client.request.RequestListener;
  */
 public abstract class ContentService extends Service {
 
+    private final static String LOG_CAT = "ContentService";
+
     // ============================================================================================
     // CONSTANTS
     // ============================================================================================
@@ -56,6 +57,8 @@ public abstract class ContentService extends Service {
     // ============================================================================================
     // ATTRIBUTES
     // ============================================================================================
+
+    private boolean failOnCacheError = false;
 
     public ContentServiceBinder mContentServiceBinder;
     /**
@@ -83,8 +86,14 @@ public abstract class ContentService extends Service {
      */
     public ContentService() {
         mContentServiceBinder = new ContentServiceBinder();
+    }
+
+    @Override
+    public void onCreate() {
+        super.onCreate();
         dataPersistenceManager = createDataPersistenceManager( getApplication() );
         handlerResponse = new Handler( Looper.getMainLooper() );
+        Log.d( LOG_CAT, "Content Service instance created." );
     }
 
     // ============================================================================================
@@ -94,6 +103,8 @@ public abstract class ContentService extends Service {
     public abstract DataPersistenceManager createDataPersistenceManager( Application application );
 
     public void addRequest( final CachedContentRequest< ? > request, Set< RequestListener< ? >> listRequestListener ) {
+        Log.d( LOG_CAT, "Adding request to queue : " + request );
+
         Set< RequestListener< ? >> listRequestListenerForThisRequest = mapRequestToRequestListener.get( request );
 
         if ( listRequestListenerForThisRequest == null ) {
@@ -111,18 +122,32 @@ public abstract class ContentService extends Service {
     }
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    private < T > void processRequest( CachedContentRequest< T > request ) {
+    protected < T > void processRequest( CachedContentRequest< T > request ) {
+        Log.d( LOG_CAT, "Processing request : " + request );
 
         T result = null;
         Set< RequestListener< ? >> requestListeners = mapRequestToRequestListener.get( request );
         try {
+            Log.d( LOG_CAT, "Loading request from cache : " + request );
             result = loadDataFromCache( request.getResultType(), request.getRequestCacheKey(), request.getCacheDuration() );
         } catch ( FileNotFoundException e ) {
             Log.d( getClass().getName(), "Cache file not found.", e );
+            if ( failOnCacheError ) {
+                handlerResponse.post( new ResultRunnable( requestListeners, new LoadFromCacheException( "Cache file not found.", e ) ) );
+                return;
+            }
         } catch ( IOException e ) {
             Log.d( getClass().getName(), "Cache file could not be read.", e );
+            if ( failOnCacheError ) {
+                handlerResponse.post( new ResultRunnable( requestListeners, new LoadFromCacheException( "Cache file could not be read.", e ) ) );
+                return;
+            }
         } catch ( CacheExpiredException e ) {
             Log.d( getClass().getName(), "Cache file has expired.", e );
+            if ( failOnCacheError ) {
+                handlerResponse.post( new ResultRunnable( requestListeners, new LoadFromCacheException( "Cache file has expired.", e ) ) );
+                return;
+            }
         }
 
         if ( result == null && !request.isCanceled() ) {
@@ -136,7 +161,7 @@ public abstract class ContentService extends Service {
                 try {
                     result = request.loadDataFromNetwork();
                     if ( result == null ) {
-                        Log.e( LOGCAT_TAG, "Unable to get web service result : " + request.getResultType() );
+                        Log.d( LOGCAT_TAG, "Unable to get web service result : " + request.getResultType() );
                         handlerResponse.post( new ResultRunnable( requestListeners, (T) null ) );
                         return;
                     }
@@ -154,11 +179,19 @@ public abstract class ContentService extends Service {
                     handlerResponse.post( new ResultRunnable( requestListeners, result ) );
                     return;
                 } catch ( FileNotFoundException e ) {
-                    Log.e( LOGCAT_TAG, "A file not found exception occured during service execution :" + e.getMessage(), e );
-                    handlerResponse
-                            .post( new ResultRunnable( requestListeners, new SaveToCacheException( "Exception occured during cache write of data.", e ) ) );
+                    Log.d( LOGCAT_TAG, "A file not found exception occured during service execution :" + e.getMessage(), e );
+                    if ( failOnCacheError ) {
+                        handlerResponse.post( new ResultRunnable( requestListeners, new SaveToCacheException(
+                                "A file not found exception occured during service execution :", e ) ) );
+                        return;
+                    }
                 } catch ( IOException e ) {
-                    Log.e( LOGCAT_TAG, "An io exception occured during service execution :" + e.getMessage(), e );
+                    Log.d( LOGCAT_TAG, "An io exception occured during service execution :" + e.getMessage(), e );
+                    if ( failOnCacheError ) {
+                        handlerResponse.post( new ResultRunnable( requestListeners, new SaveToCacheException(
+                                "An io exception occured during service execution :", e ) ) );
+                        return;
+                    }
                 }
             }
         }
@@ -176,6 +209,14 @@ public abstract class ContentService extends Service {
         DataClassPersistenceManager< T > dataClassPersistenceManager = (DataClassPersistenceManager< T >) dataPersistenceManager
                 .getDataClassPersistenceManager( data.getClass() );
         return dataClassPersistenceManager.saveDataToCacheAndReturnData( data, cacheKey );
+    }
+
+    public boolean isFailOnCacheError() {
+        return failOnCacheError;
+    }
+
+    public void setFailOnCacheError( boolean failOnCacheError ) {
+        this.failOnCacheError = failOnCacheError;
     }
 
     private class ResultRunnable< T > implements Runnable {
@@ -203,27 +244,6 @@ public abstract class ContentService extends Service {
                 }
             }
         }
-
-    }
-
-    /**
-     * Check if the data in the cache is expired. To achieve that, check the last modified date of the file is today or
-     * not.<br/>
-     * If the file was modified a day or more before today, the cache is expired, otherwise the cache can be used
-     * 
-     * @param lastModifiedDate
-     * @return
-     */
-    public boolean isCacheExpired( Date today, Date lastModifiedDate ) {
-        Calendar cal1 = Calendar.getInstance();
-        Calendar cal2 = Calendar.getInstance();
-        cal1.setTime( today );
-        cal2.setTime( lastModifiedDate );
-
-        boolean areDatesInSameDay = cal1.get( Calendar.YEAR ) == cal2.get( Calendar.YEAR )
-                && cal1.get( Calendar.DAY_OF_YEAR ) == cal2.get( Calendar.DAY_OF_YEAR );
-
-        return !areDatesInSameDay;
     }
 
     /**

@@ -44,6 +44,7 @@ public class ContentManager extends Thread {
 
     private Object lockQueue = new Object();
     private Object lockAcquireService = new Object();
+    private boolean contentServiceMustBeSetFailOnErrorAsap = false;
 
     @Override
     public final synchronized void start() {
@@ -68,6 +69,8 @@ public class ContentManager extends Thread {
                 }
             }
         }
+
+        contentService.setFailOnCacheError( this.contentServiceMustBeSetFailOnErrorAsap );
 
         while ( !isStopped ) {
             synchronized ( lockQueue ) {
@@ -97,7 +100,8 @@ public class ContentManager extends Thread {
     }
 
     private void bindService( Context context ) {
-        Intent intentService = new Intent( context, ContentService.class );
+        Intent intentService = new Intent();
+        intentService.setAction( "com.octo.android.rest.client.ContentService" );
         contentServiceConnection = new ContentServiceConnection();
         context.bindService( intentService, contentServiceConnection, Context.BIND_AUTO_CREATE );
     }
@@ -157,9 +161,19 @@ public class ContentManager extends Thread {
         }
     }
 
+    public void setFailOnCacheError( boolean failOnCacheError ) {
+        this.contentServiceMustBeSetFailOnErrorAsap = failOnCacheError;
+
+        if ( contentService != null ) {
+            contentService.setFailOnCacheError( failOnCacheError );
+        }
+    }
+
     public void cancelAllRequests() {
-        for ( ContentRequest< ? > restRequest : requestQueue ) {
-            restRequest.cancel();
+        synchronized ( lockQueue ) {
+            for ( ContentRequest< ? > restRequest : requestQueue ) {
+                restRequest.cancel();
+            }
         }
     }
 
