@@ -9,11 +9,11 @@ import android.util.Log;
 
 import com.octo.android.rest.client.request.ContentRequest;
 
-public class AbstractImageRequest extends ContentRequest< InputStream > {
+public class SimpleImageRequest extends ContentRequest< InputStream > {
 
     protected String url;
 
-    public AbstractImageRequest( String url ) {
+    public SimpleImageRequest( String url ) {
         super( InputStream.class );
         this.url = url;
     }

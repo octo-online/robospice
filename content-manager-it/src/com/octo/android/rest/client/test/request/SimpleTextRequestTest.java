@@ -1,49 +1,29 @@
 package com.octo.android.rest.client.test.request;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-
-import com.octo.android.rest.client.persistence.CacheExpiredException;
-import com.octo.android.rest.client.sample.HelloAndroidActivity;
-
 import android.test.ActivityInstrumentationTestCase2;
 import android.test.suitebuilder.annotation.LargeTest;
-import android.test.suitebuilder.annotation.SmallTest;
 
-public class SimpleTextRequestTest extends ActivityInstrumentationTestCase2<HelloAndroidActivity> {
+import com.octo.android.rest.client.request.simple.SimpleTextRequest;
+import com.octo.android.rest.client.sample.HelloAndroidActivity;
 
-	private HelloAndroidActivity.CnilRequest cnilRequest;
+@LargeTest
+public class SimpleTextRequestTest extends ActivityInstrumentationTestCase2< HelloAndroidActivity > {
 
-	public SimpleTextRequestTest() {
-		super("com.octo.android.rest.client.sample", HelloAndroidActivity.class);
-	}
+    private SimpleTextRequest cnilRequest;
 
-	@Override
-	protected void setUp() throws Exception {
-		super.setUp();
-		cnilRequest = getActivity().cnilRequest;
-	}
+    public SimpleTextRequestTest() {
+        super( "com.octo.android.rest.client.sample", HelloAndroidActivity.class );
+    }
 
-	@SmallTest
-	public void test_saveDataAndReturnData() throws FileNotFoundException, IOException {
-		final String FILE_NAME = "toto";
-		String stringReturned = cnilRequest.saveDataToCacheAndReturnData("coucou",FILE_NAME);
-		assertEquals("coucou", stringReturned);
-	}
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        cnilRequest = new SimpleTextRequest( "http://www.loremipsum.de/downloads/original.txt" );
+    }
 
-	@SmallTest
-	public void test_loadDataFromCache() throws FileNotFoundException, IOException, CacheExpiredException {
-		final String FILE_NAME = "toto";
-		cnilRequest.saveDataToCacheAndReturnData("coucou",FILE_NAME);
-		String stringReturned = cnilRequest.loadDataFromCache(FILE_NAME);
-		assertEquals("coucou", stringReturned);
-	}
-	
-	@LargeTest
-	public void test_loadDataFromNetwork() throws FileNotFoundException, IOException {
-		String stringReturned = cnilRequest.loadDataFromNetwork();
-		assertTrue(stringReturned.startsWith("Lorem ipsum"));
-	}
-
+    public void test_loadDataFromNetwork() throws Exception {
+        String stringReturned = cnilRequest.loadDataFromNetwork();
+        assertTrue( stringReturned.startsWith( "Lorem ipsum" ) );
+    }
 
 }

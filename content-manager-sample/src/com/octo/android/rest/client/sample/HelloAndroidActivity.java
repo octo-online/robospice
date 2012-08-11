@@ -17,8 +17,8 @@ import com.octo.android.rest.client.exception.ContentManagerException;
 import com.octo.android.rest.client.persistence.DurationInMillis;
 import com.octo.android.rest.client.request.RequestListener;
 import com.octo.android.rest.client.request.json.RestTemplateFactory;
-import com.octo.android.rest.client.request.simple.AbstractImageRequest;
-import com.octo.android.rest.client.request.simple.AbstractTextRequest;
+import com.octo.android.rest.client.request.simple.SimpleImageRequest;
+import com.octo.android.rest.client.request.simple.SimpleTextRequest;
 import com.octo.android.rest.client.sample.model.WeatherResult;
 import com.octo.android.rest.client.sample.request.WeatherRequest;
 
@@ -42,8 +42,8 @@ public class HelloAndroidActivity extends RoboContentActivity {
     @Inject
     private RestTemplateFactory restTemplateFactory;
 
-    AbstractTextRequest cnilRequest;
-    AbstractImageRequest imageRequest;
+    SimpleTextRequest cnilRequest;
+    SimpleImageRequest imageRequest;
     WeatherRequest weatherRequest;
 
     // ============================================================================================
@@ -58,9 +58,9 @@ public class HelloAndroidActivity extends RoboContentActivity {
         // Log a message (only on dev platform)
         Log.i( getClass().getName(), "onCreate" );
 
-        cnilRequest = new AbstractTextRequest( "http://www.loremipsum.de/downloads/original.txt" );
+        cnilRequest = new SimpleTextRequest( "http://www.loremipsum.de/downloads/original.txt" );
         weatherRequest = new WeatherRequest( "75000" );
-        imageRequest = new AbstractImageRequest( "http://cdn1.iconfinder.com/data/icons/softicons/PNG/Programming.png" );
+        imageRequest = new SimpleImageRequest( "http://cdn1.iconfinder.com/data/icons/softicons/PNG/Programming.png" );
     }
 
     @Override

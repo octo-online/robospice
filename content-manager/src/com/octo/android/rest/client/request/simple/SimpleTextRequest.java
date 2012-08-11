@@ -10,11 +10,11 @@ import android.util.Log;
 import com.google.common.io.CharStreams;
 import com.octo.android.rest.client.request.ContentRequest;
 
-public class AbstractTextRequest extends ContentRequest< String > {
+public class SimpleTextRequest extends ContentRequest< String > {
 
     private String url;
 
-    public AbstractTextRequest( String url ) {
+    public SimpleTextRequest( String url ) {
         super( String.class );
         this.url = url;
     }
