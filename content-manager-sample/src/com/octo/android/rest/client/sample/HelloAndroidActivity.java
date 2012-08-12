@@ -16,7 +16,6 @@ import com.google.inject.Inject;
 import com.octo.android.rest.client.exception.ContentManagerException;
 import com.octo.android.rest.client.persistence.DurationInMillis;
 import com.octo.android.rest.client.request.RequestListener;
-import com.octo.android.rest.client.request.json.RestTemplateFactory;
 import com.octo.android.rest.client.request.simple.SimpleImageRequest;
 import com.octo.android.rest.client.request.simple.SimpleTextRequest;
 import com.octo.android.rest.client.sample.model.WeatherResult;
@@ -38,9 +37,6 @@ public class HelloAndroidActivity extends RoboContentActivity {
 
     @Inject
     EnvironmentConfigService environmentConfigService;
-
-    @Inject
-    private RestTemplateFactory restTemplateFactory;
 
     SimpleTextRequest cnilRequest;
     SimpleImageRequest imageRequest;
