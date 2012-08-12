@@ -3,7 +3,7 @@ package com.octo.android.rest.client;
 import org.springframework.web.client.RestTemplate;
 
 import com.octo.android.rest.client.request.CachedContentRequest;
-import com.octo.android.rest.client.request.json.RestContentRequest;
+import com.octo.android.rest.client.request.springandroid.RestContentRequest;
 
 public abstract class SpringAndroidContentService extends ContentService {
 

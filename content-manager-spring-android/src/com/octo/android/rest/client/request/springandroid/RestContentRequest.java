@@ -1,4 +1,4 @@
-package com.octo.android.rest.client.request.json;
+package com.octo.android.rest.client.request.springandroid;
 
 import org.springframework.web.client.RestTemplate;
 
