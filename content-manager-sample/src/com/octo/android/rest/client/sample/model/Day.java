@@ -5,7 +5,7 @@ import java.util.List;
 public class Day {
     private String weather_code;
     private String weather_text;
-    private List wind;
+    private List< Wind > wind;
 
     public String getWeather_code() {
         return this.weather_code;
@@ -23,11 +23,11 @@ public class Day {
         this.weather_text = weather_text;
     }
 
-    public List getWind() {
+    public List< Wind > getWind() {
         return this.wind;
     }
 
-    public void setWind( List wind ) {
+    public void setWind( List< Wind > wind ) {
         this.wind = wind;
     }
 }

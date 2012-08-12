@@ -4,9 +4,9 @@ import java.util.List;
 
 public class Forecast {
     private String date;
-    private List day;
+    private List< Day > day;
     private String day_max_temp;
-    private List night;
+    private List< Day > night;
     private String night_min_temp;
     private String temp_unit;
 
@@ -18,11 +18,11 @@ public class Forecast {
         this.date = date;
     }
 
-    public List getDay() {
+    public List< Day > getDay() {
         return this.day;
     }
 
-    public void setDay( List day ) {
+    public void setDay( List< Day > day ) {
         this.day = day;
     }
 
@@ -34,11 +34,11 @@ public class Forecast {
         this.day_max_temp = day_max_temp;
     }
 
-    public List getNight() {
+    public List< Day > getNight() {
         return this.night;
     }
 
-    public void setNight( List night ) {
+    public void setNight( List< Day > night ) {
         this.night = night;
     }
 

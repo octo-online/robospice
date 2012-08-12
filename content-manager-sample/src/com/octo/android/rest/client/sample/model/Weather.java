@@ -3,22 +3,22 @@ package com.octo.android.rest.client.sample.model;
 import java.util.List;
 
 public class Weather {
-    private List curren_weather;
-    private List forecast;
+    private List< Curren_weather > curren_weather;
+    private List< Forecast > forecast;
 
-    public List getCurren_weather() {
+    public List< Curren_weather > getCurren_weather() {
         return this.curren_weather;
     }
 
-    public void setCurren_weather( List curren_weather ) {
+    public void setCurren_weather( List< Curren_weather > curren_weather ) {
         this.curren_weather = curren_weather;
     }
 
-    public List getForecast() {
+    public List< Forecast > getForecast() {
         return this.forecast;
     }
 
-    public void setForecast( List forecast ) {
+    public void setForecast( List< Forecast > forecast ) {
         this.forecast = forecast;
     }
 }

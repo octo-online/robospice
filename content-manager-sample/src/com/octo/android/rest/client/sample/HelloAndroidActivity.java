@@ -12,7 +12,6 @@ import android.util.Log;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.inject.Inject;
 import com.octo.android.rest.client.exception.ContentManagerException;
 import com.octo.android.rest.client.persistence.DurationInMillis;
 import com.octo.android.rest.client.request.RequestListener;
@@ -34,9 +33,6 @@ public class HelloAndroidActivity extends RoboContentActivity {
     private TextView mCurrentWeatherTextView;
     @InjectView(R.id.textview_hello_image)
     private TextView mImageTextView;
-
-    @Inject
-    EnvironmentConfigService environmentConfigService;
 
     SimpleTextRequest cnilRequest;
     SimpleImageRequest imageRequest;

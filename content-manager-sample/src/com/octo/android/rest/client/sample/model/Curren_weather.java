@@ -9,7 +9,7 @@ public class Curren_weather {
     private String temp_unit;
     private String weather_code;
     private String weather_text;
-    private List wind;
+    private List< Wind > wind;
 
     public String getHumidity() {
         return this.humidity;
@@ -59,11 +59,11 @@ public class Curren_weather {
         this.weather_text = weather_text;
     }
 
-    public List getWind() {
+    public List< Wind > getWind() {
         return this.wind;
     }
 
-    public void setWind( List wind ) {
+    public void setWind( List< Wind > wind ) {
         this.wind = wind;
     }
 }
