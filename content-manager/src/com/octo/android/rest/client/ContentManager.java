@@ -42,7 +42,9 @@ public class ContentManager extends Thread {
     private Map< CachedContentRequest< ? >, Set< RequestListener< ? >>> mapRequestToRequestListener = Collections
             .synchronizedMap( new IdentityHashMap< CachedContentRequest< ? >, Set< RequestListener< ? >>>() );
 
+    // TODO use blocking queue
     private Object lockQueue = new Object();
+    // TODO use semaphore
     private Object lockAcquireService = new Object();
     private boolean contentServiceMustBeSetFailOnErrorAsap = false;
 
