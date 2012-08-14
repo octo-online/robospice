@@ -16,7 +16,6 @@
         <module>content-manager</module>
     	<module>content-manager-json</module>
     	<module>content-manager-spring-android</module>
-        <module>content-manager-roboguice</module>
     	<module>content-manager-sample</module>
         <module>content-manager-it</module>
   </modules>
