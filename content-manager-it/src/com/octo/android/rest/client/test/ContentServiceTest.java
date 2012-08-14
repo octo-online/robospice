@@ -42,7 +42,7 @@
 //	public void testServiceWithCnilRequest() {
 //		ContentServiceBinder binder = (ContentServiceBinder) bindService( new Intent(getContext(),ContentService.class) );
 //		final ContentService service = binder.getContentService();
-//		final CnilRequest cnilRequest = new CnilRequest("http://www.loremipsum.de/downloads/original.txt");
+//		final CnilRequest loremRequest = new CnilRequest("http://www.loremipsum.de/downloads/original.txt");
 //		Thread.setDefaultUncaughtExceptionHandler( new UncaughtExceptionHandler() {
 //
 //			@Override
@@ -53,7 +53,7 @@
 //		new Thread() {
 //			public void run() {
 //				Looper.prepare();
-//				service.addRequest(cnilRequest, new Handler(), true);
+//				service.addRequest(loremRequest, new Handler(), true);
 //			};
 //		}.start();
 //		lock.lock();
@@ -67,8 +67,8 @@
 //		} finally {
 //			lock.unlock();
 //		}
-//		assertNotNull(cnilRequest.getResult());
-//		assertTrue(cnilRequest.getResult().startsWith("Lorem ipsum"));
+//		assertNotNull(loremRequest.getResult());
+//		assertTrue(loremRequest.getResult().startsWith("Lorem ipsum"));
 //	}
 //
 //	public final class CnilRequest extends AbstractTextRequest {

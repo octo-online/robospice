@@ -23,95 +23,95 @@ import com.octo.android.rest.client.sample.request.WeatherRequest;
 @ContentView(R.layout.main)
 public class HelloAndroidActivity extends RoboContentActivity {
 
-    // ============================================================================================
-    // ATTRIBUTES
-    // ============================================================================================
+	// ============================================================================================
+	// ATTRIBUTES
+	// ============================================================================================
 
-    @InjectView(R.id.textview_hello_cnil)
-    private TextView mCnilTextView;
-    @InjectView(R.id.textview_hello_credit_status)
-    private TextView mCurrentWeatherTextView;
-    @InjectView(R.id.textview_hello_image)
-    private TextView mImageTextView;
+	@InjectView(R.id.textview_hello_cnil)
+	private TextView mLoremTextView;
+	@InjectView(R.id.textview_hello_credit_status)
+	private TextView mCurrentWeatherTextView;
+	@InjectView(R.id.textview_hello_image)
+	private TextView mImageTextView;
 
-    SimpleTextRequest cnilRequest;
-    SimpleImageRequest imageRequest;
-    WeatherRequest weatherRequest;
+	SimpleTextRequest loremRequest;
+	SimpleImageRequest imageRequest;
+	WeatherRequest weatherRequest;
 
-    // ============================================================================================
-    // ACITVITY LIFE CYCLE
-    // ============================================================================================
+	// ============================================================================================
+	// ACITVITY LIFE CYCLE
+	// ============================================================================================
 
-    @Override
-    public void onCreate( Bundle savedInstanceState ) {
-        super.onCreate( savedInstanceState );
+	@Override
+	public void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
 
-        // Initializes the logging
-        // Log a message (only on dev platform)
-        Log.i( getClass().getName(), "onCreate" );
+		// Initializes the logging
+		// Log a message (only on dev platform)
+		Log.i(getClass().getName(), "onCreate");
 
-        cnilRequest = new SimpleTextRequest( "http://www.loremipsum.de/downloads/original.txt" );
-        weatherRequest = new WeatherRequest( "75000" );
-        imageRequest = new SimpleImageRequest( "http://cdn1.iconfinder.com/data/icons/softicons/PNG/Programming.png" );
-    }
+		loremRequest = new SimpleTextRequest("http://www.loremipsum.de/downloads/original.txt");
+		weatherRequest = new WeatherRequest("75000");
+		imageRequest = new SimpleImageRequest("http://cdn1.iconfinder.com/data/icons/softicons/PNG/Programming.png");
+	}
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-        execute( cnilRequest, "cnil.txt", DurationInMillis.ONE_DAY, new CnilRequestListener() );
-        execute( weatherRequest, "75000.weather", DurationInMillis.ONE_DAY, new WeatherRequestListener() );
-        execute( imageRequest, "logo", DurationInMillis.ONE_DAY, new ImageRequestListener() );
-    }
+	@Override
+	protected void onResume() {
+		super.onResume();
+		execute(loremRequest, "lorem.txt", DurationInMillis.ONE_DAY, new LoremRequestListener());
+		execute(weatherRequest, "75000.weather", DurationInMillis.ONE_DAY, new WeatherRequestListener());
+		execute(imageRequest, "logo", DurationInMillis.ONE_DAY, new ImageRequestListener());
+	}
 
-    // ============================================================================================
-    // INNER CLASSES
-    // ============================================================================================
+	// ============================================================================================
+	// INNER CLASSES
+	// ============================================================================================
 
-    public final class CnilRequestListener implements RequestListener< String > {
+	public final class LoremRequestListener implements RequestListener<String> {
 
-        @Override
-        public void onRequestFailure( ContentManagerException contentManagerException ) {
-            Toast.makeText( HelloAndroidActivity.this, "failure", Toast.LENGTH_SHORT ).show();
-        }
+		@Override
+		public void onRequestFailure(ContentManagerException contentManagerException) {
+			Toast.makeText(HelloAndroidActivity.this, "failure", Toast.LENGTH_SHORT).show();
+		}
 
-        @Override
-        public void onRequestSuccess( final String result ) {
-            Toast.makeText( HelloAndroidActivity.this, "success", Toast.LENGTH_SHORT ).show();
-            String originalText = mCnilTextView.getText().toString();
-            mCnilTextView.setText( originalText + result );
-        }
-    }
+		@Override
+		public void onRequestSuccess(final String result) {
+			Toast.makeText(HelloAndroidActivity.this, "success", Toast.LENGTH_SHORT).show();
+			String originalText = mLoremTextView.getText().toString();
+			mLoremTextView.setText(originalText + result);
+		}
+	}
 
-    public final class WeatherRequestListener implements RequestListener< WeatherResult > {
+	public final class WeatherRequestListener implements RequestListener<WeatherResult> {
 
-        @Override
-        public void onRequestFailure( ContentManagerException contentManagerException ) {
-            Toast.makeText( HelloAndroidActivity.this, "failure", Toast.LENGTH_SHORT ).show();
-        }
+		@Override
+		public void onRequestFailure(ContentManagerException contentManagerException) {
+			Toast.makeText(HelloAndroidActivity.this, "failure", Toast.LENGTH_SHORT).show();
+		}
 
-        @Override
-        public void onRequestSuccess( final WeatherResult result ) {
-            Toast.makeText( HelloAndroidActivity.this, "success", Toast.LENGTH_SHORT ).show();
-            String originalText = mCurrentWeatherTextView.getText().toString();
-            mCurrentWeatherTextView.setText( originalText + result.toString() );
-        }
-    }
+		@Override
+		public void onRequestSuccess(final WeatherResult result) {
+			Toast.makeText(HelloAndroidActivity.this, "success", Toast.LENGTH_SHORT).show();
+			String originalText = mCurrentWeatherTextView.getText().toString();
+			mCurrentWeatherTextView.setText(originalText + result.toString());
+		}
+	}
 
-    public final class ImageRequestListener implements RequestListener< InputStream > {
+	public final class ImageRequestListener implements RequestListener<InputStream> {
 
-        @Override
-        public void onRequestFailure( ContentManagerException contentManagerException ) {
-            Toast.makeText( HelloAndroidActivity.this, "failure", Toast.LENGTH_SHORT ).show();
-        }
+		@Override
+		public void onRequestFailure(ContentManagerException contentManagerException) {
+			Toast.makeText(HelloAndroidActivity.this, "failure", Toast.LENGTH_SHORT).show();
+		}
 
-        @Override
-        public void onRequestSuccess( final InputStream result ) {
-            Bitmap bitmap = BitmapFactory.decodeStream( result );
-            BitmapDrawable drawable = new BitmapDrawable( bitmap );
-            Toast.makeText( HelloAndroidActivity.this, "success", Toast.LENGTH_SHORT ).show();
-            mImageTextView.setBackgroundDrawable( drawable );
-            mImageTextView.setText( "" );
-        }
-    }
+		@Override
+		public void onRequestSuccess(final InputStream result) {
+			Bitmap bitmap = BitmapFactory.decodeStream(result);
+			BitmapDrawable drawable = new BitmapDrawable(bitmap);
+			Toast.makeText(HelloAndroidActivity.this, "success", Toast.LENGTH_SHORT).show();
+			mImageTextView.setBackgroundDrawable(drawable);
+			mImageTextView.setText("");
+		}
+	}
 
 }
