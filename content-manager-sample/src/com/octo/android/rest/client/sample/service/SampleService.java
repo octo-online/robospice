@@ -30,7 +30,6 @@ public class SampleService extends SpringAndroidContentService {
         InputStreamCacheManager binaryPersistenceManager = new InputStreamCacheManager( application );
         JSonPersistenceManageFactory jSonPersistenceManageFactory = new JSonPersistenceManageFactory( application );
 
-        // request application injection
         dataPersistenceManager.registerCacheManagerBusElement( stringPersistenceManager );
         dataPersistenceManager.registerCacheManagerBusElement( binaryPersistenceManager );
         dataPersistenceManager.registerCacheManagerBusElement( jSonPersistenceManageFactory );
@@ -52,6 +51,7 @@ public class SampleService extends SpringAndroidContentService {
         FormHttpMessageConverter formHttpMessageConverter = new FormHttpMessageConverter();
         StringHttpMessageConverter stringHttpMessageConverter = new StringHttpMessageConverter();
         final List< HttpMessageConverter< ? >> listHttpMessageConverters = restTemplate.getMessageConverters();
+
         listHttpMessageConverters.add( jsonConverter );
         listHttpMessageConverters.add( formHttpMessageConverter );
         listHttpMessageConverters.add( stringHttpMessageConverter );
