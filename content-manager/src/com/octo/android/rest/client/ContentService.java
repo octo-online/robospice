@@ -29,7 +29,7 @@ import com.octo.android.rest.client.exception.NoNetworkException;
 import com.octo.android.rest.client.exception.SaveToCacheException;
 import com.octo.android.rest.client.persistence.CacheExpiredException;
 import com.octo.android.rest.client.persistence.DataClassPersistenceManager;
-import com.octo.android.rest.client.persistence.DataPersistenceManager;
+import com.octo.android.rest.client.persistence.CacheManager;
 import com.octo.android.rest.client.request.CachedContentRequest;
 import com.octo.android.rest.client.request.RequestListener;
 
@@ -69,7 +69,7 @@ public abstract class ContentService extends Service {
     private ExecutorService executorService = Executors.newSingleThreadExecutor();
 
     /** Responsible for persisting data. */
-    private DataPersistenceManager dataPersistenceManager;
+    private CacheManager dataPersistenceManager;
     /** Used to post results on the UI thread of the activity. */
     private Handler handlerResponse;
 
@@ -100,7 +100,7 @@ public abstract class ContentService extends Service {
     // METHODS
     // ============================================================================================
 
-    public abstract DataPersistenceManager createDataPersistenceManager( Application application );
+    public abstract CacheManager createDataPersistenceManager( Application application );
 
     public void addRequest( final CachedContentRequest< ? > request, Set< RequestListener< ? >> listRequestListener ) {
         Log.d( LOG_CAT, "Adding request to queue : " + request );

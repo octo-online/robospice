@@ -1,3 +1,4 @@
+package com.octo.android.rest.client;
 //package com.octo.android.rest.client.test;
 //
 //import java.lang.Thread.UncaughtExceptionHandler;

@@ -12,7 +12,7 @@ import org.springframework.web.client.RestTemplate;
 import android.app.Application;
 
 import com.octo.android.rest.client.SpringAndroidContentService;
-import com.octo.android.rest.client.persistence.DataPersistenceManager;
+import com.octo.android.rest.client.persistence.CacheManager;
 import com.octo.android.rest.client.persistence.json.JSonPersistenceManageFactory;
 import com.octo.android.rest.client.persistence.simple.BinaryPersistenceManager;
 import com.octo.android.rest.client.persistence.simple.StringPersistenceManager;
@@ -22,8 +22,8 @@ public class SampleService extends SpringAndroidContentService {
     private static final int WEBSERVICES_TIMEOUT = 30000;
 
     @Override
-    public DataPersistenceManager createDataPersistenceManager( Application application ) {
-        DataPersistenceManager dataPersistenceManager = new DataPersistenceManager();
+    public CacheManager createDataPersistenceManager( Application application ) {
+        CacheManager dataPersistenceManager = new CacheManager();
 
         // init
         StringPersistenceManager stringPersistenceManager = new StringPersistenceManager( application );
@@ -31,9 +31,9 @@ public class SampleService extends SpringAndroidContentService {
         JSonPersistenceManageFactory jSonPersistenceManageFactory = new JSonPersistenceManageFactory( application );
 
         // request application injection
-        dataPersistenceManager.registerDataClassPersistenceManager( stringPersistenceManager );
-        dataPersistenceManager.registerDataClassPersistenceManager( binaryPersistenceManager );
-        dataPersistenceManager.registerDataClassPersistenceManagerFactory( jSonPersistenceManageFactory );
+        dataPersistenceManager.registerCacheManagerBusElement( stringPersistenceManager );
+        dataPersistenceManager.registerCacheManagerBusElement( binaryPersistenceManager );
+        dataPersistenceManager.registerCacheManagerBusElement( jSonPersistenceManageFactory );
         return dataPersistenceManager;
     }
 

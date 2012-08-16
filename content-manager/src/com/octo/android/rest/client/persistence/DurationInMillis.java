@@ -1,5 +1,12 @@
 package com.octo.android.rest.client.persistence;
 
+/**
+ * Utility interface to write duration, used to ease maximum time a value is considered value in the cache before
+ * expiring.
+ * 
+ * @author sni
+ * 
+ */
 public interface DurationInMillis {
 
     public static final long ALWAYS = 0;

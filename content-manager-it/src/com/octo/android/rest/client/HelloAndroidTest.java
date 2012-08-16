@@ -1,4 +1,4 @@
-package com.octo.android.rest.client.test;
+package com.octo.android.rest.client;
 
 import com.octo.android.rest.client.sample.HelloAndroidActivity;
 

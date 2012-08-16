@@ -1,5 +1,12 @@
 package com.octo.android.rest.client.exception;
 
+
+/**
+ * Exception thrown when there is no available data connection.
+ * 
+ * @author sni
+ * 
+ */
 public class NoNetworkException extends ContentManagerException {
 
     private static final long serialVersionUID = 5365883691014039322L;

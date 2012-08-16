@@ -14,12 +14,12 @@ public class JSonPersistenceManageFactory extends DataClassPersistenceManagerFac
     }
 
     @Override
-    public boolean canHandleData( Class< ? > clazz ) {
+    public boolean canHandleClass( Class< ? > clazz ) {
         return true;
     }
 
-    @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     public < DATA > DataClassPersistenceManager< DATA > createDataPersistenceManager( Class< DATA > clazz ) {
         return new JSonPersistenceManager( application, clazz );
     }

@@ -47,8 +47,7 @@ public final class StringPersistenceManager extends DataClassPersistenceManager<
         return data;
     }
 
-    @Override
-    public boolean canHandleData( Class< ? > clazz ) {
+    public boolean canHandleClass( Class< ? > clazz ) {
         return clazz.equals( String.class );
     }
 

@@ -92,7 +92,7 @@ public final class JSonPersistenceManager< T > extends DataClassPersistenceManag
     }
 
     @Override
-    public boolean canHandleData( Class< ? > clazz ) {
+    public boolean canHandleClass( Class< ? > clazz ) {
         return true;
     }
 
