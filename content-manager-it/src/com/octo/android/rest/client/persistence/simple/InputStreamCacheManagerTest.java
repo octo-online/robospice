@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.Arrays;
 
 import android.test.ActivityInstrumentationTestCase2;
 
@@ -38,7 +39,7 @@ public class InputStreamCacheManagerTest extends ActivityInstrumentationTestCase
 
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         ByteStreams.copy( new FileInputStream( cachedFile ), bos );
-        assertEquals( "coucou".getBytes(), bos.toByteArray() );
+        assertTrue( Arrays.equals( "coucou".getBytes(), bos.toByteArray() ) );
     }
 
     public void testLoadDataFromCache() throws FileNotFoundException, IOException, CacheExpiredException {
@@ -46,7 +47,7 @@ public class InputStreamCacheManagerTest extends ActivityInstrumentationTestCase
         Files.write( "coucou".getBytes(), cachedFile );
 
         byte[] actual = Files.toByteArray( cachedFile );
-        assertEquals( "coucou".getBytes(), actual );
+        assertTrue( Arrays.equals( "coucou".getBytes(), actual ) );
     }
 
     @Override
