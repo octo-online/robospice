@@ -29,7 +29,6 @@ import com.octo.android.rest.client.exception.NoNetworkException;
 import com.octo.android.rest.client.exception.SaveToCacheException;
 import com.octo.android.rest.client.persistence.CacheExpiredException;
 import com.octo.android.rest.client.persistence.CacheManager;
-import com.octo.android.rest.client.persistence.ClassCacheManager;
 import com.octo.android.rest.client.request.CachedContentRequest;
 import com.octo.android.rest.client.request.RequestListener;
 
@@ -69,7 +68,7 @@ public abstract class ContentService extends Service {
     private ExecutorService executorService = Executors.newSingleThreadExecutor();
 
     /** Responsible for persisting data. */
-    private CacheManager dataPersistenceManager;
+    private CacheManager cacheManager;
     /** Used to post results on the UI thread of the activity. */
     private Handler handlerResponse;
 
@@ -91,7 +90,7 @@ public abstract class ContentService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
-        dataPersistenceManager = createDataPersistenceManager( getApplication() );
+        cacheManager = createCacheManager( getApplication() );
         handlerResponse = new Handler( Looper.getMainLooper() );
         Log.d( LOG_CAT, "Content Service instance created." );
     }
@@ -100,7 +99,7 @@ public abstract class ContentService extends Service {
     // METHODS
     // ============================================================================================
 
-    public abstract CacheManager createDataPersistenceManager( Application application );
+    public abstract CacheManager createCacheManager( Application application );
 
     public void addRequest( final CachedContentRequest< ? > request, Set< RequestListener< ? >> listRequestListener ) {
         Log.d( LOG_CAT, "Adding request to queue : " + request );
@@ -201,25 +200,23 @@ public abstract class ContentService extends Service {
 
     public < T > T loadDataFromCache( Class< T > clazz, Object cacheKey, long maxTimeInCacheBeforeExpiry ) throws FileNotFoundException, IOException,
             CacheExpiredException {
-        return dataPersistenceManager.getDataClassPersistenceManager( clazz ).loadDataFromCache( cacheKey, maxTimeInCacheBeforeExpiry );
+        return cacheManager.loadDataFromCache( clazz, cacheKey, maxTimeInCacheBeforeExpiry );
     }
 
-    @SuppressWarnings("unchecked")
     public < T > T saveDataToCacheAndReturnData( T data, Object cacheKey ) throws FileNotFoundException, IOException {
-        ClassCacheManager< T > dataClassPersistenceManager = (ClassCacheManager< T >) dataPersistenceManager.getDataClassPersistenceManager( data.getClass() );
-        return dataClassPersistenceManager.saveDataToCacheAndReturnData( data, cacheKey );
+        return cacheManager.saveDataToCacheAndReturnData( data, cacheKey );
     }
 
     public boolean removeDataFromCache( Class< ? > clazz, Object cacheKey ) {
-        return dataPersistenceManager.getDataClassPersistenceManager( clazz ).removeDataFromCache( cacheKey );
+        return cacheManager.removeDataFromCache( clazz, cacheKey );
     }
 
     public void removeAllDataFromCache( Class< ? > clazz ) {
-        dataPersistenceManager.getDataClassPersistenceManager( clazz ).removeAllDataFromCache();
+        cacheManager.removeAllDataFromCache( clazz );
     }
 
     public void removeAllDataFromCache() {
-        dataPersistenceManager.notifyAllCacheManagerBusElementToRemoveContent();
+        cacheManager.removeAllDataFromCache();
     }
 
     public boolean isFailOnCacheError() {

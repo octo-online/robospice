@@ -14,14 +14,14 @@ public abstract class FileBasedClassCacheManagerFactory extends ClassCacheManage
 	}
 
 	@Override
-	public abstract <DATA> FileBasedClassCacheManager<DATA> createDataPersistenceManager(Class<DATA> clazz);
+	public abstract <DATA> FileBasedClassCacheManager<DATA> createClassCacheManager(Class<DATA> clazz);
 
 	public boolean removeDataFromCache(Class<?> clazz, Object cacheKey) {
-		return createDataPersistenceManager(clazz).removeDataFromCache(cacheKey);
+		return createClassCacheManager(clazz).removeDataFromCache(cacheKey);
 	}
 
 	public void removeAllDataFromCache(Class<?> clazz) {
-		createDataPersistenceManager(clazz).removeAllDataFromCache();
+		createClassCacheManager(clazz).removeAllDataFromCache();
 	}
 
 	public void removeAllDataFromCache() {

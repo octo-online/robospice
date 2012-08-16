@@ -14,5 +14,5 @@ public abstract class ClassCacheManagerFactory implements CacheManagerBusElement
 		return mApplication;
 	}
 
-	public abstract <DATA> ClassCacheManager<DATA> createDataPersistenceManager(Class<DATA> clazz);
+	public abstract <DATA> ClassCacheManager<DATA> createClassCacheManager(Class<DATA> clazz);
 }
