@@ -18,78 +18,89 @@ import com.google.common.io.Files;
 import com.octo.android.rest.client.persistence.CacheExpiredException;
 import com.octo.android.rest.client.persistence.simple.FileBasedClassCacheManager;
 
-public final class JSonPersistenceManager< T > extends FileBasedClassCacheManager< T > {
+public final class JSonPersistenceManager<T> extends FileBasedClassCacheManager<T> {
 
-    // ============================================================================================
-    // ATTRIBUTES
-    // ============================================================================================
+	// ============================================================================================
+	// ATTRIBUTES
+	// ============================================================================================
 
-    private final ObjectMapper mJsonMapper;
+	private final ObjectMapper mJsonMapper;
 
-    private Class< T > clazz;
+	private Class<T> clazz;
 
-    // ============================================================================================
-    // CONSTRUCTOR
-    // ============================================================================================
-    public JSonPersistenceManager( Application application, Class< T > clazz ) {
-        super( application );
-        this.clazz = clazz;
-        this.mJsonMapper = new ObjectMapper();
-    }
+	private String mFactoryPrefix;
 
-    // ============================================================================================
-    // METHODS
-    // ============================================================================================
+	// ============================================================================================
+	// CONSTRUCTOR
+	// ============================================================================================
+	public JSonPersistenceManager(Application application, Class<T> clazz, String factoryPrefix) {
+		super(application);
+		this.clazz = clazz;
+		this.mJsonMapper = new ObjectMapper();
+		this.mFactoryPrefix = factoryPrefix;
+	}
 
-    @Override
-    public final T loadDataFromCache( Object cacheKey, long maxTimeInCacheBeforeExpiry ) throws JsonParseException, JsonMappingException, IOException,
-            CacheExpiredException {
-        T result = null;
-        String resultJson = null;
+	// ============================================================================================
+	// METHODS
+	// ============================================================================================
 
-        File file = getCacheFile( cacheKey );
-        if ( file.exists() ) {
-            long timeInCache = System.currentTimeMillis() - file.lastModified();
-            if ( maxTimeInCacheBeforeExpiry == 0 || timeInCache <= maxTimeInCacheBeforeExpiry ) {
-                resultJson = CharStreams.toString( Files.newReader( file, Charset.forName( "UTF-8" ) ) );
-                if ( resultJson != null ) {
-                    // finally transform json in object
-                    if ( !Strings.isNullOrEmpty( resultJson ) ) {
-                        result = mJsonMapper.readValue( resultJson, clazz );
-                    } else {
-                        Log.e( getClass().getName(), "Unable to restore cache content : cache file is empty" );
-                    }
-                } else {
-                    Log.e( getClass().getName(), "Unable to restore cache content" );
-                }
-                return result;
-            } else {
-                throw new CacheExpiredException( "Cache content is expired since " + ( maxTimeInCacheBeforeExpiry - timeInCache ) );
-            }
-        }
-        throw new FileNotFoundException( "File was not found in cache: " + file.getAbsolutePath() );
+	@Override
+	protected String getCachePrefix() {
+		return mFactoryPrefix + super.getCachePrefix();
+	}
 
-    }
+	@Override
+	public final T loadDataFromCache(Object cacheKey, long maxTimeInCacheBeforeExpiry) throws JsonParseException, JsonMappingException, IOException, CacheExpiredException {
+		T result = null;
+		String resultJson = null;
 
-    @Override
-    public T saveDataToCacheAndReturnData( T data, Object cacheKey ) throws FileNotFoundException, IOException {
-        String resultJson = null;
+		File file = getCacheFile(cacheKey);
+		if (file.exists()) {
+			long timeInCache = System.currentTimeMillis() - file.lastModified();
+			if (maxTimeInCacheBeforeExpiry == 0 || timeInCache <= maxTimeInCacheBeforeExpiry) {
+				resultJson = CharStreams.toString(Files.newReader(file, Charset.forName("UTF-8")));
+				if (resultJson != null) {
+					// finally transform json in object
+					if (!Strings.isNullOrEmpty(resultJson)) {
+						result = mJsonMapper.readValue(resultJson, clazz);
+					}
+					else {
+						Log.e(getClass().getName(), "Unable to restore cache content : cache file is empty");
+					}
+				}
+				else {
+					Log.e(getClass().getName(), "Unable to restore cache content");
+				}
+				return result;
+			}
+			else {
+				throw new CacheExpiredException("Cache content is expired since " + (maxTimeInCacheBeforeExpiry - timeInCache));
+			}
+		}
+		throw new FileNotFoundException("File was not found in cache: " + file.getAbsolutePath());
 
-        // transform the content in json to store it in the cache
-        resultJson = mJsonMapper.writeValueAsString( data );
+	}
 
-        // finally store the json in the cache
-        if ( !Strings.isNullOrEmpty( resultJson ) ) {
-            Files.write( resultJson, getCacheFile( cacheKey ), Charset.forName( "UTF-8" ) );
-        } else {
-            Log.e( getClass().getName(), "Unable to save web service result into the cache" );
-        }
-        return data;
-    }
+	@Override
+	public T saveDataToCacheAndReturnData(T data, Object cacheKey) throws FileNotFoundException, IOException {
+		String resultJson = null;
 
-    @Override
-    public boolean canHandleClass( Class< ? > clazz ) {
-        return true;
-    }
+		// transform the content in json to store it in the cache
+		resultJson = mJsonMapper.writeValueAsString(data);
+
+		// finally store the json in the cache
+		if (!Strings.isNullOrEmpty(resultJson)) {
+			Files.write(resultJson, getCacheFile(cacheKey), Charset.forName("UTF-8"));
+		}
+		else {
+			Log.e(getClass().getName(), "Unable to save web service result into the cache");
+		}
+		return data;
+	}
+
+	@Override
+	public boolean canHandleClass(Class<?> clazz) {
+		return true;
+	}
 
 }

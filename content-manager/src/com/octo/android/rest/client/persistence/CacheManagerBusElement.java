@@ -7,13 +7,13 @@ package com.octo.android.rest.client.persistence;
  * 
  */
 public interface CacheManagerBusElement {
-    /**
-     * Wether or not this bus element can persist/unpersist objects of the given class clazz.
-     * 
-     * @param clazz
-     *            the class of objets we are looking forward to persist.
-     * @return true if this bus element can persist/unpersist objects of the given class clazz. False otherwise.
-     */
-    public boolean canHandleClass( Class< ? > clazz );
+	/**
+	 * Wether or not this bus element can persist/unpersist objects of the given class clazz.
+	 * 
+	 * @param clazz
+	 *            the class of objets we are looking forward to persist.
+	 * @return true if this bus element can persist/unpersist objects of the given class clazz. False otherwise.
+	 */
+	boolean canHandleClass(Class<?> clazz);
 
 }

@@ -41,11 +41,10 @@ public class CacheManager {
 		throw new IllegalArgumentException("Class " + clazz.getName() + " is not handled by any registered CacheManagerBusElementList");
 	}
 
-	@SuppressWarnings("unchecked")
-	public <T> void notifyAllCacheManagerBusElementToRemoveContent() {
+	public void notifyAllCacheManagerBusElementToRemoveContent() {
 		for (CacheManagerBusElement cacheManagerBusElement : this.cacheManagerBusElementList) {
 			if (cacheManagerBusElement instanceof ClassCacheManager<?>) {
-				((ClassCacheManager<T>) cacheManagerBusElement).removeAllDataFromCache();
+				((ClassCacheManager<?>) cacheManagerBusElement).removeAllDataFromCache();
 			}
 			// TODO : if it is a factory ???
 		}

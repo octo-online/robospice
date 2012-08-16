@@ -9,16 +9,16 @@ import android.test.suitebuilder.annotation.SmallTest;
 @SmallTest
 public class CacheManagerTest extends AndroidTestCase {
 
-	private CacheManager dataPersistenceManager;
+	private CacheManager cacheManager;
 
 	@Override
 	protected void setUp() throws Exception {
-		dataPersistenceManager = new CacheManager();
+		cacheManager = new CacheManager();
 	}
 
 	public void testEmptyDataPersistenceManager() {
 		try {
-			dataPersistenceManager.getDataClassPersistenceManager(Object.class);
+			cacheManager.getDataClassPersistenceManager(Object.class);
 			fail("No data class persistence manager should have been found as none had been registered");
 		}
 		catch (Exception ex) {
@@ -28,37 +28,37 @@ public class CacheManagerTest extends AndroidTestCase {
 
 	public void testRegisterDataClassPersistenceManager() {
 		MockDataClassPersistenceManager mockDataClassPersistenceManager = new MockDataClassPersistenceManager();
-		dataPersistenceManager.registerCacheManagerBusElement(mockDataClassPersistenceManager);
-		ClassCacheManager<?> actual = dataPersistenceManager.getDataClassPersistenceManager(String.class);
+		cacheManager.registerCacheManagerBusElement(mockDataClassPersistenceManager);
+		ClassCacheManager<?> actual = cacheManager.getDataClassPersistenceManager(String.class);
 		assertEquals(mockDataClassPersistenceManager, actual);
 	}
 
 	public void testGetDataClassPersistenceManager_returns_CacheManagerBusElement_in_order() {
 		// register a data class persistence manager first
 		MockDataClassPersistenceManager mockDataClassPersistenceManager = new MockDataClassPersistenceManager();
-		dataPersistenceManager.registerCacheManagerBusElement(mockDataClassPersistenceManager);
+		cacheManager.registerCacheManagerBusElement(mockDataClassPersistenceManager);
 
 		// register a second data class persistence manager
 		MockDataClassPersistenceManager mockDataClassPersistenceManager2 = new MockDataClassPersistenceManager();
-		dataPersistenceManager.registerCacheManagerBusElement(mockDataClassPersistenceManager2);
+		cacheManager.registerCacheManagerBusElement(mockDataClassPersistenceManager2);
 
-		ClassCacheManager<?> actual = dataPersistenceManager.getDataClassPersistenceManager(String.class);
+		ClassCacheManager<?> actual = cacheManager.getDataClassPersistenceManager(String.class);
 		assertEquals(mockDataClassPersistenceManager, actual);
 	}
 
 	public void testUnRegisterDataClassPersistenceManager() {
 		// register a data class persistence manager first
 		MockDataClassPersistenceManager mockDataClassPersistenceManager = new MockDataClassPersistenceManager();
-		dataPersistenceManager.registerCacheManagerBusElement(mockDataClassPersistenceManager);
-		ClassCacheManager<?> actual = dataPersistenceManager.getDataClassPersistenceManager(String.class);
+		cacheManager.registerCacheManagerBusElement(mockDataClassPersistenceManager);
+		ClassCacheManager<?> actual = cacheManager.getDataClassPersistenceManager(String.class);
 		assertEquals(mockDataClassPersistenceManager, actual);
 
 		// unregister it
-		dataPersistenceManager.unregisterCacheManagerBusElement(mockDataClassPersistenceManager);
+		cacheManager.unregisterCacheManagerBusElement(mockDataClassPersistenceManager);
 
 		// no persistence manager should be found any more
 		try {
-			dataPersistenceManager.getDataClassPersistenceManager(String.class);
+			cacheManager.getDataClassPersistenceManager(String.class);
 			fail("No data class persistence manager should have been found as none had been registered");
 		}
 		catch (Exception ex) {

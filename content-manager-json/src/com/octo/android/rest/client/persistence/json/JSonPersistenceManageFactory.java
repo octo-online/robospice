@@ -2,26 +2,24 @@ package com.octo.android.rest.client.persistence.json;
 
 import android.app.Application;
 
-import com.octo.android.rest.client.persistence.ClassCacheManager;
-import com.octo.android.rest.client.persistence.ClassCacheManagerFactory;
+import com.octo.android.rest.client.persistence.simple.FileBasedClassCacheManager;
+import com.octo.android.rest.client.persistence.simple.FileBasedClassCacheManagerFactory;
 
-public class JSonPersistenceManageFactory extends ClassCacheManagerFactory {
+public class JSonPersistenceManageFactory extends FileBasedClassCacheManagerFactory {
 
-    Application application;
+	public JSonPersistenceManageFactory(Application application) {
+		super(application);
+	}
 
-    public JSonPersistenceManageFactory( Application application ) {
-        this.application = application;
-    }
+	@Override
+	public boolean canHandleClass(Class<?> clazz) {
+		return true;
+	}
 
-    @Override
-    public boolean canHandleClass( Class< ? > clazz ) {
-        return true;
-    }
-
-    @Override
-    @SuppressWarnings({ "unchecked", "rawtypes" })
-    public < DATA > ClassCacheManager< DATA > createDataPersistenceManager( Class< DATA > clazz ) {
-        return new JSonPersistenceManager( application, clazz );
-    }
+	@Override
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	public <DATA> FileBasedClassCacheManager<DATA> createDataPersistenceManager(Class<DATA> clazz) {
+		return new JSonPersistenceManager(getApplication(), clazz, getCachePrefix());
+	}
 
 }

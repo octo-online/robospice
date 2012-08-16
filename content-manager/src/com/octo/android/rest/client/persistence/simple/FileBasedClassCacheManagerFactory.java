@@ -5,23 +5,25 @@ import java.io.FileFilter;
 
 import android.app.Application;
 
-import com.octo.android.rest.client.persistence.ClassCacheManager;
+import com.octo.android.rest.client.persistence.ClassCacheManagerFactory;
 
-public abstract class FileBasedClassCacheManager<DATA> extends ClassCacheManager<DATA> {
+public abstract class FileBasedClassCacheManagerFactory extends ClassCacheManagerFactory {
 
-	/* package private */
-	static final String CACHE_PREFIX_END = "_";
-
-	public FileBasedClassCacheManager(Application application) {
+	public FileBasedClassCacheManagerFactory(Application application) {
 		super(application);
 	}
 
 	@Override
-	public boolean removeDataFromCache(Object cacheKey) {
-		return getCacheFile(cacheKey).delete();
+	public abstract <DATA> FileBasedClassCacheManager<DATA> createDataPersistenceManager(Class<DATA> clazz);
+
+	public boolean removeDataFromCache(Class<?> clazz, Object cacheKey) {
+		return createDataPersistenceManager(clazz).removeDataFromCache(cacheKey);
 	}
 
-	@Override
+	public void removeAllDataFromCache(Class<?> clazz) {
+		createDataPersistenceManager(clazz).removeAllDataFromCache();
+	}
+
 	public void removeAllDataFromCache() {
 		File cacheFolder = getCacheFolder();
 		File[] cacheFileList = cacheFolder.listFiles(new FileFilter() {
@@ -39,15 +41,10 @@ public abstract class FileBasedClassCacheManager<DATA> extends ClassCacheManager
 	}
 
 	protected String getCachePrefix() {
-		return getClass().getSimpleName() + CACHE_PREFIX_END;
-	}
-
-	protected File getCacheFile(Object cacheKey) {
-		return new File(getCacheFolder(), getCachePrefix() + cacheKey.toString());
+		return getClass().getSimpleName() + FileBasedClassCacheManager.CACHE_PREFIX_END;
 	}
 
 	private File getCacheFolder() {
 		return getApplication().getCacheDir();
 	}
-
 }
