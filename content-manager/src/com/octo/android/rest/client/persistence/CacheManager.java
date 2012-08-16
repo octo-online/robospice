@@ -5,8 +5,8 @@ import java.util.Collection;
 
 /**
  * An entity responsible for loading/saving data from/to cache. It implements a Chain of Responsability pattern,
- * delegating loading and saving operations to {@link DataClassPersistenceManager} and
- * {@link DataClassPersistenceManagerFactory} elements.
+ * delegating loading and saving operations to {@link ClassCacheManager} and
+ * {@link ClassCacheManagerFactory} elements.
  * 
  * The chain of responsibility is ordered. This means that the order used to register elements matters. All elements in
  * the chain of responsibility are questioned in order. The first element that can handle a given class for persistence
@@ -28,13 +28,13 @@ public class CacheManager {
     }
 
     @SuppressWarnings("unchecked")
-    public < T > DataClassPersistenceManager< T > getDataClassPersistenceManager( Class< T > clazz ) {
+    public < T > ClassCacheManager< T > getDataClassPersistenceManager( Class< T > clazz ) {
         for ( CacheManagerBusElement cacheManagerBusElement : this.cacheManagerBusElementList ) {
             if ( cacheManagerBusElement.canHandleClass( clazz ) ) {
-                if ( cacheManagerBusElement instanceof DataClassPersistenceManager< ? > ) {
-                    return (DataClassPersistenceManager< T >) cacheManagerBusElement;
-                } else if ( cacheManagerBusElement instanceof DataClassPersistenceManagerFactory ) {
-                    DataClassPersistenceManagerFactory factory = (DataClassPersistenceManagerFactory) cacheManagerBusElement;
+                if ( cacheManagerBusElement instanceof ClassCacheManager< ? > ) {
+                    return (ClassCacheManager< T >) cacheManagerBusElement;
+                } else if ( cacheManagerBusElement instanceof ClassCacheManagerFactory ) {
+                    ClassCacheManagerFactory factory = (ClassCacheManagerFactory) cacheManagerBusElement;
                     return factory.createDataPersistenceManager( clazz );
                 }
             }

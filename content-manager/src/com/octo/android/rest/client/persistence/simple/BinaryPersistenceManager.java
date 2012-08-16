@@ -12,9 +12,9 @@ import android.app.Application;
 import com.google.common.io.ByteStreams;
 import com.google.common.io.Files;
 import com.octo.android.rest.client.persistence.CacheExpiredException;
-import com.octo.android.rest.client.persistence.DataClassPersistenceManager;
+import com.octo.android.rest.client.persistence.ClassCacheManager;
 
-public final class BinaryPersistenceManager extends DataClassPersistenceManager< InputStream > {
+public final class BinaryPersistenceManager extends ClassCacheManager< InputStream > {
 
     public BinaryPersistenceManager( Application application ) {
         super( application );

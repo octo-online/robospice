@@ -11,13 +11,13 @@ import android.app.Application;
  * @author sni
  * 
  * @param <DATA>
- *            the class of the objects this {@link DataClassPersistenceManager} can persist/unpersist.
+ *            the class of the objects this {@link ClassCacheManager} can persist/unpersist.
  */
-public abstract class DataClassPersistenceManager< DATA > implements CacheManagerBusElement {
+public abstract class ClassCacheManager< DATA > implements CacheManagerBusElement {
 
     private Application mApplication;
 
-    public DataClassPersistenceManager( Application application ) {
+    public ClassCacheManager( Application application ) {
         this.mApplication = application;
     }
 

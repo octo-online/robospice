@@ -7,7 +7,7 @@ import android.test.AndroidTestCase;
 import android.test.suitebuilder.annotation.SmallTest;
 
 @SmallTest
-public class DataPersistenceManagerTest extends AndroidTestCase {
+public class CacheManagerTest extends AndroidTestCase {
 
     private CacheManager dataPersistenceManager;
 
@@ -28,7 +28,7 @@ public class DataPersistenceManagerTest extends AndroidTestCase {
     public void testRegisterDataClassPersistenceManager() {
         MockDataClassPersistenceManager mockDataClassPersistenceManager = new MockDataClassPersistenceManager();
         dataPersistenceManager.registerCacheManagerBusElement( mockDataClassPersistenceManager );
-        DataClassPersistenceManager< ? > actual = dataPersistenceManager.getDataClassPersistenceManager( String.class );
+        ClassCacheManager< ? > actual = dataPersistenceManager.getDataClassPersistenceManager( String.class );
         assertEquals( mockDataClassPersistenceManager, actual );
     }
 
@@ -41,7 +41,7 @@ public class DataPersistenceManagerTest extends AndroidTestCase {
         MockDataClassPersistenceManager mockDataClassPersistenceManager2 = new MockDataClassPersistenceManager();
         dataPersistenceManager.registerCacheManagerBusElement( mockDataClassPersistenceManager2 );
 
-        DataClassPersistenceManager< ? > actual = dataPersistenceManager.getDataClassPersistenceManager( String.class );
+        ClassCacheManager< ? > actual = dataPersistenceManager.getDataClassPersistenceManager( String.class );
         assertEquals( mockDataClassPersistenceManager, actual );
     }
 
@@ -49,7 +49,7 @@ public class DataPersistenceManagerTest extends AndroidTestCase {
         // register a data class persistence manager first
         MockDataClassPersistenceManager mockDataClassPersistenceManager = new MockDataClassPersistenceManager();
         dataPersistenceManager.registerCacheManagerBusElement( mockDataClassPersistenceManager );
-        DataClassPersistenceManager< ? > actual = dataPersistenceManager.getDataClassPersistenceManager( String.class );
+        ClassCacheManager< ? > actual = dataPersistenceManager.getDataClassPersistenceManager( String.class );
         assertEquals( mockDataClassPersistenceManager, actual );
 
         // unregister it
@@ -64,7 +64,7 @@ public class DataPersistenceManagerTest extends AndroidTestCase {
         }
     }
 
-    private class MockDataClassPersistenceManager extends DataClassPersistenceManager< String > {
+    private class MockDataClassPersistenceManager extends ClassCacheManager< String > {
         private static final String TEST_PERSISTED_STRING = "TEST";
 
         public MockDataClassPersistenceManager() {

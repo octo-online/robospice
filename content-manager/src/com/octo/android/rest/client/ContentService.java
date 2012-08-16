@@ -28,7 +28,7 @@ import com.octo.android.rest.client.exception.NetworkException;
 import com.octo.android.rest.client.exception.NoNetworkException;
 import com.octo.android.rest.client.exception.SaveToCacheException;
 import com.octo.android.rest.client.persistence.CacheExpiredException;
-import com.octo.android.rest.client.persistence.DataClassPersistenceManager;
+import com.octo.android.rest.client.persistence.ClassCacheManager;
 import com.octo.android.rest.client.persistence.CacheManager;
 import com.octo.android.rest.client.request.CachedContentRequest;
 import com.octo.android.rest.client.request.RequestListener;
@@ -206,7 +206,7 @@ public abstract class ContentService extends Service {
 
     @SuppressWarnings("unchecked")
     public < T > T saveDataToCacheAndReturnData( T data, Object cacheKey ) throws FileNotFoundException, IOException {
-        DataClassPersistenceManager< T > dataClassPersistenceManager = (DataClassPersistenceManager< T >) dataPersistenceManager
+        ClassCacheManager< T > dataClassPersistenceManager = (ClassCacheManager< T >) dataPersistenceManager
                 .getDataClassPersistenceManager( data.getClass() );
         return dataClassPersistenceManager.saveDataToCacheAndReturnData( data, cacheKey );
     }

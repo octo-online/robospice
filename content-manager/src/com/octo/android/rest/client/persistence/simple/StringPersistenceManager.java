@@ -11,9 +11,9 @@ import android.util.Log;
 import com.google.common.io.CharStreams;
 import com.google.common.io.Files;
 import com.octo.android.rest.client.persistence.CacheExpiredException;
-import com.octo.android.rest.client.persistence.DataClassPersistenceManager;
+import com.octo.android.rest.client.persistence.ClassCacheManager;
 
-public final class StringPersistenceManager extends DataClassPersistenceManager< String > {
+public final class StringPersistenceManager extends ClassCacheManager< String > {
     private final static String LOG_CAT = "StringPersistenceManager";
 
     public StringPersistenceManager( Application application ) {

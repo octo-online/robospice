@@ -16,9 +16,9 @@ import com.google.common.base.Strings;
 import com.google.common.io.CharStreams;
 import com.google.common.io.Files;
 import com.octo.android.rest.client.persistence.CacheExpiredException;
-import com.octo.android.rest.client.persistence.DataClassPersistenceManager;
+import com.octo.android.rest.client.persistence.ClassCacheManager;
 
-public final class JSonPersistenceManager< T > extends DataClassPersistenceManager< T > {
+public final class JSonPersistenceManager< T > extends ClassCacheManager< T > {
 
     // ============================================================================================
     // ATTRIBUTES

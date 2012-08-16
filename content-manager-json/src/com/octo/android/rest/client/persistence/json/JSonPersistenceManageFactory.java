@@ -2,10 +2,10 @@ package com.octo.android.rest.client.persistence.json;
 
 import android.app.Application;
 
-import com.octo.android.rest.client.persistence.DataClassPersistenceManager;
-import com.octo.android.rest.client.persistence.DataClassPersistenceManagerFactory;
+import com.octo.android.rest.client.persistence.ClassCacheManager;
+import com.octo.android.rest.client.persistence.ClassCacheManagerFactory;
 
-public class JSonPersistenceManageFactory extends DataClassPersistenceManagerFactory {
+public class JSonPersistenceManageFactory extends ClassCacheManagerFactory {
 
     Application application;
 
@@ -20,7 +20,7 @@ public class JSonPersistenceManageFactory extends DataClassPersistenceManagerFac
 
     @Override
     @SuppressWarnings({ "unchecked", "rawtypes" })
-    public < DATA > DataClassPersistenceManager< DATA > createDataPersistenceManager( Class< DATA > clazz ) {
+    public < DATA > ClassCacheManager< DATA > createDataPersistenceManager( Class< DATA > clazz ) {
         return new JSonPersistenceManager( application, clazz );
     }
 

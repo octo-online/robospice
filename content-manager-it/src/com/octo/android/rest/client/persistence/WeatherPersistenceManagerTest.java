@@ -8,8 +8,6 @@ import java.util.List;
 import android.test.ActivityInstrumentationTestCase2;
 import android.test.suitebuilder.annotation.SmallTest;
 
-import com.octo.android.rest.client.persistence.CacheExpiredException;
-import com.octo.android.rest.client.persistence.DataClassPersistenceManager;
 import com.octo.android.rest.client.persistence.json.JSonPersistenceManageFactory;
 import com.octo.android.rest.client.sample.HelloAndroidActivity;
 import com.octo.android.rest.client.sample.model.Curren_weather;
@@ -18,7 +16,7 @@ import com.octo.android.rest.client.sample.model.WeatherResult;
 
 @SmallTest
 public class WeatherPersistenceManagerTest extends ActivityInstrumentationTestCase2< HelloAndroidActivity > {
-    private DataClassPersistenceManager< WeatherResult > dataPersistenceManager;
+    private ClassCacheManager< WeatherResult > dataPersistenceManager;
 
     public WeatherPersistenceManagerTest() {
         super( "com.octo.android.rest.client.sample", HelloAndroidActivity.class );
