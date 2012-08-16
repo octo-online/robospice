@@ -7,15 +7,15 @@ import android.test.ActivityInstrumentationTestCase2;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import com.octo.android.rest.client.persistence.simple.StringCacheManager;
-import com.octo.android.rest.client.sample.HelloAndroidActivity;
+import com.octo.android.rest.client.sample.TestActivity;
 
 @SmallTest
-public class StringCacheManagerTest extends ActivityInstrumentationTestCase2< HelloAndroidActivity > {
+public class StringCacheManagerTest extends ActivityInstrumentationTestCase2< TestActivity > {
 
     private StringCacheManager stringPersistenceManager;
 
     public StringCacheManagerTest() {
-        super( "com.octo.android.rest.client.sample", HelloAndroidActivity.class );
+        super( "com.octo.android.rest.client.sample", TestActivity.class );
     }
 
     @Override

@@ -13,16 +13,16 @@ import android.app.Application;
  * @param <DATA>
  *            the class of the objects this {@link ClassCacheManager} can persist/unpersist.
  */
-public abstract class ClassCacheManager< DATA > implements CacheManagerBusElement {
-
-    private Application mApplication;
+public abstract class ClassCacheManager< DATA > extends ClassCacheManagerFactory {
 
     public ClassCacheManager( Application application ) {
-        this.mApplication = application;
+        super( application );
     }
 
-    protected final Application getApplication() {
-        return mApplication;
+    @Override
+    @SuppressWarnings("unchecked")
+    public final < T > ClassCacheManager< T > createClassCacheManager( Class< T > clazz ) {
+        return (ClassCacheManager< T >) this;
     }
 
     /**

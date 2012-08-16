@@ -22,18 +22,18 @@ public class SampleService extends SpringAndroidContentService {
     private static final int WEBSERVICES_TIMEOUT = 30000;
 
     @Override
-    public CacheManager createDataPersistenceManager( Application application ) {
-        CacheManager dataPersistenceManager = new CacheManager();
+    public CacheManager createCacheManager( Application application ) {
+        CacheManager cacheManager = new CacheManager();
 
         // init
         StringCacheManager stringPersistenceManager = new StringCacheManager( application );
         InputStreamCacheManager binaryPersistenceManager = new InputStreamCacheManager( application );
         JSonPersistenceManageFactory jSonPersistenceManageFactory = new JSonPersistenceManageFactory( application );
 
-        dataPersistenceManager.registerCacheManagerBusElement( stringPersistenceManager );
-        dataPersistenceManager.registerCacheManagerBusElement( binaryPersistenceManager );
-        dataPersistenceManager.registerCacheManagerBusElement( jSonPersistenceManageFactory );
-        return dataPersistenceManager;
+        cacheManager.registerFactory( stringPersistenceManager );
+        cacheManager.registerFactory( binaryPersistenceManager );
+        cacheManager.registerFactory( jSonPersistenceManageFactory );
+        return cacheManager;
     }
 
     @Override

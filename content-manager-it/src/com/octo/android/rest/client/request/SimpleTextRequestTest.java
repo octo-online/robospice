@@ -4,15 +4,15 @@ import android.test.ActivityInstrumentationTestCase2;
 import android.test.suitebuilder.annotation.LargeTest;
 
 import com.octo.android.rest.client.request.simple.SimpleTextRequest;
-import com.octo.android.rest.client.sample.HelloAndroidActivity;
+import com.octo.android.rest.client.sample.TestActivity;
 
 @LargeTest
-public class SimpleTextRequestTest extends ActivityInstrumentationTestCase2< HelloAndroidActivity > {
+public class SimpleTextRequestTest extends ActivityInstrumentationTestCase2< TestActivity > {
 
     private SimpleTextRequest cnilRequest;
 
     public SimpleTextRequestTest() {
-        super( "com.octo.android.rest.client.sample", HelloAndroidActivity.class );
+        super( "com.octo.android.rest.client.sample", TestActivity.class );
     }
 
     @Override

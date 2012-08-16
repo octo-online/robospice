@@ -10,15 +10,15 @@ import android.test.suitebuilder.annotation.SmallTest;
 
 import com.google.common.io.ByteStreams;
 import com.octo.android.rest.client.persistence.simple.InputStreamCacheManager;
-import com.octo.android.rest.client.sample.HelloAndroidActivity;
+import com.octo.android.rest.client.sample.TestActivity;
 
 @SmallTest
-public class InputStreamCacheManagerTest extends ActivityInstrumentationTestCase2< HelloAndroidActivity > {
+public class InputStreamCacheManagerTest extends ActivityInstrumentationTestCase2< TestActivity > {
 
     private InputStreamCacheManager binaryPersistenceManager;
 
     public InputStreamCacheManagerTest() {
-        super( "com.octo.android.rest.client.sample", HelloAndroidActivity.class );
+        super( "com.octo.android.rest.client.sample", TestActivity.class );
     }
 
     @Override

@@ -11,16 +11,16 @@ import android.test.ActivityInstrumentationTestCase2;
 import com.google.common.io.Files;
 import com.octo.android.rest.client.persistence.CacheExpiredException;
 import com.octo.android.rest.client.persistence.DurationInMillis;
-import com.octo.android.rest.client.sample.HelloAndroidActivity;
+import com.octo.android.rest.client.sample.TestActivity;
 
-public class StringCacheManagerTest extends ActivityInstrumentationTestCase2< HelloAndroidActivity > {
+public class StringCacheManagerTest extends ActivityInstrumentationTestCase2< TestActivity > {
 
     private static final String TEST_CACHE_KEY = "TEST_CACHE_KEY";
 
     private StringCacheManager stringCacheManager;
 
     public StringCacheManagerTest() {
-        super( "com.octo.android.Rest.client", HelloAndroidActivity.class );
+        super( "com.octo.android.Rest.client", TestActivity.class );
     }
 
     @Override

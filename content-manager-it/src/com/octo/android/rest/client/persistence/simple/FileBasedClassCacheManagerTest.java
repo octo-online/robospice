@@ -9,15 +9,15 @@ import android.test.ActivityInstrumentationTestCase2;
 import android.test.suitebuilder.annotation.MediumTest;
 
 import com.octo.android.rest.client.persistence.CacheExpiredException;
-import com.octo.android.rest.client.sample.HelloAndroidActivity;
+import com.octo.android.rest.client.sample.TestActivity;
 
 @MediumTest
-public class FileBasedClassCacheManagerTest extends ActivityInstrumentationTestCase2< HelloAndroidActivity > {
+public class FileBasedClassCacheManagerTest extends ActivityInstrumentationTestCase2< TestActivity > {
 
     FileBasedClassCacheManager< Object > fileBasedClassCacheManager;
 
     public FileBasedClassCacheManagerTest() {
-        super( "com.octo.android.rest.client", HelloAndroidActivity.class );
+        super( "com.octo.android.rest.client", TestActivity.class );
     }
 
     @Override

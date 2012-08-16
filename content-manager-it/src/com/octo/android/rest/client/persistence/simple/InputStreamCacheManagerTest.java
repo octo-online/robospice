@@ -13,16 +13,16 @@ import android.test.ActivityInstrumentationTestCase2;
 import com.google.common.io.ByteStreams;
 import com.google.common.io.Files;
 import com.octo.android.rest.client.persistence.CacheExpiredException;
-import com.octo.android.rest.client.sample.HelloAndroidActivity;
+import com.octo.android.rest.client.sample.TestActivity;
 
-public class InputStreamCacheManagerTest extends ActivityInstrumentationTestCase2< HelloAndroidActivity > {
+public class InputStreamCacheManagerTest extends ActivityInstrumentationTestCase2< TestActivity > {
 
     private static final String TEST_CACHE_KEY = "TEST_CACHE_KEY";
 
     private InputStreamCacheManager inputStreamCacheManager;
 
     public InputStreamCacheManagerTest() {
-        super( "com.octo.android.Rest.client", HelloAndroidActivity.class );
+        super( "com.octo.android.Rest.client", TestActivity.class );
     }
 
     @Override

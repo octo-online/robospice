@@ -18,8 +18,10 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        
+        <activity android:name=".TestActivity" />
 
-        <service android:name="com.octo.android.rest.client.sample.service.SampleService" >
+        <service android:name="com.octo.android.rest.client.sample.service.SampleService" android:exported="false">
             <intent-filter>
                 <action android:name="com.octo.android.rest.client.ContentService" />
             </intent-filter>

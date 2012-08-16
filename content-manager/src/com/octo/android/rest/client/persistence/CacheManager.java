@@ -18,14 +18,14 @@ import java.util.Collection;
  */
 public class CacheManager {
 
-    private Collection< CacheManagerBusElement > cacheManagerBusElementList = new ArrayList< CacheManagerBusElement >();
+    private Collection< ClassCacheManagerFactory > factoryList = new ArrayList< ClassCacheManagerFactory >();
 
-    public void registerCacheManagerBusElement( CacheManagerBusElement cacheManagerBusElement ) {
-        cacheManagerBusElementList.add( cacheManagerBusElement );
+    public void registerFactory( ClassCacheManagerFactory factory ) {
+        factoryList.add( factory );
     }
 
-    public void unregisterCacheManagerBusElement( CacheManagerBusElement cacheManagerBusElement ) {
-        cacheManagerBusElementList.remove( cacheManagerBusElement );
+    public void unregisterFactory( ClassCacheManagerFactory factory ) {
+        factoryList.remove( factory );
     }
 
     public < T > T loadDataFromCache( Class< T > clazz, Object cacheKey, long maxTimeInCacheBeforeExpiry ) throws FileNotFoundException, IOException,
@@ -48,23 +48,17 @@ public class CacheManager {
     }
 
     public void removeAllDataFromCache() {
-        for ( CacheManagerBusElement cacheManagerBusElement : this.cacheManagerBusElementList ) {
-            cacheManagerBusElement.removeAllDataFromCache();
+        for ( ClassCacheManagerFactory factory : this.factoryList ) {
+            factory.removeAllDataFromCache();
         }
     }
 
-    @SuppressWarnings("unchecked")
     protected < T > ClassCacheManager< T > getClassCacheManager( Class< T > clazz ) {
-        for ( CacheManagerBusElement cacheManagerBusElement : this.cacheManagerBusElementList ) {
-            if ( cacheManagerBusElement.canHandleClass( clazz ) ) {
-                if ( cacheManagerBusElement instanceof ClassCacheManager< ? > ) {
-                    return (ClassCacheManager< T >) cacheManagerBusElement;
-                } else if ( cacheManagerBusElement instanceof ClassCacheManagerFactory ) {
-                    ClassCacheManagerFactory factory = (ClassCacheManagerFactory) cacheManagerBusElement;
-                    return factory.createClassCacheManager( clazz );
-                }
+        for ( ClassCacheManagerFactory factory : this.factoryList ) {
+            if ( factory.canHandleClass( clazz ) ) {
+                return factory.createClassCacheManager( clazz );
             }
         }
-        throw new IllegalArgumentException( "Class " + clazz.getName() + " is not handled by any registered CacheManagerBusElementList" );
+        throw new IllegalArgumentException( "Class " + clazz.getName() + " is not handled by any registered factoryList" );
     }
 }

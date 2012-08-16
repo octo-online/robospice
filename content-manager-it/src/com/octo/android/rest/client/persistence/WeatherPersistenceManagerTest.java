@@ -9,24 +9,24 @@ import android.test.ActivityInstrumentationTestCase2;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import com.octo.android.rest.client.persistence.json.JSonPersistenceManageFactory;
-import com.octo.android.rest.client.sample.HelloAndroidActivity;
+import com.octo.android.rest.client.sample.TestActivity;
 import com.octo.android.rest.client.sample.model.Curren_weather;
 import com.octo.android.rest.client.sample.model.Weather;
 import com.octo.android.rest.client.sample.model.WeatherResult;
 
 @SmallTest
-public class WeatherPersistenceManagerTest extends ActivityInstrumentationTestCase2< HelloAndroidActivity > {
+public class WeatherPersistenceManagerTest extends ActivityInstrumentationTestCase2< TestActivity > {
     private ClassCacheManager< WeatherResult > dataPersistenceManager;
 
     public WeatherPersistenceManagerTest() {
-        super( "com.octo.android.rest.client.sample", HelloAndroidActivity.class );
+        super( "com.octo.android.rest.client.sample", TestActivity.class );
     }
 
     @Override
     protected void setUp() throws Exception {
         super.setUp();
         JSonPersistenceManageFactory factory = new JSonPersistenceManageFactory( getActivity().getApplication() );
-        dataPersistenceManager = factory.createDataPersistenceManager( WeatherResult.class );
+        dataPersistenceManager = factory.createClassCacheManager( WeatherResult.class );
     }
 
     public void test_canHandleClientRequestStatus() {
