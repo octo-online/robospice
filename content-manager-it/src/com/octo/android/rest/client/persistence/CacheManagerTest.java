@@ -85,5 +85,13 @@ public class CacheManagerTest extends AndroidTestCase {
         public String saveDataToCacheAndReturnData( String arg0, Object arg1 ) throws FileNotFoundException, IOException {
             return TEST_PERSISTED_STRING;
         }
+
+        @Override
+        public void removeAllDataFromCache() {
+        }
+
+        @Override
+        public void removeDataFromCache( Object arg0 ) {
+        }
     }
 }

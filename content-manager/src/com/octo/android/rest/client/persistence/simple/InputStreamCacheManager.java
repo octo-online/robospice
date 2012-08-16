@@ -12,11 +12,10 @@ import android.app.Application;
 import com.google.common.io.ByteStreams;
 import com.google.common.io.Files;
 import com.octo.android.rest.client.persistence.CacheExpiredException;
-import com.octo.android.rest.client.persistence.ClassCacheManager;
 
-public final class BinaryPersistenceManager extends ClassCacheManager< InputStream > {
+public final class InputStreamCacheManager extends FileBasedClassCacheManager< InputStream > {
 
-    public BinaryPersistenceManager( Application application ) {
+    public InputStreamCacheManager( Application application ) {
         super( application );
     }
 
@@ -32,10 +31,6 @@ public final class BinaryPersistenceManager extends ClassCacheManager< InputStre
             }
         }
         throw new FileNotFoundException( "File was not found in cache: " + file.getAbsolutePath() );
-    }
-
-    private File getCacheFile( Object cacheKey ) {
-        return new File( getApplication().getCacheDir(), cacheKey.toString() );
     }
 
     @Override

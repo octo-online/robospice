@@ -11,13 +11,16 @@ import android.util.Log;
 import com.google.common.io.CharStreams;
 import com.google.common.io.Files;
 import com.octo.android.rest.client.persistence.CacheExpiredException;
-import com.octo.android.rest.client.persistence.ClassCacheManager;
 
-public final class StringPersistenceManager extends ClassCacheManager< String > {
-    private final static String LOG_CAT = "StringPersistenceManager";
+public final class StringCacheManager extends FileBasedClassCacheManager< String > {
+    private final static String LOG_CAT = StringCacheManager.class.getSimpleName();
 
-    public StringPersistenceManager( Application application ) {
+    public StringCacheManager( Application application ) {
         super( application );
+    }
+
+    public boolean canHandleClass( Class< ? > clazz ) {
+        return clazz.equals( String.class );
     }
 
     @Override
@@ -36,19 +39,11 @@ public final class StringPersistenceManager extends ClassCacheManager< String > 
 
     }
 
-    private File getCacheFile( Object cacheKey ) {
-        return new File( getApplication().getCacheDir(), cacheKey.toString() );
-    }
-
     @Override
     public String saveDataToCacheAndReturnData( String data, Object cacheKey ) throws FileNotFoundException, IOException {
         Log.v( LOG_CAT, "Saving String " + data + " into cacheKey = " + cacheKey );
         Files.write( data, getCacheFile( cacheKey ), Charset.forName( "UTF-8" ) );
         return data;
-    }
-
-    public boolean canHandleClass( Class< ? > clazz ) {
-        return clazz.equals( String.class );
     }
 
 }

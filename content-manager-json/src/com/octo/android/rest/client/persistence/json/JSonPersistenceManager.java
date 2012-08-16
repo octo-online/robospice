@@ -16,9 +16,9 @@ import com.google.common.base.Strings;
 import com.google.common.io.CharStreams;
 import com.google.common.io.Files;
 import com.octo.android.rest.client.persistence.CacheExpiredException;
-import com.octo.android.rest.client.persistence.ClassCacheManager;
+import com.octo.android.rest.client.persistence.simple.FileBasedClassCacheManager;
 
-public final class JSonPersistenceManager< T > extends ClassCacheManager< T > {
+public final class JSonPersistenceManager< T > extends FileBasedClassCacheManager< T > {
 
     // ============================================================================================
     // ATTRIBUTES
@@ -69,10 +69,6 @@ public final class JSonPersistenceManager< T > extends ClassCacheManager< T > {
         }
         throw new FileNotFoundException( "File was not found in cache: " + file.getAbsolutePath() );
 
-    }
-
-    private File getCacheFile( Object cacheKey ) {
-        return new File( getApplication().getCacheDir(), cacheKey.toString() );
     }
 
     @Override

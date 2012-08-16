@@ -6,23 +6,22 @@ import java.io.IOException;
 import android.test.ActivityInstrumentationTestCase2;
 import android.test.suitebuilder.annotation.SmallTest;
 
-import com.octo.android.rest.client.persistence.CacheExpiredException;
-import com.octo.android.rest.client.persistence.simple.StringPersistenceManager;
+import com.octo.android.rest.client.persistence.simple.StringCacheManager;
 import com.octo.android.rest.client.sample.HelloAndroidActivity;
 
 @SmallTest
-public class StringPersistenceManagerTest extends ActivityInstrumentationTestCase2< HelloAndroidActivity > {
+public class StringCacheManagerTest extends ActivityInstrumentationTestCase2< HelloAndroidActivity > {
 
-    private StringPersistenceManager stringPersistenceManager;
+    private StringCacheManager stringPersistenceManager;
 
-    public StringPersistenceManagerTest() {
+    public StringCacheManagerTest() {
         super( "com.octo.android.rest.client.sample", HelloAndroidActivity.class );
     }
 
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        stringPersistenceManager = new StringPersistenceManager( getActivity().getApplication() );
+        stringPersistenceManager = new StringCacheManager( getActivity().getApplication() );
     }
 
     public void test_canHandleStrings() {

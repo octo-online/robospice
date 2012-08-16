@@ -45,4 +45,8 @@ public abstract class ClassCacheManager< DATA > implements CacheManagerBusElemen
 
     public abstract DATA saveDataToCacheAndReturnData( DATA data, Object cacheKey ) throws FileNotFoundException, IOException;
 
+    public abstract void removeDataFromCache( Object cacheKey );
+
+    public abstract void removeAllDataFromCache();
+
 }

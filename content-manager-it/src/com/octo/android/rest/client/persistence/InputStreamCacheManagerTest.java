@@ -9,23 +9,22 @@ import android.test.ActivityInstrumentationTestCase2;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import com.google.common.io.ByteStreams;
-import com.octo.android.rest.client.persistence.CacheExpiredException;
-import com.octo.android.rest.client.persistence.simple.BinaryPersistenceManager;
+import com.octo.android.rest.client.persistence.simple.InputStreamCacheManager;
 import com.octo.android.rest.client.sample.HelloAndroidActivity;
 
 @SmallTest
-public class BinaryPersistenceManagerTest extends ActivityInstrumentationTestCase2< HelloAndroidActivity > {
+public class InputStreamCacheManagerTest extends ActivityInstrumentationTestCase2< HelloAndroidActivity > {
 
-    private BinaryPersistenceManager binaryPersistenceManager;
+    private InputStreamCacheManager binaryPersistenceManager;
 
-    public BinaryPersistenceManagerTest() {
+    public InputStreamCacheManagerTest() {
         super( "com.octo.android.rest.client.sample", HelloAndroidActivity.class );
     }
 
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        binaryPersistenceManager = new BinaryPersistenceManager( getActivity().getApplication() );
+        binaryPersistenceManager = new InputStreamCacheManager( getActivity().getApplication() );
     }
 
     public void test_canHandleInputStreams() {
