@@ -7,6 +7,8 @@ import java.util.LinkedList;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import android.app.Activity;
 import android.app.Service;
@@ -42,11 +44,12 @@ public class ContentManager extends Thread {
 	private Queue<CachedContentRequest<?>> requestQueue = new LinkedList<CachedContentRequest<?>>();
 	private Map<CachedContentRequest<?>, Set<RequestListener<?>>> mapRequestToRequestListener = Collections.synchronizedMap(new IdentityHashMap<CachedContentRequest<?>, Set<RequestListener<?>>>());
 
+	private ExecutorService executorService = Executors.newSingleThreadExecutor();
+
 	// TODO use blocking queue
 	private Object lockQueue = new Object();
 	// TODO use semaphore
 	private Object lockAcquireService = new Object();
-	private boolean contentServiceMustBeSetFailOnErrorAsap = false;
 
 	// ============================================================================================
 	// THREAD BEHAVIOR
@@ -66,18 +69,7 @@ public class ContentManager extends Thread {
 	public void run() {
 		bindService(context);
 
-		synchronized (lockAcquireService) {
-			while (contentService == null) {
-				try {
-					lockAcquireService.wait();
-				}
-				catch (InterruptedException e) {
-					e.printStackTrace();
-				}
-			}
-		}
-
-		contentService.setFailOnCacheError(this.contentServiceMustBeSetFailOnErrorAsap);
+		waitForServiceToBeBound();
 
 		while (!isStopped) {
 			synchronized (lockQueue) {
@@ -196,19 +188,24 @@ public class ContentManager extends Thread {
 	 *            the key of the object in cache
 	 * @return true if the data has been deleted from cache
 	 */
-	public <T> boolean removeDataFromCache(Class<T> clazz, Object cacheKey) {
-		if (contentService != null) {
-			return contentService.removeDataFromCache(clazz, cacheKey);
-		}
-		// TODO : what if contentservice not available
-		return false;
+	public <T> void removeDataFromCache(final Class<T> clazz, final Object cacheKey) {
+		executorService.execute(new Runnable() {
+
+			public void run() {
+				waitForServiceToBeBound();
+				contentService.removeDataFromCache(clazz, cacheKey);
+			}
+		});
 	}
 
 	public void removeAllDataFromCache() {
-		if (contentService != null) {
-			contentService.removeAllDataFromCache();
-		}
-		// TODO : what if contentservice not available
+		executorService.execute(new Runnable() {
+
+			public void run() {
+				waitForServiceToBeBound();
+				contentService.removeAllDataFromCache();
+			}
+		});
 	}
 
 	/**
@@ -218,11 +215,26 @@ public class ContentManager extends Thread {
 	 * @param failOnCacheError
 	 *            true if an error must fail the process
 	 */
-	public void setFailOnCacheError(boolean failOnCacheError) {
-		this.contentServiceMustBeSetFailOnErrorAsap = failOnCacheError;
+	public void setFailOnCacheError(final boolean failOnCacheError) {
+		executorService.execute(new Runnable() {
 
-		if (contentService != null) {
-			contentService.setFailOnCacheError(failOnCacheError);
+			public void run() {
+				waitForServiceToBeBound();
+				contentService.setFailOnCacheError(failOnCacheError);
+			}
+		});
+	}
+
+	private void waitForServiceToBeBound() {
+		synchronized (lockAcquireService) {
+			while (contentService == null) {
+				try {
+					lockAcquireService.wait();
+				}
+				catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
 		}
 	}
 
