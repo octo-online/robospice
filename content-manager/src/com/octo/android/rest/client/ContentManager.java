@@ -10,12 +10,14 @@ import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.Service;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.os.AsyncTask;
 import android.os.IBinder;
 
 import com.octo.android.rest.client.ContentService.ContentServiceBinder;
@@ -108,6 +110,41 @@ public class ContentManager extends Thread {
     }
 
     /**
+     * Execute a {@link AsyncTask}, put the result in cache with key <i>requestCacheKey</i> during <i>cacheDuration</i>
+     * millisecond and register listeners to notify when request is finished.
+     * 
+     * @param asyncTask
+     *            the AsyncTask to execute
+     * @param requestCacheKey
+     *            the key used to store and retrieve the result of the request in the cache
+     * @param cacheDuration
+     *            the time in millisecond to keep cache alive (see {@link DurationInMillis})
+     * @param requestListener
+     *            the listener to notify when the request will finish
+     * @param params
+     *            the params of the asynctask to execute
+     */
+    @TargetApi(3)
+    public < Params, Progress, Result > void execute( AsyncTask< Params, Progress, Result > asyncTask, String requestCacheKey, long cacheDuration,
+            RequestListener< Result > requestListener, Params... params ) {
+
+        checkHasBeenStartedAndIsNotStopped();
+        synchronized ( lockQueue ) {
+            CachedContentRequest< Result > cachedContentRequest = new CachedContentRequest< Result >( asyncTask, requestCacheKey, cacheDuration, params );
+            // add listener to listeners list for this request
+            Set< RequestListener< ? >> listeners = mapRequestToRequestListener.get( cachedContentRequest );
+            if ( listeners == null ) {
+                listeners = new HashSet< RequestListener< ? >>();
+                this.mapRequestToRequestListener.put( cachedContentRequest, listeners );
+            }
+            listeners.add( requestListener );
+
+            this.requestQueue.add( cachedContentRequest );
+            lockQueue.notifyAll();
+        }
+    }
+
+    /**
      * Execute a request, put the result in cache with key <i>requestCacheKey</i> during <i>cacheDuration</i>
      * millisecond and register listeners to notify when request is finished.
      * 
@@ -126,7 +163,7 @@ public class ContentManager extends Thread {
         synchronized ( lockQueue ) {
             CachedContentRequest< T > cachedContentRequest = new CachedContentRequest< T >( request, requestCacheKey, cacheDuration );
             // add listener to listeners list for this request
-            Set< RequestListener< ? >> listeners = mapRequestToRequestListener.get( request );
+            Set< RequestListener< ? >> listeners = mapRequestToRequestListener.get( cachedContentRequest );
             if ( listeners == null ) {
                 listeners = new HashSet< RequestListener< ? >>();
                 this.mapRequestToRequestListener.put( cachedContentRequest, listeners );

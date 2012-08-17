@@ -19,7 +19,7 @@ public abstract class ContentRequest< RESULT > {
         this.isCanceled = true;
     }
 
-    public boolean isCanceled() {
+    public boolean isCancelled() {
         return this.isCanceled;
     }
 

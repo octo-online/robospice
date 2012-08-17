@@ -97,7 +97,7 @@ public class RequestProcessor {
     protected < T > void processRequest( CachedContentRequest< T > request ) {
         Log.d( LOG_CAT, "Processing request : " + request );
 
-        if ( request.isCanceled() ) {
+        if ( request.isCancelled() ) {
             Log.d( LOG_CAT, "Not processing request : " + request + " as it is cancelled. " );
             return;
         }
@@ -117,7 +117,7 @@ public class RequestProcessor {
             }
         }
 
-        if ( result == null && !request.isCanceled() ) {
+        if ( result == null && !request.isCancelled() ) {
             // if file is not found or the date is a day after or cache disabled, call the web service
             Log.d( LOG_CAT, "Cache content not available or expired or disabled" );
             if ( !isNetworkAvailable( applicationContext ) ) {

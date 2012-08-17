@@ -4,6 +4,8 @@ import android.test.InstrumentationTestCase;
 
 import com.octo.android.rest.client.persistence.DurationInMillis;
 import com.octo.android.rest.client.request.CachedContentRequest;
+import com.octo.android.rest.client.request.ContentRequest;
+import com.octo.android.rest.client.stub.AsyncTaskStub;
 import com.octo.android.rest.client.stub.ContentRequestFailingStub;
 import com.octo.android.rest.client.stub.ContentRequestStub;
 import com.octo.android.rest.client.stub.ContentRequestSucceedingStub;
@@ -49,7 +51,7 @@ public class ContentManagerTest extends InstrumentationTestCase {
 
         // when
         try {
-            contentManager.execute( new CachedContentRequest< String >( null, null, DurationInMillis.ALWAYS ), null );
+            contentManager.execute( new CachedContentRequest< String >( (ContentRequest< String >) null, null, DurationInMillis.ALWAYS ), null );
             // then
             fail();
         } catch ( Exception ex ) {
@@ -66,13 +68,29 @@ public class ContentManagerTest extends InstrumentationTestCase {
 
         // when
         try {
-            contentManager.execute( new CachedContentRequest< String >( null, null, DurationInMillis.ALWAYS ), null );
+            contentManager.execute( new CachedContentRequest< String >( (ContentRequest< String >) null, null, DurationInMillis.ALWAYS ), null );
             // then
             fail();
         } catch ( Exception ex ) {
             // then
             assertTrue( true );
         }
+    }
+
+    public void test_executeContentRequest_based_on_asynctask() throws InterruptedException {
+        // when
+        contentManager.start( getInstrumentation().getContext() );
+        AsyncTaskStub< Void, Void, String > asyncTaskStub = new AsyncTaskStub< Void, Void, String >();
+        RequestListenerStub< String > requestListenerStub = new RequestListenerStub< String >();
+
+        // when
+        contentManager.execute( asyncTaskStub, TEST_CACHE_KEY, TEST_DURATION, requestListenerStub );
+        requestListenerStub.await( REQUEST_COMPLETION_TIME_OUT );
+
+        // test
+        assertTrue( asyncTaskStub.isLoadDataFromNetworkCalled() );
+        assertTrue( requestListenerStub.isExecutedInUIThread() );
+        assertTrue( requestListenerStub.isSuccessful() );
     }
 
     public void test_executeContentRequest_when_request_succeeds() throws InterruptedException {
@@ -83,9 +101,9 @@ public class ContentManagerTest extends InstrumentationTestCase {
 
         // when
         contentManager.execute( contentRequestStub, TEST_CACHE_KEY, TEST_DURATION, requestListenerStub );
+        requestListenerStub.await( REQUEST_COMPLETION_TIME_OUT );
 
         // test
-        requestListenerStub.await( REQUEST_COMPLETION_TIME_OUT );
         assertTrue( contentRequestStub.isLoadDataFromNetworkCalled() );
         assertTrue( requestListenerStub.isExecutedInUIThread() );
         assertTrue( requestListenerStub.isSuccessful() );
@@ -99,9 +117,9 @@ public class ContentManagerTest extends InstrumentationTestCase {
 
         // when
         contentManager.execute( contentRequestStub, TEST_CACHE_KEY, TEST_DURATION, requestListenerStub );
+        requestListenerStub.await( REQUEST_COMPLETION_TIME_OUT );
 
         // test
-        requestListenerStub.await( REQUEST_COMPLETION_TIME_OUT );
         assertTrue( contentRequestStub.isLoadDataFromNetworkCalled() );
         assertTrue( requestListenerStub.isExecutedInUIThread() );
         assertFalse( requestListenerStub.isSuccessful() );
@@ -115,7 +133,7 @@ public class ContentManagerTest extends InstrumentationTestCase {
         contentManager.cancel( contentRequestStub );
 
         // test
-        assertTrue( contentRequestStub.isCanceled() );
+        assertTrue( contentRequestStub.isCancelled() );
     }
 
     public void testCancelAllRequests() {
@@ -132,8 +150,8 @@ public class ContentManagerTest extends InstrumentationTestCase {
         contentManager.cancelAllRequests();
 
         // test
-        assertTrue( contentRequestStub.isCanceled() );
-        assertTrue( contentRequestStub2.isCanceled() );
+        assertTrue( contentRequestStub.isCancelled() );
+        assertTrue( contentRequestStub2.isCancelled() );
     }
 
     public void test_dontNotifyRequestListenersForRequest() throws InterruptedException {
