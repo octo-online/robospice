@@ -1,7 +1,5 @@
 package com.octo.android.rest.client;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
@@ -18,12 +16,11 @@ import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
 
+import com.octo.android.rest.client.exception.CacheLoadingException;
+import com.octo.android.rest.client.exception.CacheSavingException;
 import com.octo.android.rest.client.exception.ContentManagerException;
-import com.octo.android.rest.client.exception.LoadFromCacheException;
 import com.octo.android.rest.client.exception.NetworkException;
 import com.octo.android.rest.client.exception.NoNetworkException;
-import com.octo.android.rest.client.exception.SaveToCacheException;
-import com.octo.android.rest.client.persistence.CacheExpiredException;
 import com.octo.android.rest.client.persistence.CacheManager;
 import com.octo.android.rest.client.request.CachedContentRequest;
 import com.octo.android.rest.client.request.RequestListener;
@@ -96,28 +93,16 @@ public class RequestProcessor {
 
 		T result = null;
 		Set<RequestListener<?>> requestListeners = mapRequestToRequestListener.get(request);
+
+		// First, search cata in cache
 		try {
 			Log.d(LOG_CAT, "Loading request from cache : " + request);
 			result = loadDataFromCache(request.getResultType(), request.getRequestCacheKey(), request.getCacheDuration());
 		}
-		catch (FileNotFoundException e) {
-			Log.d(getClass().getName(), "Cache file not found.", e);
-			if (failOnCacheError) {
-				handlerResponse.post(new ResultRunnable(requestListeners, new LoadFromCacheException("Cache file not found.", e)));
-				return;
-			}
-		}
-		catch (IOException e) {
+		catch (CacheLoadingException e) {
 			Log.d(getClass().getName(), "Cache file could not be read.", e);
 			if (failOnCacheError) {
-				handlerResponse.post(new ResultRunnable(requestListeners, new LoadFromCacheException("Cache file could not be read.", e)));
-				return;
-			}
-		}
-		catch (CacheExpiredException e) {
-			Log.d(getClass().getName(), "Cache file has expired.", e);
-			if (failOnCacheError) {
-				handlerResponse.post(new ResultRunnable(requestListeners, new LoadFromCacheException("Cache file has expired.", e)));
+				handlerResponse.post(new ResultRunnable(requestListeners, e));
 				return;
 			}
 		}
@@ -131,6 +116,7 @@ public class RequestProcessor {
 				return;
 			}
 			else {
+				// Nothing found in cache (or cache expired), load from network
 				try {
 					result = request.loadDataFromNetwork();
 					if (result == null) {
@@ -152,17 +138,10 @@ public class RequestProcessor {
 					handlerResponse.post(new ResultRunnable(requestListeners, result));
 					return;
 				}
-				catch (FileNotFoundException e) {
-					Log.d(LOG_CAT, "A file not found exception occured during service execution :" + e.getMessage(), e);
+				catch (CacheSavingException e) {
+					Log.d(LOG_CAT, "An exception occured during service execution :" + e.getMessage(), e);
 					if (failOnCacheError) {
-						handlerResponse.post(new ResultRunnable(requestListeners, new SaveToCacheException("A file not found exception occured during service execution :", e)));
-						return;
-					}
-				}
-				catch (IOException e) {
-					Log.d(LOG_CAT, "An io exception occured during service execution :" + e.getMessage(), e);
-					if (failOnCacheError) {
-						handlerResponse.post(new ResultRunnable(requestListeners, new SaveToCacheException("An io exception occured during service execution :", e)));
+						handlerResponse.post(new ResultRunnable(requestListeners, e));
 						return;
 					}
 				}
@@ -210,11 +189,11 @@ public class RequestProcessor {
 	// PRIVATE
 	// ============================================================================================
 
-	private <T> T loadDataFromCache(Class<T> clazz, Object cacheKey, long maxTimeInCacheBeforeExpiry) throws FileNotFoundException, IOException, CacheExpiredException {
+	private <T> T loadDataFromCache(Class<T> clazz, Object cacheKey, long maxTimeInCacheBeforeExpiry) throws CacheLoadingException {
 		return cacheManager.loadDataFromCache(clazz, cacheKey, maxTimeInCacheBeforeExpiry);
 	}
 
-	private <T> T saveDataToCacheAndReturnData(T data, Object cacheKey) throws FileNotFoundException, IOException {
+	private <T> T saveDataToCacheAndReturnData(T data, Object cacheKey) throws CacheSavingException {
 		return cacheManager.saveDataToCacheAndReturnData(data, cacheKey);
 	}
 
