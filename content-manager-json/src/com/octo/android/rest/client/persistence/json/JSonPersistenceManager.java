@@ -2,11 +2,8 @@ package com.octo.android.rest.client.persistence.json;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.nio.charset.Charset;
 
-import org.codehaus.jackson.JsonParseException;
-import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
 
 import android.app.Application;
@@ -15,10 +12,13 @@ import android.util.Log;
 import com.google.common.base.Strings;
 import com.google.common.io.CharStreams;
 import com.google.common.io.Files;
-import com.octo.android.rest.client.persistence.CacheExpiredException;
+import com.octo.android.rest.client.exception.CacheLoadingException;
+import com.octo.android.rest.client.exception.CacheSavingException;
 import com.octo.android.rest.client.persistence.simple.FileBasedClassCacheManager;
 
 public final class JSonPersistenceManager<T> extends FileBasedClassCacheManager<T> {
+
+	private final static String LOG_CAT = JSonPersistenceManager.class.getSimpleName();
 
 	// ============================================================================================
 	// ATTRIBUTES
@@ -50,7 +50,7 @@ public final class JSonPersistenceManager<T> extends FileBasedClassCacheManager<
 	}
 
 	@Override
-	public final T loadDataFromCache(Object cacheKey, long maxTimeInCacheBeforeExpiry) throws JsonParseException, JsonMappingException, IOException, CacheExpiredException {
+	public final T loadDataFromCache(Object cacheKey, long maxTimeInCacheBeforeExpiry) throws CacheLoadingException {
 		T result = null;
 		String resultJson = null;
 
@@ -58,42 +58,57 @@ public final class JSonPersistenceManager<T> extends FileBasedClassCacheManager<
 		if (file.exists()) {
 			long timeInCache = System.currentTimeMillis() - file.lastModified();
 			if (maxTimeInCacheBeforeExpiry == 0 || timeInCache <= maxTimeInCacheBeforeExpiry) {
-				resultJson = CharStreams.toString(Files.newReader(file, Charset.forName("UTF-8")));
-				if (resultJson != null) {
+				try {
+					resultJson = CharStreams.toString(Files.newReader(file, Charset.forName("UTF-8")));
+
 					// finally transform json in object
 					if (!Strings.isNullOrEmpty(resultJson)) {
 						result = mJsonMapper.readValue(resultJson, clazz);
+						return result;
 					}
-					else {
-						Log.e(getClass().getName(), "Unable to restore cache content : cache file is empty");
-					}
+					throw new CacheLoadingException("Unable to restore cache content : cache file is empty");
 				}
-				else {
-					Log.e(getClass().getName(), "Unable to restore cache content");
+				catch (FileNotFoundException e) {
+					// Should not occur (we test before if file exists)
+					// Do not throw, file is not cached
+					Log.w(LOG_CAT, "file " + file.getAbsolutePath() + " does not exists", e);
+					return null;
 				}
-				return result;
+				catch (CacheLoadingException e) {
+					throw e;
+				}
+				catch (Exception e) {
+					throw new CacheLoadingException(e);
+				}
 			}
-			else {
-				throw new CacheExpiredException("Cache content is expired since " + (maxTimeInCacheBeforeExpiry - timeInCache));
-			}
+			Log.v(LOG_CAT, "Cache content is expired since " + (maxTimeInCacheBeforeExpiry - timeInCache));
+			return null;
 		}
-		throw new FileNotFoundException("File was not found in cache: " + file.getAbsolutePath());
-
+		Log.v(LOG_CAT, "file " + file.getAbsolutePath() + " does not exists");
+		return null;
 	}
 
 	@Override
-	public T saveDataToCacheAndReturnData(T data, Object cacheKey) throws FileNotFoundException, IOException {
+	public T saveDataToCacheAndReturnData(T data, Object cacheKey) throws CacheSavingException {
 		String resultJson = null;
 
-		// transform the content in json to store it in the cache
-		resultJson = mJsonMapper.writeValueAsString(data);
+		try {
+			// transform the content in json to store it in the cache
+			resultJson = mJsonMapper.writeValueAsString(data);
 
-		// finally store the json in the cache
-		if (!Strings.isNullOrEmpty(resultJson)) {
-			Files.write(resultJson, getCacheFile(cacheKey), Charset.forName("UTF-8"));
+			// finally store the json in the cache
+			if (!Strings.isNullOrEmpty(resultJson)) {
+				Files.write(resultJson, getCacheFile(cacheKey), Charset.forName("UTF-8"));
+			}
+			else {
+				throw new CacheSavingException("Data could not be serialized in json");
+			}
 		}
-		else {
-			Log.e(getClass().getName(), "Unable to save web service result into the cache");
+		catch (CacheSavingException e) {
+			throw e;
+		}
+		catch (Exception e) {
+			throw new CacheSavingException(e);
 		}
 		return data;
 	}

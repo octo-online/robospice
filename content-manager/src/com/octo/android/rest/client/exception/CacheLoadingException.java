@@ -12,19 +12,19 @@ import com.octo.android.rest.client.ContentService;
  * @author sni
  * 
  */
-public class LoadFromCacheException extends ContentManagerException {
+public class CacheLoadingException extends ContentManagerException {
 
     private static final long serialVersionUID = -1821941621446511524L;
 
-    public LoadFromCacheException( String detailMessage ) {
+    public CacheLoadingException( String detailMessage ) {
         super( detailMessage );
     }
 
-    public LoadFromCacheException( String detailMessage, Throwable throwable ) {
+    public CacheLoadingException( String detailMessage, Throwable throwable ) {
         super( detailMessage, throwable );
     }
 
-    public LoadFromCacheException( Throwable throwable ) {
+    public CacheLoadingException( Throwable throwable ) {
         super( throwable );
     }
 
