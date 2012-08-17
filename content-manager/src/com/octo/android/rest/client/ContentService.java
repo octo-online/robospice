@@ -47,12 +47,6 @@ public abstract class ContentService extends Service {
     // CONSTANTS
     // ============================================================================================
 
-    public static final int RESULT_OK = 0;
-    public static final int RESULT_ERROR = -1;
-
-    protected static final String FILE_CACHE_EXTENSION = ".store";
-    private static final String LOGCAT_TAG = "AbstractContentService";
-
     // ============================================================================================
     // ATTRIBUTES
     // ============================================================================================
@@ -151,21 +145,21 @@ public abstract class ContentService extends Service {
 
         if ( result == null && !request.isCanceled() ) {
             // if file is not found or the date is a day after or cache disabled, call the web service
-            Log.d( LOGCAT_TAG, "Cache content not available or expired or disabled" );
+            Log.d( LOG_CAT, "Cache content not available or expired or disabled" );
             if ( !isNetworkAvailable( getApplicationContext() ) ) {
-                Log.e( LOGCAT_TAG, "Network is down." );
+                Log.e( LOG_CAT, "Network is down." );
                 handlerResponse.post( new ResultRunnable( requestListeners, new NoNetworkException() ) );
                 return;
             } else {
                 try {
                     result = request.loadDataFromNetwork();
                     if ( result == null ) {
-                        Log.d( LOGCAT_TAG, "Unable to get web service result : " + request.getResultType() );
+                        Log.d( LOG_CAT, "Unable to get web service result : " + request.getResultType() );
                         handlerResponse.post( new ResultRunnable( requestListeners, (T) null ) );
                         return;
                     }
                 } catch ( Exception e ) {
-                    Log.e( LOGCAT_TAG, "A rest client exception occured during service execution :" + e.getMessage(), e );
+                    Log.e( LOG_CAT, "A rest client exception occured during service execution :" + e.getMessage(), e );
                     handlerResponse
                             .post( new ResultRunnable( requestListeners, new NetworkException( "Exception occured during invocation of web service.", e ) ) );
                     return;
@@ -173,19 +167,19 @@ public abstract class ContentService extends Service {
 
                 // request worked and result is not null
                 try {
-                    Log.d( LOGCAT_TAG, "Start caching content..." );
+                    Log.d( LOG_CAT, "Start caching content..." );
                     result = saveDataToCacheAndReturnData( result, request.getRequestCacheKey() );
                     handlerResponse.post( new ResultRunnable( requestListeners, result ) );
                     return;
                 } catch ( FileNotFoundException e ) {
-                    Log.d( LOGCAT_TAG, "A file not found exception occured during service execution :" + e.getMessage(), e );
+                    Log.d( LOG_CAT, "A file not found exception occured during service execution :" + e.getMessage(), e );
                     if ( failOnCacheError ) {
                         handlerResponse.post( new ResultRunnable( requestListeners, new SaveToCacheException(
                                 "A file not found exception occured during service execution :", e ) ) );
                         return;
                     }
                 } catch ( IOException e ) {
-                    Log.d( LOGCAT_TAG, "An io exception occured during service execution :" + e.getMessage(), e );
+                    Log.d( LOG_CAT, "An io exception occured during service execution :" + e.getMessage(), e );
                     if ( failOnCacheError ) {
                         handlerResponse.post( new ResultRunnable( requestListeners, new SaveToCacheException(
                                 "An io exception occured during service execution :", e ) ) );
