@@ -10,6 +10,7 @@ import org.easymock.EasyMock;
 
 import android.os.Looper;
 import android.test.InstrumentationTestCase;
+import android.test.suitebuilder.annotation.SmallTest;
 
 import com.octo.android.rest.client.exception.CacheLoadingException;
 import com.octo.android.rest.client.exception.CacheSavingException;
@@ -17,6 +18,7 @@ import com.octo.android.rest.client.exception.ContentManagerException;
 import com.octo.android.rest.client.persistence.DurationInMillis;
 import com.octo.android.rest.client.persistence.ICacheManager;
 
+@SmallTest
 public class RequestProcessorTest extends InstrumentationTestCase {
 
     private final static Class< String > TEST_CLASS = String.class;
@@ -105,7 +107,7 @@ public class RequestProcessorTest extends InstrumentationTestCase {
 
     public void testAddRequest_when_nothing_is_found_in_cache_and_request_fails() throws CacheLoadingException, CacheSavingException, InterruptedException {
         // given
-        CachedContentRequestStub< String > stubRequest = createRequest( TEST_CLASS, TEST_CACHE_KEY, TEST_DURATION );
+        CachedContentRequestStub< String > stubRequest = createFailedRequest( TEST_CLASS, TEST_CACHE_KEY, TEST_DURATION );
 
         RequestListenerStub< String > mockRequestListener = new RequestListenerStub< String >();
         Set< RequestListener< ? > > requestListenerSet = new HashSet< RequestListener< ? > >();
@@ -319,7 +321,7 @@ public class RequestProcessorTest extends InstrumentationTestCase {
         return new CachedContentRequestStub< T >( stubContentRequest, cacheKey, maxTimeInCache );
     }
 
-    private < T > CachedContentRequestStub< T > createRequest( Class< T > clazz, String cacheKey, long maxTimeInCache ) {
+    private < T > CachedContentRequestStub< T > createFailedRequest( Class< T > clazz, String cacheKey, long maxTimeInCache ) {
         ContentRequestStub< T > stubContentRequest = new ContentRequestFailingStub< T >( clazz );
         return new CachedContentRequestStub< T >( stubContentRequest, cacheKey, maxTimeInCache );
     }

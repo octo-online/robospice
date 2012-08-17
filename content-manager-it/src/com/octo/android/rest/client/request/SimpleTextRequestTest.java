@@ -9,7 +9,7 @@ import com.octo.android.rest.client.sample.TestActivity;
 @LargeTest
 public class SimpleTextRequestTest extends ActivityInstrumentationTestCase2< TestActivity > {
 
-    private SimpleTextRequest cnilRequest;
+    private SimpleTextRequest loremIpsumTextRequest;
 
     public SimpleTextRequestTest() {
         super( "com.octo.android.rest.client.sample", TestActivity.class );
@@ -18,11 +18,11 @@ public class SimpleTextRequestTest extends ActivityInstrumentationTestCase2< Tes
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        cnilRequest = new SimpleTextRequest( "http://www.loremipsum.de/downloads/original.txt" );
+        loremIpsumTextRequest = new SimpleTextRequest( "http://www.loremipsum.de/downloads/original.txt" );
     }
 
     public void test_loadDataFromNetwork() throws Exception {
-        String stringReturned = cnilRequest.loadDataFromNetwork();
+        String stringReturned = loremIpsumTextRequest.loadDataFromNetwork();
         assertTrue( stringReturned.startsWith( "Lorem ipsum" ) );
     }
 
