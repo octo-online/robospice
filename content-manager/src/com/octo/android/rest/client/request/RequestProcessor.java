@@ -1,5 +1,6 @@
 package com.octo.android.rest.client.request;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
@@ -8,6 +9,7 @@ import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import android.app.Activity;
 import android.app.Service;
 import android.content.Context;
 import android.net.ConnectivityManager;
@@ -95,6 +97,11 @@ public class RequestProcessor {
     protected < T > void processRequest( CachedContentRequest< T > request ) {
         Log.d( LOG_CAT, "Processing request : " + request );
 
+        if ( request.isCanceled() ) {
+            Log.d( LOG_CAT, "Not processing request : " + request + " as it is cancelled. " );
+            return;
+        }
+
         T result = null;
         Set< RequestListener< ? >> requestListeners = mapRequestToRequestListener.get( request );
 
@@ -150,6 +157,28 @@ public class RequestProcessor {
         }
         // we reached that point so write in cache didn't work but network worked.
         handlerResponse.post( new ResultRunnable( requestListeners, result ) );
+    }
+
+    /**
+     * Disable request listeners notifications for a specific request.<br/>
+     * All listeners associated to this request won't be called when request will finish.<br/>
+     * Should be called in {@link Activity#onPause}
+     * 
+     * @param request
+     *            Request on which you want to disable listeners
+     * @param listRequestListener
+     *            the collection of listeners associated to request not to be notified
+     */
+    public void dontNotifyRequestListenersForRequest( ContentRequest< ? > request, Collection< RequestListener< ? >> listRequestListener ) {
+        for ( CachedContentRequest< ? > cachedContentRequest : mapRequestToRequestListener.keySet() ) {
+            if ( cachedContentRequest.getContentRequest().equals( request ) ) {
+                Set< RequestListener< ? >> setRequestListener = mapRequestToRequestListener.get( cachedContentRequest );
+                if ( setRequestListener != null && listRequestListener != null ) {
+                    setRequestListener.removeAll( listRequestListener );
+                }
+                break;
+            }
+        }
     }
 
     /**

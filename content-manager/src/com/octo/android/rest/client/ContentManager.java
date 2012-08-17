@@ -250,11 +250,13 @@ public class ContentManager extends Thread {
      * @param request
      *            Request on which you want to disable listeners
      */
-    public void dontNotifyRequestListenersForRequest( ContentRequest< ? > request ) {
+    public void dontNotifyRequestListenersForRequest( final ContentRequest< ? > request ) {
         synchronized ( lockQueue ) {
-            // TODOuse a list iterator instead
+            // normally a list iterator would be better suited here
+            // but we exit the loop after first removal, so it's not needed
             for ( CachedContentRequest< ? > cachedContentRequest : mapRequestToRequestListener.keySet() ) {
                 if ( cachedContentRequest.getContentRequest().equals( request ) ) {
+                    dontNotifyRequestListenersForRequestInternal( request, cachedContentRequest );
                     mapRequestToRequestListener.remove( cachedContentRequest );
                     break;
                 }
@@ -268,8 +270,23 @@ public class ContentManager extends Thread {
      */
     public void dontNotifyAnyRequestListeners() {
         synchronized ( lockQueue ) {
+            for ( CachedContentRequest< ? > cachedContentRequest : mapRequestToRequestListener.keySet() ) {
+                final ContentRequest< ? > request = cachedContentRequest.getContentRequest();
+                dontNotifyRequestListenersForRequestInternal( request, cachedContentRequest );
+            }
             mapRequestToRequestListener.clear();
         }
+    }
+
+    protected void dontNotifyRequestListenersForRequestInternal( final ContentRequest< ? > request, CachedContentRequest< ? > cachedContentRequest ) {
+        final Set< RequestListener< ? >> setRequestListeners = mapRequestToRequestListener.get( cachedContentRequest );
+        executorService.execute( new Runnable() {
+
+            public void run() {
+                waitForServiceToBeBound();
+                contentService.dontNotifyRequestListenersForRequest( request, setRequestListeners );
+            }
+        } );
     }
 
     // ============================================================================================

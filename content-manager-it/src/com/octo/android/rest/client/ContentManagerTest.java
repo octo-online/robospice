@@ -62,7 +62,7 @@ public class ContentManagerTest extends InstrumentationTestCase {
         // given
         contentManager.start( getInstrumentation().getContext() );
         contentManager.shouldStop();
-        contentManager.join( 500 );
+        contentManager.join( REQUEST_COMPLETION_TIME_OUT );
 
         // when
         try {
@@ -78,14 +78,14 @@ public class ContentManagerTest extends InstrumentationTestCase {
     public void test_executeContentRequest_when_request_succeeds() throws InterruptedException {
         // when
         contentManager.start( getInstrumentation().getContext() );
-        ContentRequestStub< String > contentRequestStub = new ContentRequestSucceedingStub< String >( TEST_CLASS, "coucou" );
+        ContentRequestStub< String > contentRequestStub = new ContentRequestSucceedingStub< String >( TEST_CLASS, TEST_RETURNED_DATA );
         RequestListenerStub< String > requestListenerStub = new RequestListenerStub< String >();
 
         // when
         contentManager.execute( contentRequestStub, TEST_CACHE_KEY, TEST_DURATION, requestListenerStub );
 
         // test
-        requestListenerStub.await( 500 );
+        requestListenerStub.await( REQUEST_COMPLETION_TIME_OUT );
         assertTrue( contentRequestStub.isLoadDataFromNetworkCalled() );
         assertTrue( requestListenerStub.isExecutedInUIThread() );
         assertTrue( requestListenerStub.isSuccessful() );
@@ -101,7 +101,7 @@ public class ContentManagerTest extends InstrumentationTestCase {
         contentManager.execute( contentRequestStub, TEST_CACHE_KEY, TEST_DURATION, requestListenerStub );
 
         // test
-        requestListenerStub.await( 500 );
+        requestListenerStub.await( REQUEST_COMPLETION_TIME_OUT );
         assertTrue( contentRequestStub.isLoadDataFromNetworkCalled() );
         assertTrue( requestListenerStub.isExecutedInUIThread() );
         assertFalse( requestListenerStub.isSuccessful() );
@@ -109,7 +109,7 @@ public class ContentManagerTest extends InstrumentationTestCase {
 
     public void testCancel() {
         // given
-        ContentRequestStub< String > contentRequestStub = new ContentRequestSucceedingStub< String >( String.class, "coucou" );
+        ContentRequestStub< String > contentRequestStub = new ContentRequestSucceedingStub< String >( String.class, TEST_RETURNED_DATA );
 
         // when
         contentManager.cancel( contentRequestStub );
@@ -149,18 +149,12 @@ public class ContentManagerTest extends InstrumentationTestCase {
         contentManager.execute( contentRequestStub2, TEST_CACHE_KEY, TEST_DURATION, requestListenerStub2 );
         contentManager.dontNotifyRequestListenersForRequest( contentRequestStub );
 
-        contentRequestStub.await( 500 );
-        contentRequestStub2.await( 500 );
+        contentRequestStub.await( REQUEST_COMPLETION_TIME_OUT );
+        contentRequestStub2.await( REQUEST_COMPLETION_TIME_OUT );
 
         // test
         assertTrue( contentRequestStub.isLoadDataFromNetworkCalled() );
         assertTrue( contentRequestStub2.isLoadDataFromNetworkCalled() );
-
-        // TODO
-        /*
-         * This test should work. But content manager does just remove all listeners from its own list. It doesn't
-         * remove any listener from the service list of listeners, and that remains to be done.
-         */
         assertNull( requestListenerStub.isSuccessful() );
         assertFalse( requestListenerStub2.isSuccessful() );
     }
@@ -178,18 +172,12 @@ public class ContentManagerTest extends InstrumentationTestCase {
         contentManager.execute( contentRequestStub2, TEST_CACHE_KEY, TEST_DURATION, requestListenerStub2 );
         contentManager.dontNotifyAnyRequestListeners();
 
-        contentRequestStub.await( 500 );
-        contentRequestStub2.await( 500 );
+        contentRequestStub.await( REQUEST_COMPLETION_TIME_OUT );
+        contentRequestStub2.await( REQUEST_COMPLETION_TIME_OUT );
 
         // test
         assertTrue( contentRequestStub.isLoadDataFromNetworkCalled() );
         assertTrue( contentRequestStub2.isLoadDataFromNetworkCalled() );
-
-        // TODO
-        /*
-         * This test should work. But content manager does just remove all listeners from its own list. It doesn't
-         * remove any listener from the service list of listeners, and that remains to be done.
-         */
         assertNull( requestListenerStub.isSuccessful() );
         assertNull( requestListenerStub2.isSuccessful() );
     }

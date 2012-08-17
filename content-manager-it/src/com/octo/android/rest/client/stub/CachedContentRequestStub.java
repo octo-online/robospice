@@ -2,7 +2,6 @@ package com.octo.android.rest.client.stub;
 
 import com.octo.android.rest.client.request.CachedContentRequest;
 
-
 // ============================================================================================
 // INNER CLASS
 // ============================================================================================
@@ -12,8 +11,12 @@ public class CachedContentRequestStub< T > extends CachedContentRequest< T > {
         super( contentRequest, requestCacheKey, cacheDuration );
     }
 
-    @SuppressWarnings("rawtypes")
     public boolean isLoadDataFromNetworkCalled() {
-        return ( (ContentRequestStub) getContentRequest() ).isLoadDataFromNetworkCalled();
+        return ( (ContentRequestStub< ? >) getContentRequest() ).isLoadDataFromNetworkCalled();
     }
+
+    public void await( long millisecond ) throws InterruptedException {
+        ( (ContentRequestStub< ? >) getContentRequest() ).await( millisecond );
+    }
+
 }
