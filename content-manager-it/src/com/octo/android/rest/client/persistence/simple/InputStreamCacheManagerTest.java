@@ -4,6 +4,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.InputStream;
 import java.util.Arrays;
 
 import android.test.ActivityInstrumentationTestCase2;
@@ -11,6 +12,7 @@ import android.test.suitebuilder.annotation.MediumTest;
 
 import com.google.common.io.ByteStreams;
 import com.google.common.io.Files;
+import com.octo.android.rest.client.persistence.DurationInMillis;
 import com.octo.android.rest.client.sample.TestActivity;
 
 @MediumTest
@@ -41,12 +43,31 @@ public class InputStreamCacheManagerTest extends ActivityInstrumentationTestCase
         assertTrue( Arrays.equals( "coucou".getBytes(), bos.toByteArray() ) );
     }
 
-    public void testLoadDataFromCache() throws Exception {
+    public void testLoadDataFromCache_no_expiracy() throws Exception {
         File cachedFile = inputStreamCacheManager.getCacheFile( TEST_CACHE_KEY );
         Files.write( "coucou".getBytes(), cachedFile );
 
-        byte[] actual = Files.toByteArray( cachedFile );
+        InputStream inputStream = inputStreamCacheManager.loadDataFromCache( TEST_CACHE_KEY, DurationInMillis.ALWAYS );
+        byte[] actual = ByteStreams.toByteArray( inputStream );
         assertTrue( Arrays.equals( "coucou".getBytes(), actual ) );
+    }
+
+    public void testLoadDataFromCache_not_expired() throws Exception {
+        File cachedFile = inputStreamCacheManager.getCacheFile( TEST_CACHE_KEY );
+        Files.write( "coucou".getBytes(), cachedFile );
+
+        InputStream inputStream = inputStreamCacheManager.loadDataFromCache( TEST_CACHE_KEY, DurationInMillis.ONE_SECOND );
+        byte[] actual = ByteStreams.toByteArray( inputStream );
+        assertTrue( Arrays.equals( "coucou".getBytes(), actual ) );
+    }
+
+    public void testLoadDataFromCache_expired() throws Exception {
+        File cachedFile = inputStreamCacheManager.getCacheFile( TEST_CACHE_KEY );
+        Files.write( "coucou".getBytes(), cachedFile );
+        cachedFile.setLastModified( System.currentTimeMillis() - 5 * DurationInMillis.ONE_SECOND );
+
+        InputStream inputStream = inputStreamCacheManager.loadDataFromCache( TEST_CACHE_KEY, DurationInMillis.ONE_SECOND );
+        assertNull( inputStream );
     }
 
     @Override

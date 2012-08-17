@@ -39,12 +39,29 @@ public class StringCacheManagerTest extends ActivityInstrumentationTestCase2< Te
         assertEquals( "coucou", actual.get( 0 ) );
     }
 
-    public void testLoadDataFromCache() throws Exception {
+    public void testLoadDataFromCache_no_expiracy() throws Exception {
         File cachedFile = stringCacheManager.getCacheFile( TEST_CACHE_KEY );
         Files.write( "coucou", cachedFile, Charset.forName( "UTF-8" ) );
 
         String actual = stringCacheManager.loadDataFromCache( TEST_CACHE_KEY, DurationInMillis.ALWAYS );
         assertEquals( "coucou", actual );
+    }
+
+    public void testLoadDataFromCache_not_expired() throws Exception {
+        File cachedFile = stringCacheManager.getCacheFile( TEST_CACHE_KEY );
+        Files.write( "coucou", cachedFile, Charset.forName( "UTF-8" ) );
+
+        String actual = stringCacheManager.loadDataFromCache( TEST_CACHE_KEY, DurationInMillis.ONE_SECOND );
+        assertEquals( "coucou", actual );
+    }
+
+    public void testLoadDataFromCache_expired() throws Exception {
+        File cachedFile = stringCacheManager.getCacheFile( TEST_CACHE_KEY );
+        Files.write( "coucou", cachedFile, Charset.forName( "UTF-8" ) );
+        cachedFile.setLastModified( System.currentTimeMillis() - 5 * DurationInMillis.ONE_SECOND );
+
+        String actual = stringCacheManager.loadDataFromCache( TEST_CACHE_KEY, DurationInMillis.ONE_SECOND );
+        assertNull( actual );
     }
 
     @Override
