@@ -121,6 +121,8 @@ public class ContentManager extends Thread {
      *            the listener to notify when the request will finish
      */
     public < T > void execute( ContentRequest< T > request, String requestCacheKey, long cacheDuration, RequestListener< T > requestListener ) {
+
+        checkHasBeenStartedAndIsNotStopped();
         synchronized ( lockQueue ) {
             CachedContentRequest< T > cachedContentRequest = new CachedContentRequest< T >( request, requestCacheKey, cacheDuration );
             // add listener to listeners list for this request
@@ -146,6 +148,7 @@ public class ContentManager extends Thread {
      *            the listener to notify when the request will finish
      */
     public < T > void execute( CachedContentRequest< T > cachedContentRequest, RequestListener< T > requestListener ) {
+        checkHasBeenStartedAndIsNotStopped();
         synchronized ( lockQueue ) {
             // add listener to listeners list for this request
             Set< RequestListener< ? >> listeners = mapRequestToRequestListener.get( cachedContentRequest );
@@ -248,10 +251,13 @@ public class ContentManager extends Thread {
      *            Request on which you want to disable listeners
      */
     public void dontNotifyRequestListenersForRequest( ContentRequest< ? > request ) {
-        for ( CachedContentRequest< ? > cachedContentRequest : mapRequestToRequestListener.keySet() ) {
-            if ( cachedContentRequest.getContentRequest().equals( request ) ) {
-                mapRequestToRequestListener.remove( cachedContentRequest );
-                break;
+        synchronized ( lockQueue ) {
+            // TODOuse a list iterator instead
+            for ( CachedContentRequest< ? > cachedContentRequest : mapRequestToRequestListener.keySet() ) {
+                if ( cachedContentRequest.getContentRequest().equals( request ) ) {
+                    mapRequestToRequestListener.remove( cachedContentRequest );
+                    break;
+                }
             }
         }
     }
@@ -261,7 +267,9 @@ public class ContentManager extends Thread {
      * Should be called in {@link Activity#onPause}
      */
     public void dontNotifyAnyRequestListeners() {
-        mapRequestToRequestListener.clear();
+        synchronized ( lockQueue ) {
+            mapRequestToRequestListener.clear();
+        }
     }
 
     // ============================================================================================
@@ -286,6 +294,16 @@ public class ContentManager extends Thread {
     // ============================================================================================
     // PRIVATE
     // ============================================================================================
+
+    private void checkHasBeenStartedAndIsNotStopped() {
+        if ( context == null ) {
+            throw new IllegalStateException( "Content Manager has not been started. Invoke start(Context context)" );
+        }
+        if ( isStopped ) {
+            throw new IllegalStateException( "Content Manager has been stopped." );
+        }
+    }
+
     private void bindService( Context context ) {
         Intent intentService = new Intent();
         intentService.setAction( "com.octo.android.rest.client.ContentService" );

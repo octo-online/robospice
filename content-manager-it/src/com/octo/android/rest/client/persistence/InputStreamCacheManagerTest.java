@@ -4,13 +4,13 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 
 import android.test.ActivityInstrumentationTestCase2;
-import android.test.suitebuilder.annotation.SmallTest;
+import android.test.suitebuilder.annotation.MediumTest;
 
 import com.google.common.io.ByteStreams;
 import com.octo.android.rest.client.persistence.simple.InputStreamCacheManager;
 import com.octo.android.rest.client.sample.TestActivity;
 
-@SmallTest
+@MediumTest
 public class InputStreamCacheManagerTest extends ActivityInstrumentationTestCase2< TestActivity > {
 
     private InputStreamCacheManager binaryPersistenceManager;

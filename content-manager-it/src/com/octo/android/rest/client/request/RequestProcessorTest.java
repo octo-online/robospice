@@ -2,21 +2,21 @@ package com.octo.android.rest.client.request;
 
 import java.util.HashSet;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.Condition;
-import java.util.concurrent.locks.ReentrantLock;
 
 import org.easymock.EasyMock;
 
-import android.os.Looper;
 import android.test.InstrumentationTestCase;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import com.octo.android.rest.client.exception.CacheLoadingException;
 import com.octo.android.rest.client.exception.CacheSavingException;
-import com.octo.android.rest.client.exception.ContentManagerException;
 import com.octo.android.rest.client.persistence.DurationInMillis;
 import com.octo.android.rest.client.persistence.ICacheManager;
+import com.octo.android.rest.client.stub.CachedContentRequestStub;
+import com.octo.android.rest.client.stub.ContentRequestFailingStub;
+import com.octo.android.rest.client.stub.ContentRequestStub;
+import com.octo.android.rest.client.stub.ContentRequestSucceedingStub;
+import com.octo.android.rest.client.stub.RequestListenerStub;
 
 @SmallTest
 public class RequestProcessorTest extends InstrumentationTestCase {
@@ -25,20 +25,16 @@ public class RequestProcessorTest extends InstrumentationTestCase {
     private final static String TEST_CACHE_KEY = "12345";
     private final static long TEST_DURATION = DurationInMillis.ONE_SECOND;
     private final static String TEST_RETURNED_DATA = "coucou";
+    private static final long REQUEST_COMPLETION_TIME_OUT = 500;
 
     private ICacheManager mockCacheManager;
     private RequestProcessor requestProcessorUnderTest;
-
-    private ReentrantLock lock;
-    private Condition requestFinishedCondition;
 
     @Override
     protected void setUp() throws Exception {
         super.setUp();
         mockCacheManager = EasyMock.createMock( ICacheManager.class );
         requestProcessorUnderTest = new RequestProcessor( getInstrumentation().getTargetContext(), mockCacheManager );
-        lock = new ReentrantLock();
-        requestFinishedCondition = lock.newCondition();
     }
 
     // ============================================================================================
@@ -60,12 +56,7 @@ public class RequestProcessorTest extends InstrumentationTestCase {
         // when
         requestProcessorUnderTest.addRequest( stubRequest, requestListenerSet );
 
-        lock.lock();
-        try {
-            requestFinishedCondition.await( 500, TimeUnit.MILLISECONDS );
-        } finally {
-            lock.unlock();
-        }
+        mockRequestListener.await( REQUEST_COMPLETION_TIME_OUT );
 
         // then
         EasyMock.verify( mockCacheManager );
@@ -91,12 +82,7 @@ public class RequestProcessorTest extends InstrumentationTestCase {
         // when
         requestProcessorUnderTest.addRequest( stubRequest, requestListenerSet );
 
-        lock.lock();
-        try {
-            requestFinishedCondition.await( 500, TimeUnit.MILLISECONDS );
-        } finally {
-            lock.unlock();
-        }
+        mockRequestListener.await( REQUEST_COMPLETION_TIME_OUT );
 
         // then
         EasyMock.verify( mockCacheManager );
@@ -120,12 +106,7 @@ public class RequestProcessorTest extends InstrumentationTestCase {
         // when
         requestProcessorUnderTest.addRequest( stubRequest, requestListenerSet );
 
-        lock.lock();
-        try {
-            requestFinishedCondition.await( 500, TimeUnit.MILLISECONDS );
-        } finally {
-            lock.unlock();
-        }
+        mockRequestListener.await( REQUEST_COMPLETION_TIME_OUT );
 
         // then
         EasyMock.verify( mockCacheManager );
@@ -151,12 +132,7 @@ public class RequestProcessorTest extends InstrumentationTestCase {
         // when
         requestProcessorUnderTest.addRequest( stubRequest, requestListenerSet );
 
-        lock.lock();
-        try {
-            requestFinishedCondition.await( 500, TimeUnit.MILLISECONDS );
-        } finally {
-            lock.unlock();
-        }
+        mockRequestListener.await( REQUEST_COMPLETION_TIME_OUT );
 
         // then
         EasyMock.verify( mockCacheManager );
@@ -187,12 +163,7 @@ public class RequestProcessorTest extends InstrumentationTestCase {
         requestProcessorUnderTest.setFailOnCacheError( true );
         requestProcessorUnderTest.addRequest( stubRequest, requestListenerSet );
 
-        lock.lock();
-        try {
-            requestFinishedCondition.await( 500, TimeUnit.MILLISECONDS );
-        } finally {
-            lock.unlock();
-        }
+        mockRequestListener.await( REQUEST_COMPLETION_TIME_OUT );
 
         // then
         EasyMock.verify( mockCacheManager );
@@ -218,12 +189,7 @@ public class RequestProcessorTest extends InstrumentationTestCase {
         requestProcessorUnderTest.setFailOnCacheError( true );
         requestProcessorUnderTest.addRequest( stubRequest, requestListenerSet );
 
-        lock.lock();
-        try {
-            requestFinishedCondition.await( 500, TimeUnit.MILLISECONDS );
-        } finally {
-            lock.unlock();
-        }
+        mockRequestListener.await( REQUEST_COMPLETION_TIME_OUT );
 
         // then
         EasyMock.verify( mockCacheManager );
@@ -250,12 +216,7 @@ public class RequestProcessorTest extends InstrumentationTestCase {
         requestProcessorUnderTest.setFailOnCacheError( true );
         requestProcessorUnderTest.addRequest( stubRequest, requestListenerSet );
 
-        lock.lock();
-        try {
-            requestFinishedCondition.await( 500, TimeUnit.MILLISECONDS );
-        } finally {
-            lock.unlock();
-        }
+        mockRequestListener.await( REQUEST_COMPLETION_TIME_OUT );
 
         // then
         EasyMock.verify( mockCacheManager );
@@ -324,105 +285,5 @@ public class RequestProcessorTest extends InstrumentationTestCase {
     private < T > CachedContentRequestStub< T > createFailedRequest( Class< T > clazz, String cacheKey, long maxTimeInCache ) {
         ContentRequestStub< T > stubContentRequest = new ContentRequestFailingStub< T >( clazz );
         return new CachedContentRequestStub< T >( stubContentRequest, cacheKey, maxTimeInCache );
-    }
-
-    // ============================================================================================
-    // INNER CLASS
-    // ============================================================================================
-    private class CachedContentRequestStub< T > extends CachedContentRequest< T > {
-
-        public CachedContentRequestStub( ContentRequestStub< T > contentRequest, String requestCacheKey, long cacheDuration ) {
-            super( contentRequest, requestCacheKey, cacheDuration );
-        }
-
-        @SuppressWarnings("rawtypes")
-        public boolean isLoadDataFromNetworkCalled() {
-            return ( (ContentRequestStub) getContentRequest() ).isLoadDataFromNetworkCalled();
-        }
-    }
-
-    private abstract class ContentRequestStub< T > extends ContentRequest< T > {
-        protected boolean isLoadDataFromNetworkCalled = false;
-
-        public ContentRequestStub( Class< T > clazz ) {
-            super( clazz );
-        }
-
-        public boolean isLoadDataFromNetworkCalled() {
-            return isLoadDataFromNetworkCalled;
-        }
-    }
-
-    private final class ContentRequestSucceedingStub< T > extends ContentRequestStub< T > {
-        private T returnedData;
-
-        private ContentRequestSucceedingStub( Class< T > clazz, T returnedData ) {
-            super( clazz );
-            this.returnedData = returnedData;
-        }
-
-        @Override
-        public T loadDataFromNetwork() throws Exception {
-            isLoadDataFromNetworkCalled = true;
-            return returnedData;
-        }
-    }
-
-    private final class ContentRequestFailingStub< T > extends ContentRequestStub< T > {
-
-        private ContentRequestFailingStub( Class< T > clazz ) {
-            super( clazz );
-        }
-
-        @Override
-        public T loadDataFromNetwork() throws Exception {
-            isLoadDataFromNetworkCalled = true;
-            throw new Exception();
-        }
-
-    }
-
-    private class RequestListenerStub< T > implements RequestListener< T > {
-
-        private Boolean isSuccessful = null;
-        private boolean isExecutedInUIThread = false;
-
-        @Override
-        public void onRequestFailure( ContentManagerException arg0 ) {
-            lock.lock();
-            try {
-                checkIsExectuedInUIThread();
-                isSuccessful = false;
-                requestFinishedCondition.signal();
-            } finally {
-                lock.unlock();
-            }
-        }
-
-        @Override
-        public void onRequestSuccess( T arg0 ) {
-            lock.lock();
-            try {
-                checkIsExectuedInUIThread();
-                isSuccessful = true;
-                requestFinishedCondition.signal();
-            } finally {
-                lock.unlock();
-            }
-        }
-
-        protected void checkIsExectuedInUIThread() {
-            if ( Looper.myLooper() != null && Looper.myLooper() == Looper.getMainLooper() ) {
-                isExecutedInUIThread = true;
-            }
-        }
-
-        public Boolean isSuccessful() {
-            return isSuccessful;
-        }
-
-        public boolean isExecutedInUIThread() {
-            return isExecutedInUIThread;
-        }
     }
 }

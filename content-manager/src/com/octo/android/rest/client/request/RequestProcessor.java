@@ -73,14 +73,16 @@ public class RequestProcessor {
     public void addRequest( final CachedContentRequest< ? > request, Set< RequestListener< ? >> listRequestListener ) {
         Log.d( LOG_CAT, "Adding request to queue : " + request );
 
-        Set< RequestListener< ? >> listRequestListenerForThisRequest = mapRequestToRequestListener.get( request );
+        if ( listRequestListener != null ) {
+            Set< RequestListener< ? >> listRequestListenerForThisRequest = mapRequestToRequestListener.get( request );
 
-        if ( listRequestListenerForThisRequest == null ) {
-            listRequestListenerForThisRequest = new HashSet< RequestListener< ? >>();
-            this.mapRequestToRequestListener.put( request, listRequestListenerForThisRequest );
+            if ( listRequestListenerForThisRequest == null ) {
+                listRequestListenerForThisRequest = new HashSet< RequestListener< ? >>();
+                this.mapRequestToRequestListener.put( request, listRequestListenerForThisRequest );
+            }
+
+            listRequestListenerForThisRequest.addAll( listRequestListener );
         }
-
-        listRequestListenerForThisRequest.addAll( listRequestListener );
 
         executorService.execute( new Runnable() {
             public void run() {
@@ -213,6 +215,10 @@ public class RequestProcessor {
         }
 
         public void run() {
+            if ( listeners == null ) {
+                return;
+            }
+
             for ( RequestListener< T > listener : listeners ) {
                 if ( contentManagerException == null ) {
                     listener.onRequestSuccess( result );
