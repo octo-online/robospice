@@ -12,6 +12,7 @@ import android.util.Log;
 import com.octo.android.rest.client.persistence.CacheManager;
 import com.octo.android.rest.client.request.CachedContentRequest;
 import com.octo.android.rest.client.request.RequestListener;
+import com.octo.android.rest.client.request.RequestProcessor;
 
 /**
  * This is an abstract class used to manage the cache and provide web service result to an activity. <br/>

@@ -16,7 +16,7 @@ import com.octo.android.rest.client.exception.CacheSavingException;
  * @author sni
  * 
  */
-public class CacheManager {
+public class CacheManager implements ICacheManager {
 
 	private Collection<ClassCacheManagerFactory> factoryList = new ArrayList<ClassCacheManagerFactory>();
 
