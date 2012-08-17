@@ -1,7 +1,5 @@
 package com.octo.android.rest.client.request;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -13,8 +11,9 @@ import org.easymock.EasyMock;
 import android.os.Looper;
 import android.test.InstrumentationTestCase;
 
+import com.octo.android.rest.client.exception.CacheLoadingException;
+import com.octo.android.rest.client.exception.CacheSavingException;
 import com.octo.android.rest.client.exception.ContentManagerException;
-import com.octo.android.rest.client.persistence.CacheExpiredException;
 import com.octo.android.rest.client.persistence.DurationInMillis;
 import com.octo.android.rest.client.persistence.ICacheManager;
 
@@ -44,40 +43,9 @@ public class RequestProcessorTest extends InstrumentationTestCase {
     // TESTING WITH FAIL ON ERROR = false
     // ============================================================================================
 
-    public void testAddRequest_when_nothing_is_found_in_cache() throws FileNotFoundException, IOException, CacheExpiredException, InterruptedException {
+    public void testAddRequest_when_something_is_found_in_cache() throws CacheLoadingException, CacheSavingException, InterruptedException {
         // given
-        CachedContentRequestStub< String > stubRequest = createRequest( TEST_CLASS, TEST_CACHE_KEY, TEST_DURATION, TEST_RETURNED_DATA );
-
-        RequestListenerStub< String > mockRequestListener = new RequestListenerStub< String >();
-        Set< RequestListener< ? > > requestListenerSet = new HashSet< RequestListener< ? > >();
-        requestListenerSet.add( mockRequestListener );
-
-        EasyMock.expect( mockCacheManager.loadDataFromCache( EasyMock.eq( TEST_CLASS ), EasyMock.eq( TEST_CACHE_KEY ), EasyMock.eq( TEST_DURATION ) ) )
-                .andThrow( new FileNotFoundException() );
-        EasyMock.expect( mockCacheManager.saveDataToCacheAndReturnData( EasyMock.eq( TEST_RETURNED_DATA ), EasyMock.eq( TEST_CACHE_KEY ) ) ).andReturn(
-                TEST_RETURNED_DATA );
-        EasyMock.replay( mockCacheManager );
-
-        // when
-        requestProcessorUnderTest.addRequest( stubRequest, requestListenerSet );
-
-        lock.lock();
-        try {
-            requestFinishedCondition.await( 500, TimeUnit.MILLISECONDS );
-        } finally {
-            lock.unlock();
-        }
-
-        // then
-        EasyMock.verify( mockCacheManager );
-        assertTrue( stubRequest.isLoadDataFromNetworkCalled() );
-        assertTrue( mockRequestListener.isExecutedInUIThread() );
-        assertTrue( mockRequestListener.isSuccessful() );
-    }
-
-    public void testAddRequest_when_something_is_found_in_cache() throws FileNotFoundException, IOException, CacheExpiredException, InterruptedException {
-        // given
-        CachedContentRequestStub< String > stubRequest = createRequest( TEST_CLASS, TEST_CACHE_KEY, TEST_DURATION, TEST_RETURNED_DATA );
+        CachedContentRequestStub< String > stubRequest = createSuccessfulRequest( TEST_CLASS, TEST_CACHE_KEY, TEST_DURATION, TEST_RETURNED_DATA );
 
         RequestListenerStub< String > mockRequestListener = new RequestListenerStub< String >();
         Set< RequestListener< ? > > requestListenerSet = new HashSet< RequestListener< ? > >();
@@ -104,7 +72,38 @@ public class RequestProcessorTest extends InstrumentationTestCase {
         assertTrue( mockRequestListener.isSuccessful() );
     }
 
-    public void testAddRequest_when_request_fails() throws FileNotFoundException, IOException, CacheExpiredException, InterruptedException {
+    public void testAddRequest_when_nothing_is_found_in_cache_and_request_succeeds() throws CacheLoadingException, CacheSavingException, InterruptedException {
+        // given
+        CachedContentRequestStub< String > stubRequest = createSuccessfulRequest( TEST_CLASS, TEST_CACHE_KEY, TEST_DURATION, TEST_RETURNED_DATA );
+
+        RequestListenerStub< String > mockRequestListener = new RequestListenerStub< String >();
+        Set< RequestListener< ? > > requestListenerSet = new HashSet< RequestListener< ? > >();
+        requestListenerSet.add( mockRequestListener );
+
+        EasyMock.expect( mockCacheManager.loadDataFromCache( EasyMock.eq( TEST_CLASS ), EasyMock.eq( TEST_CACHE_KEY ), EasyMock.eq( TEST_DURATION ) ) )
+                .andReturn( null );
+        EasyMock.expect( mockCacheManager.saveDataToCacheAndReturnData( EasyMock.eq( TEST_RETURNED_DATA ), EasyMock.eq( TEST_CACHE_KEY ) ) ).andReturn(
+                TEST_RETURNED_DATA );
+        EasyMock.replay( mockCacheManager );
+
+        // when
+        requestProcessorUnderTest.addRequest( stubRequest, requestListenerSet );
+
+        lock.lock();
+        try {
+            requestFinishedCondition.await( 500, TimeUnit.MILLISECONDS );
+        } finally {
+            lock.unlock();
+        }
+
+        // then
+        EasyMock.verify( mockCacheManager );
+        assertTrue( stubRequest.isLoadDataFromNetworkCalled() );
+        assertTrue( mockRequestListener.isExecutedInUIThread() );
+        assertTrue( mockRequestListener.isSuccessful() );
+    }
+
+    public void testAddRequest_when_nothing_is_found_in_cache_and_request_fails() throws CacheLoadingException, CacheSavingException, InterruptedException {
         // given
         CachedContentRequestStub< String > stubRequest = createRequest( TEST_CLASS, TEST_CACHE_KEY, TEST_DURATION );
 
@@ -113,7 +112,7 @@ public class RequestProcessorTest extends InstrumentationTestCase {
         requestListenerSet.add( mockRequestListener );
 
         EasyMock.expect( mockCacheManager.loadDataFromCache( EasyMock.eq( TEST_CLASS ), EasyMock.eq( TEST_CACHE_KEY ), EasyMock.eq( TEST_DURATION ) ) )
-                .andThrow( new FileNotFoundException() );
+                .andReturn( null );
         EasyMock.replay( mockCacheManager );
 
         // when
@@ -133,18 +132,18 @@ public class RequestProcessorTest extends InstrumentationTestCase {
         assertFalse( mockRequestListener.isSuccessful() );
     }
 
-    public void testAddRequest_when_saving_to_cache_throws_exception() throws FileNotFoundException, IOException, CacheExpiredException, InterruptedException {
+    public void testAddRequest_when_saving_to_cache_throws_exception() throws CacheLoadingException, CacheSavingException, InterruptedException {
         // given
-        CachedContentRequestStub< String > stubRequest = createRequest( TEST_CLASS, TEST_CACHE_KEY, TEST_DURATION, TEST_RETURNED_DATA );
+        CachedContentRequestStub< String > stubRequest = createSuccessfulRequest( TEST_CLASS, TEST_CACHE_KEY, TEST_DURATION, TEST_RETURNED_DATA );
 
         RequestListenerStub< String > mockRequestListener = new RequestListenerStub< String >();
         Set< RequestListener< ? > > requestListenerSet = new HashSet< RequestListener< ? > >();
         requestListenerSet.add( mockRequestListener );
 
         EasyMock.expect( mockCacheManager.loadDataFromCache( EasyMock.eq( TEST_CLASS ), EasyMock.eq( TEST_CACHE_KEY ), EasyMock.eq( TEST_DURATION ) ) )
-                .andThrow( new FileNotFoundException() );
+                .andReturn( null );
         EasyMock.expect( mockCacheManager.saveDataToCacheAndReturnData( EasyMock.eq( TEST_RETURNED_DATA ), EasyMock.eq( TEST_CACHE_KEY ) ) ).andThrow(
-                new IOException() );
+                new CacheSavingException( "" ) );
         EasyMock.replay( mockCacheManager );
 
         // when
@@ -167,50 +166,19 @@ public class RequestProcessorTest extends InstrumentationTestCase {
     // ============================================================================================
     // TESTING WITH FAIL ON ERROR = true
     // ============================================================================================
-    public void testAddRequest_fail_on_error_true_when_nothing_is_found_in_cache() throws FileNotFoundException, IOException, CacheExpiredException,
-            InterruptedException {
+
+    public void testAddRequest_fail_on_error_true_when_nothing_is_found_in_cache() throws CacheLoadingException, CacheSavingException, InterruptedException {
         // given
-        CachedContentRequestStub< String > stubRequest = createRequest( TEST_CLASS, TEST_CACHE_KEY, TEST_DURATION, TEST_RETURNED_DATA );
+        CachedContentRequestStub< String > stubRequest = createSuccessfulRequest( TEST_CLASS, TEST_CACHE_KEY, TEST_DURATION, TEST_RETURNED_DATA );
 
         RequestListenerStub< String > mockRequestListener = new RequestListenerStub< String >();
         Set< RequestListener< ? > > requestListenerSet = new HashSet< RequestListener< ? > >();
         requestListenerSet.add( mockRequestListener );
 
         EasyMock.expect( mockCacheManager.loadDataFromCache( EasyMock.eq( TEST_CLASS ), EasyMock.eq( TEST_CACHE_KEY ), EasyMock.eq( TEST_DURATION ) ) )
-                .andThrow( new FileNotFoundException() );
-        EasyMock.replay( mockCacheManager );
-
-        // when
-        requestProcessorUnderTest.setFailOnCacheError( true );
-        requestProcessorUnderTest.addRequest( stubRequest, requestListenerSet );
-
-        lock.lock();
-        try {
-            requestFinishedCondition.await( 500, TimeUnit.MILLISECONDS );
-        } finally {
-            lock.unlock();
-        }
-
-        // then
-        EasyMock.verify( mockCacheManager );
-        assertFalse( stubRequest.isLoadDataFromNetworkCalled() );
-        assertTrue( mockRequestListener.isExecutedInUIThread() );
-        assertFalse( mockRequestListener.isSuccessful() );
-    }
-
-    public void testAddRequest_when_fail_on_error_true_saving_to_cache_throws_exception() throws FileNotFoundException, IOException, CacheExpiredException,
-            InterruptedException {
-        // given
-        CachedContentRequestStub< String > stubRequest = createRequest( TEST_CLASS, TEST_CACHE_KEY, TEST_DURATION, TEST_RETURNED_DATA );
-
-        RequestListenerStub< String > mockRequestListener = new RequestListenerStub< String >();
-        Set< RequestListener< ? > > requestListenerSet = new HashSet< RequestListener< ? > >();
-        requestListenerSet.add( mockRequestListener );
-
-        EasyMock.expect( mockCacheManager.loadDataFromCache( EasyMock.eq( TEST_CLASS ), EasyMock.eq( TEST_CACHE_KEY ), EasyMock.eq( TEST_DURATION ) ) )
-                .andReturn( TEST_RETURNED_DATA );
-        EasyMock.expect( mockCacheManager.saveDataToCacheAndReturnData( EasyMock.eq( TEST_RETURNED_DATA ), EasyMock.eq( TEST_CACHE_KEY ) ) ).andThrow(
-                new IOException() );
+                .andReturn( null );
+        EasyMock.expect( mockCacheManager.saveDataToCacheAndReturnData( EasyMock.eq( TEST_RETURNED_DATA ), EasyMock.eq( TEST_CACHE_KEY ) ) ).andReturn(
+                TEST_RETURNED_DATA );
         EasyMock.replay( mockCacheManager );
 
         // when
@@ -229,6 +197,69 @@ public class RequestProcessorTest extends InstrumentationTestCase {
         assertTrue( stubRequest.isLoadDataFromNetworkCalled() );
         assertTrue( mockRequestListener.isExecutedInUIThread() );
         assertTrue( mockRequestListener.isSuccessful() );
+    }
+
+    public void testAddRequest_when_fail_on_error_true_loading_from_cache_throws_exception() throws CacheLoadingException, CacheSavingException,
+            InterruptedException {
+        // given
+        CachedContentRequestStub< String > stubRequest = createSuccessfulRequest( TEST_CLASS, TEST_CACHE_KEY, TEST_DURATION, TEST_RETURNED_DATA );
+
+        RequestListenerStub< String > mockRequestListener = new RequestListenerStub< String >();
+        Set< RequestListener< ? > > requestListenerSet = new HashSet< RequestListener< ? > >();
+        requestListenerSet.add( mockRequestListener );
+
+        EasyMock.expect( mockCacheManager.loadDataFromCache( EasyMock.eq( TEST_CLASS ), EasyMock.eq( TEST_CACHE_KEY ), EasyMock.eq( TEST_DURATION ) ) )
+                .andThrow( new CacheLoadingException( "" ) );
+        EasyMock.replay( mockCacheManager );
+
+        // when
+        requestProcessorUnderTest.setFailOnCacheError( true );
+        requestProcessorUnderTest.addRequest( stubRequest, requestListenerSet );
+
+        lock.lock();
+        try {
+            requestFinishedCondition.await( 500, TimeUnit.MILLISECONDS );
+        } finally {
+            lock.unlock();
+        }
+
+        // then
+        EasyMock.verify( mockCacheManager );
+        assertFalse( stubRequest.isLoadDataFromNetworkCalled() );
+        assertFalse( mockRequestListener.isSuccessful() );
+    }
+
+    public void testAddRequest_when_fail_on_error_true_saving_to_cache_throws_exception() throws CacheLoadingException, CacheSavingException,
+            InterruptedException {
+        // given
+        CachedContentRequestStub< String > stubRequest = createSuccessfulRequest( TEST_CLASS, TEST_CACHE_KEY, TEST_DURATION, TEST_RETURNED_DATA );
+
+        RequestListenerStub< String > mockRequestListener = new RequestListenerStub< String >();
+        Set< RequestListener< ? > > requestListenerSet = new HashSet< RequestListener< ? > >();
+        requestListenerSet.add( mockRequestListener );
+
+        EasyMock.expect( mockCacheManager.loadDataFromCache( EasyMock.eq( TEST_CLASS ), EasyMock.eq( TEST_CACHE_KEY ), EasyMock.eq( TEST_DURATION ) ) )
+                .andReturn( null );
+        EasyMock.expect( mockCacheManager.saveDataToCacheAndReturnData( EasyMock.eq( TEST_RETURNED_DATA ), EasyMock.eq( TEST_CACHE_KEY ) ) ).andThrow(
+                new CacheSavingException( "" ) );
+        EasyMock.replay( mockCacheManager );
+
+        // when
+        requestProcessorUnderTest.setFailOnCacheError( true );
+        requestProcessorUnderTest.addRequest( stubRequest, requestListenerSet );
+
+        lock.lock();
+        try {
+            requestFinishedCondition.await( 500, TimeUnit.MILLISECONDS );
+        } finally {
+            lock.unlock();
+        }
+
+        // then
+        EasyMock.verify( mockCacheManager );
+        assertTrue( stubRequest.isLoadDataFromNetworkCalled() );
+        assertTrue( mockRequestListener.isExecutedInUIThread() );
+        assertFalse( mockRequestListener.isSuccessful() );
     }
 
     // ============================================================================================
@@ -283,7 +314,7 @@ public class RequestProcessorTest extends InstrumentationTestCase {
     // PRIVATE METHODS
     // ============================================================================================
 
-    private < T > CachedContentRequestStub< T > createRequest( Class< T > clazz, String cacheKey, long maxTimeInCache, T returnedData ) {
+    private < T > CachedContentRequestStub< T > createSuccessfulRequest( Class< T > clazz, String cacheKey, long maxTimeInCache, T returnedData ) {
         ContentRequestStub< T > stubContentRequest = new ContentRequestSucceedingStub< T >( clazz, returnedData );
         return new CachedContentRequestStub< T >( stubContentRequest, cacheKey, maxTimeInCache );
     }
