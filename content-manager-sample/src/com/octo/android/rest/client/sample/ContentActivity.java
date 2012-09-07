@@ -1,13 +1,9 @@
 package com.octo.android.rest.client.sample;
 
-import roboguice.activity.RoboActivity;
+import android.app.Activity;
 import android.os.Bundle;
 
-import com.octo.android.rest.client.ContentActivity;
 import com.octo.android.rest.client.ContentManager;
-import com.octo.android.rest.client.request.CachedContentRequest;
-import com.octo.android.rest.client.request.ContentRequest;
-import com.octo.android.rest.client.request.RequestListener;
 
 /**
  * This class is the base class of all activities of the sample project.
@@ -18,21 +14,13 @@ import com.octo.android.rest.client.request.RequestListener;
  * @author sni
  * 
  */
-public class RoboContentActivity extends RoboActivity {
+public class ContentActivity extends Activity {
     private ContentManager contentManager = new ContentManager();
 
     @Override
     protected void onCreate( Bundle savedInstanceState ) {
         super.onCreate( savedInstanceState );
         contentManager.start( this );
-    }
-
-    public < T > void execute( ContentRequest< T > request, String requestCacheKey, long cacheDuration, RequestListener< T > requestListener ) {
-        contentManager.execute( request, requestCacheKey, cacheDuration, requestListener );
-    }
-
-    public < T > void execute( CachedContentRequest< T > cachedContentRequest, RequestListener< T > requestListener ) {
-        contentManager.execute( cachedContentRequest, requestListener );
     }
 
     @Override
@@ -47,5 +35,9 @@ public class RoboContentActivity extends RoboActivity {
     protected void onDestroy() {
         contentManager.shouldStop();
         super.onDestroy();
+    }
+
+    public ContentManager getContentManager() {
+        return contentManager;
     }
 }

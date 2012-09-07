@@ -21,7 +21,7 @@ import com.octo.android.rest.client.sample.model.WeatherResult;
 import com.octo.android.rest.client.sample.request.WeatherRequest;
 
 @ContentView(R.layout.main)
-public class HelloAndroidActivity extends RoboContentActivity {
+public class HelloAndroidActivity extends ContentActivity {
 
     // ============================================================================================
     // ATTRIBUTES
@@ -59,9 +59,9 @@ public class HelloAndroidActivity extends RoboContentActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        execute( loremRequest, "lorem.txt", DurationInMillis.ONE_DAY, new LoremRequestListener() );
-        execute( weatherRequest, "75000.weather", DurationInMillis.ONE_DAY, new WeatherRequestListener() );
-        execute( imageRequest, "logo", DurationInMillis.ONE_DAY, new ImageRequestListener() );
+        getContentManager().execute( loremRequest, "lorem.txt", DurationInMillis.ONE_DAY, new LoremRequestListener() );
+        getContentManager().execute( weatherRequest, "75000.weather", DurationInMillis.ONE_DAY, new WeatherRequestListener() );
+        getContentManager().execute( imageRequest, "logo", DurationInMillis.ONE_DAY, new ImageRequestListener() );
     }
 
     // ============================================================================================
