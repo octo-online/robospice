@@ -1,4 +1,4 @@
-package com.octo.android.rest.client.persistence.simple;
+package com.octo.android.rest.client.persistence.file;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -12,10 +12,10 @@ import com.google.common.io.Files;
 import com.octo.android.rest.client.exception.CacheLoadingException;
 import com.octo.android.rest.client.exception.CacheSavingException;
 
-public final class StringCacheManager extends FileBasedClassCacheManager< String > {
-    private final static String LOG_CAT = StringCacheManager.class.getSimpleName();
+public final class InFileStringObjectPersister extends InFileObjectPersister< String > {
+    private final static String LOG_CAT = InFileStringObjectPersister.class.getSimpleName();
 
-    public StringCacheManager( Application application ) {
+    public InFileStringObjectPersister( Application application ) {
         super( application );
     }
 

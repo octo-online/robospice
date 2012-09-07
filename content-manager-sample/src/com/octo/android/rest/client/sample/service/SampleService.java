@@ -13,9 +13,9 @@ import android.app.Application;
 
 import com.octo.android.rest.client.SpringAndroidContentService;
 import com.octo.android.rest.client.persistence.CacheManager;
+import com.octo.android.rest.client.persistence.file.InFileInputStreamObjectPersister;
+import com.octo.android.rest.client.persistence.file.InFileStringObjectPersister;
 import com.octo.android.rest.client.persistence.json.JSonPersistenceManageFactory;
-import com.octo.android.rest.client.persistence.simple.InputStreamCacheManager;
-import com.octo.android.rest.client.persistence.simple.StringCacheManager;
 
 public class SampleService extends SpringAndroidContentService {
 
@@ -26,13 +26,13 @@ public class SampleService extends SpringAndroidContentService {
         CacheManager cacheManager = new CacheManager();
 
         // init
-        StringCacheManager stringPersistenceManager = new StringCacheManager( application );
-        InputStreamCacheManager binaryPersistenceManager = new InputStreamCacheManager( application );
+        InFileStringObjectPersister stringPersistenceManager = new InFileStringObjectPersister( application );
+        InFileInputStreamObjectPersister binaryPersistenceManager = new InFileInputStreamObjectPersister( application );
         JSonPersistenceManageFactory jSonPersistenceManageFactory = new JSonPersistenceManageFactory( application );
 
-        cacheManager.registerFactory( stringPersistenceManager );
-        cacheManager.registerFactory( binaryPersistenceManager );
-        cacheManager.registerFactory( jSonPersistenceManageFactory );
+        cacheManager.addObjectPersisterFactory( stringPersistenceManager );
+        cacheManager.addObjectPersisterFactory( binaryPersistenceManager );
+        cacheManager.addObjectPersisterFactory( jSonPersistenceManageFactory );
         return cacheManager;
     }
 

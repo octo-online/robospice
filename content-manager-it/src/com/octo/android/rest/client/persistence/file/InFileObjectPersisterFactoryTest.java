@@ -1,4 +1,4 @@
-package com.octo.android.rest.client.persistence.simple;
+package com.octo.android.rest.client.persistence.file;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -9,14 +9,16 @@ import android.test.ActivityInstrumentationTestCase2;
 import android.test.suitebuilder.annotation.MediumTest;
 
 import com.google.common.io.Files;
+import com.octo.android.rest.client.persistence.file.InFileObjectPersister;
+import com.octo.android.rest.client.persistence.file.InFileObjectPersisterFactory;
 import com.octo.android.rest.client.sample.TestActivity;
 
 @MediumTest
-public class FileBasedClassCacheManagerFactoryTest extends ActivityInstrumentationTestCase2< TestActivity > {
+public class InFileObjectPersisterFactoryTest extends ActivityInstrumentationTestCase2< TestActivity > {
 
-    FileBasedClassCacheManagerFactory fileBasedClassCacheManagerFactory;
+    InFileObjectPersisterFactory fileBasedClassCacheManagerFactory;
 
-    public FileBasedClassCacheManagerFactoryTest() {
+    public InFileObjectPersisterFactoryTest() {
         super( "com.octo.android.rest.client", TestActivity.class );
     }
 
@@ -61,7 +63,7 @@ public class FileBasedClassCacheManagerFactoryTest extends ActivityInstrumentati
     // ============================================================================================
     // CLASS UNDER TEST
     // ============================================================================================
-    private final class FileBaseClassCacheManagerFactoryUnderTest extends FileBasedClassCacheManagerFactory {
+    private final class FileBaseClassCacheManagerFactoryUnderTest extends InFileObjectPersisterFactory {
         private FileBaseClassCacheManagerFactoryUnderTest( Application application ) {
             super( application );
         }
@@ -72,7 +74,7 @@ public class FileBasedClassCacheManagerFactoryTest extends ActivityInstrumentati
         }
 
         @Override
-        public < DATA > FileBasedClassCacheManager< DATA > createClassCacheManager( Class< DATA > clazz ) {
+        public < DATA > InFileObjectPersister< DATA > createClassCacheManager( Class< DATA > clazz ) {
             return null;
         }
 

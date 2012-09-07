@@ -1,4 +1,4 @@
-package com.octo.android.rest.client.persistence.simple;
+package com.octo.android.rest.client.persistence.file;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -15,11 +15,11 @@ import com.google.common.io.Files;
 import com.octo.android.rest.client.exception.CacheLoadingException;
 import com.octo.android.rest.client.exception.CacheSavingException;
 
-public final class InputStreamCacheManager extends FileBasedClassCacheManager<InputStream> {
+public final class InFileInputStreamObjectPersister extends InFileObjectPersister<InputStream> {
 
-	private final static String LOG_CAT = InputStreamCacheManager.class.getSimpleName();
+	private final static String LOG_CAT = InFileInputStreamObjectPersister.class.getSimpleName();
 
-	public InputStreamCacheManager(Application application) {
+	public InFileInputStreamObjectPersister(Application application) {
 		super(application);
 	}
 

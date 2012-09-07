@@ -1,4 +1,4 @@
-package com.octo.android.rest.client.persistence.simple;
+package com.octo.android.rest.client.persistence.file;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -15,10 +15,10 @@ import com.octo.android.rest.client.sample.model.Weather;
 import com.octo.android.rest.client.sample.model.WeatherResult;
 
 @SmallTest
-public class WeatherPersistenceManagerTest extends ActivityInstrumentationTestCase2< TestActivity > {
-    private FileBasedClassCacheManager< WeatherResult > dataPersistenceManager;
+public class InFileWeatherPersisterTest extends ActivityInstrumentationTestCase2< TestActivity > {
+    private InFileObjectPersister< WeatherResult > dataPersistenceManager;
 
-    public WeatherPersistenceManagerTest() {
+    public InFileWeatherPersisterTest() {
         super( "com.octo.android.rest.client.sample", TestActivity.class );
     }
 

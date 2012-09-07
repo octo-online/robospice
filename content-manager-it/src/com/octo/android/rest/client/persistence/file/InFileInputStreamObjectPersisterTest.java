@@ -1,4 +1,4 @@
-package com.octo.android.rest.client.persistence.simple;
+package com.octo.android.rest.client.persistence.file;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -16,20 +16,20 @@ import com.octo.android.rest.client.persistence.DurationInMillis;
 import com.octo.android.rest.client.sample.TestActivity;
 
 @MediumTest
-public class InputStreamCacheManagerTest extends ActivityInstrumentationTestCase2< TestActivity > {
+public class InFileInputStreamObjectPersisterTest extends ActivityInstrumentationTestCase2< TestActivity > {
 
     private static final String TEST_CACHE_KEY = "TEST_CACHE_KEY";
 
-    private InputStreamCacheManager inputStreamCacheManager;
+    private InFileInputStreamObjectPersister inputStreamCacheManager;
 
-    public InputStreamCacheManagerTest() {
+    public InFileInputStreamObjectPersisterTest() {
         super( "com.octo.android.Rest.client", TestActivity.class );
     }
 
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        inputStreamCacheManager = new InputStreamCacheManager( getActivity().getApplication() );
+        inputStreamCacheManager = new InFileInputStreamObjectPersister( getActivity().getApplication() );
     }
 
     public void testSaveDataToCacheAndReturnData() throws Exception {

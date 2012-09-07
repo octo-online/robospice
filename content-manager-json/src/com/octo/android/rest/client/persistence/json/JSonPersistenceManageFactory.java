@@ -2,10 +2,10 @@ package com.octo.android.rest.client.persistence.json;
 
 import android.app.Application;
 
-import com.octo.android.rest.client.persistence.simple.FileBasedClassCacheManager;
-import com.octo.android.rest.client.persistence.simple.FileBasedClassCacheManagerFactory;
+import com.octo.android.rest.client.persistence.file.InFileObjectPersister;
+import com.octo.android.rest.client.persistence.file.InFileObjectPersisterFactory;
 
-public class JSonPersistenceManageFactory extends FileBasedClassCacheManagerFactory {
+public class JSonPersistenceManageFactory extends InFileObjectPersisterFactory {
 
     public JSonPersistenceManageFactory( Application application ) {
         super( application );
@@ -18,7 +18,7 @@ public class JSonPersistenceManageFactory extends FileBasedClassCacheManagerFact
 
     @Override
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    public < DATA > FileBasedClassCacheManager< DATA > createClassCacheManager( Class< DATA > clazz ) {
+    public < DATA > InFileObjectPersister< DATA > createClassCacheManager( Class< DATA > clazz ) {
         return new JSonPersistenceManager( getApplication(), clazz, getCachePrefix() );
     }
 

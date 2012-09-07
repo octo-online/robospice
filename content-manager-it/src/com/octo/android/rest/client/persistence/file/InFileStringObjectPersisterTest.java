@@ -1,4 +1,4 @@
-package com.octo.android.rest.client.persistence.simple;
+package com.octo.android.rest.client.persistence.file;
 
 import java.io.File;
 import java.nio.charset.Charset;
@@ -12,20 +12,20 @@ import com.octo.android.rest.client.persistence.DurationInMillis;
 import com.octo.android.rest.client.sample.TestActivity;
 
 @MediumTest
-public class StringCacheManagerTest extends ActivityInstrumentationTestCase2< TestActivity > {
+public class InFileStringObjectPersisterTest extends ActivityInstrumentationTestCase2< TestActivity > {
 
     private static final String TEST_CACHE_KEY = "TEST_CACHE_KEY";
 
-    private StringCacheManager stringCacheManager;
+    private InFileStringObjectPersister stringCacheManager;
 
-    public StringCacheManagerTest() {
+    public InFileStringObjectPersisterTest() {
         super( "com.octo.android.Rest.client", TestActivity.class );
     }
 
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        stringCacheManager = new StringCacheManager( getActivity().getApplication() );
+        stringCacheManager = new InFileStringObjectPersister( getActivity().getApplication() );
     }
 
     public void testSaveDataToCacheAndReturnData() throws Exception {

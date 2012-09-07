@@ -14,9 +14,9 @@ import com.google.common.io.CharStreams;
 import com.google.common.io.Files;
 import com.octo.android.rest.client.exception.CacheLoadingException;
 import com.octo.android.rest.client.exception.CacheSavingException;
-import com.octo.android.rest.client.persistence.simple.FileBasedClassCacheManager;
+import com.octo.android.rest.client.persistence.file.InFileObjectPersister;
 
-public final class JSonPersistenceManager< T > extends FileBasedClassCacheManager< T > {
+public final class JSonPersistenceManager< T > extends InFileObjectPersister< T > {
 
     private final static String LOG_CAT = JSonPersistenceManager.class.getSimpleName();
 
