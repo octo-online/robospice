@@ -124,6 +124,8 @@ public class ContentManager extends Thread {
      * @param params
      *            the params of the asynctask to execute
      */
+    // TODO get rig of request listener, they should be provided by
+    // async task postExecute..
     @TargetApi(3)
     public < Params, Progress, Result > void execute( AsyncTask< Params, Progress, Result > asyncTask, String requestCacheKey, long cacheDuration,
             RequestListener< Result > requestListener, Params... params ) {
