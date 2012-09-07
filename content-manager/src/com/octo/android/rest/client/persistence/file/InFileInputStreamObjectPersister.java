@@ -6,6 +6,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.concurrent.TimeUnit;
 
 import android.app.Application;
 import android.util.Log;
@@ -62,6 +63,11 @@ public class InFileInputStreamObjectPersister extends InFileObjectPersister< Inp
                             ByteStreams.write( byteArray, Files.newOutputStreamSupplier( getCacheFile( cacheKey ) ) );
                         } catch ( IOException e ) {
                             Log.e( LOG_CAT, "An error occured on saving request " + cacheKey + " data asynchronously", e );
+                        } finally {
+                            // notify that saving is finished for test purpose
+                            lock.lock();
+                            condition.signal();
+                            lock.unlock();
                         }
                     };
                 }.start();
@@ -85,4 +91,9 @@ public class InFileInputStreamObjectPersister extends InFileObjectPersister< Inp
         }
     }
 
+    /** for testing purpose only. Overriding allows to regive package level visibility. */
+    @Override
+    protected void awaitForSaveAsyncTermination( long time, TimeUnit timeUnit ) throws InterruptedException {
+        super.awaitForSaveAsyncTermination( time, timeUnit );
+    }
 }

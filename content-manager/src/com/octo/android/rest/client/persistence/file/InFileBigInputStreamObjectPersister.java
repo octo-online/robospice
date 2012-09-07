@@ -3,6 +3,7 @@ package com.octo.android.rest.client.persistence.file;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.concurrent.TimeUnit;
 
 import android.app.Application;
 
@@ -32,6 +33,11 @@ public final class InFileBigInputStreamObjectPersister extends InFileInputStream
 
     @Override
     public void setAsyncSaveEnabled( boolean isAsyncSaveEnabled ) {
-        throw new IllegalArgumentException( "Asynchronous saving operation not supported." );
+        throw new IllegalStateException( "Asynchronous saving operation not supported." );
+    }
+
+    @Override
+    protected void awaitForSaveAsyncTermination( long time, TimeUnit timeUnit ) throws InterruptedException {
+        throw new IllegalStateException( "Asynchronous saving operation not supported. Not possible to invoke this method neither." );
     }
 }

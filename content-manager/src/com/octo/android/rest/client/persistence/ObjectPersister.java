@@ -2,6 +2,9 @@ package com.octo.android.rest.client.persistence;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.ReentrantLock;
 
 import android.app.Application;
 
@@ -19,6 +22,8 @@ import com.octo.android.rest.client.exception.CacheSavingException;
 public abstract class ObjectPersister< DATA > extends ObjectPersisterFactory {
 
     protected boolean isAsyncSaveEnabled;
+    protected ReentrantLock lock = new ReentrantLock();
+    protected Condition condition = lock.newCondition();
 
     public ObjectPersister( Application application ) {
         super( application );
@@ -52,11 +57,19 @@ public abstract class ObjectPersister< DATA > extends ObjectPersisterFactory {
 
     public abstract boolean removeDataFromCache( Object cacheKey );
 
+    @Override
     public boolean isAsyncSaveEnabled() {
         return isAsyncSaveEnabled;
     }
 
+    @Override
     public void setAsyncSaveEnabled( boolean isAsyncSaveEnabled ) {
         this.isAsyncSaveEnabled = isAsyncSaveEnabled;
+    }
+
+    protected void awaitForSaveAsyncTermination( long time, TimeUnit timeUnit ) throws InterruptedException {
+        lock.lock();
+        condition.await( time, timeUnit );
+        lock.unlock();
     }
 }

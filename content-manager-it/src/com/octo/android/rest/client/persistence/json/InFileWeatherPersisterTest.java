@@ -1,14 +1,15 @@
-package com.octo.android.rest.client.persistence.file;
+package com.octo.android.rest.client.persistence.json;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import android.test.ActivityInstrumentationTestCase2;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import com.octo.android.rest.client.persistence.DurationInMillis;
-import com.octo.android.rest.client.persistence.json.InJSonFileObjectPersisterFactory;
+import com.octo.android.rest.client.persistence.file.InFileObjectPersister;
 import com.octo.android.rest.client.sample.TestActivity;
 import com.octo.android.rest.client.sample.model.Curren_weather;
 import com.octo.android.rest.client.sample.model.Weather;
@@ -54,7 +55,7 @@ public class InFileWeatherPersisterTest extends ActivityInstrumentationTestCase2
         WeatherResult weatherReturned = dataPersistenceManager.saveDataToCacheAndReturnData( weatherRequestStatus, "weather.json" );
 
         // THEN
-        Thread.sleep( 500 );
+        ( (InJSonFileObjectPersister< ? >) dataPersistenceManager ).awaitForSaveAsyncTermination( 500, TimeUnit.MILLISECONDS );
         assertEquals( "28", weatherReturned.getWeather().getCurren_weather().get( 0 ).getTemp() );
     }
 
@@ -89,7 +90,7 @@ public class InFileWeatherPersisterTest extends ActivityInstrumentationTestCase2
         WeatherResult weatherRequestStatus = buildWeather();
         final String FILE_NAME = "toto";
         dataPersistenceManager.saveDataToCacheAndReturnData( weatherRequestStatus, FILE_NAME );
-        File cachedFile = dataPersistenceManager.getCacheFile( FILE_NAME );
+        File cachedFile = ( (InJSonFileObjectPersister< ? >) dataPersistenceManager ).getCacheFile( FILE_NAME );
         cachedFile.setLastModified( System.currentTimeMillis() - 5 * DurationInMillis.ONE_SECOND );
 
         // WHEN

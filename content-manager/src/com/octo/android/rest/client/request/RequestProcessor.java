@@ -50,7 +50,7 @@ public class RequestProcessor {
      * href="http://blog.zenika.com/index.php?post/2012/04/11/Introduction-programmation-concurrente-Java-2sur2. ">blog
      * article</a>.
      */
-    private ExecutorService executorService = Executors.newSingleThreadExecutor();
+    private ExecutorService executorService = null;
 
     private ICacheManager cacheManager;
 
@@ -64,10 +64,17 @@ public class RequestProcessor {
     // CONSTRUCTOR
     // ============================================================================================
 
-    public RequestProcessor( Context context, ICacheManager cacheManager ) {
+    public RequestProcessor( Context context, ICacheManager cacheManager, int threadCount ) {
         this.applicationContext = context;
         this.cacheManager = cacheManager;
         handlerResponse = new Handler( Looper.getMainLooper() );
+        if ( threadCount <= 0 ) {
+            throw new IllegalArgumentException( "Thread count must be >= 1" );
+        } else if ( threadCount == 1 ) {
+            executorService = Executors.newSingleThreadExecutor();
+        } else {
+            Executors.newFixedThreadPool( threadCount );
+        }
     }
 
     // ============================================================================================

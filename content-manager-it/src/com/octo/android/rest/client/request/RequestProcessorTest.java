@@ -34,7 +34,7 @@ public class RequestProcessorTest extends InstrumentationTestCase {
     protected void setUp() throws Exception {
         super.setUp();
         mockCacheManager = EasyMock.createMock( ICacheManager.class );
-        requestProcessorUnderTest = new RequestProcessor( getInstrumentation().getTargetContext(), mockCacheManager );
+        requestProcessorUnderTest = new RequestProcessor( getInstrumentation().getTargetContext(), mockCacheManager, 1 );
     }
 
     // ============================================================================================

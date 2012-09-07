@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.Arrays;
+import java.util.concurrent.TimeUnit;
 
 import android.test.ActivityInstrumentationTestCase2;
 import android.test.suitebuilder.annotation.MediumTest;
@@ -47,7 +48,7 @@ public class InFileInputStreamObjectPersisterTest extends ActivityInstrumentatio
         inputStreamCacheManager.setAsyncSaveEnabled( true );
         inputStreamCacheManager.saveDataToCacheAndReturnData( new ByteArrayInputStream( "coucou".getBytes() ), TEST_CACHE_KEY );
 
-        Thread.sleep( 500 );
+        inputStreamCacheManager.awaitForSaveAsyncTermination( 500, TimeUnit.MILLISECONDS );
         File cachedFile = inputStreamCacheManager.getCacheFile( TEST_CACHE_KEY );
         assertTrue( cachedFile.exists() );
 

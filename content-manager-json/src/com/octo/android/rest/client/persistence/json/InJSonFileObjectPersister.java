@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.util.concurrent.TimeUnit;
 
 import org.codehaus.jackson.JsonGenerationException;
 import org.codehaus.jackson.map.JsonMappingException;
@@ -102,6 +103,11 @@ public final class InJSonFileObjectPersister< T > extends InFileObjectPersister<
                             Log.e( LOG_CAT, "An error occured on saving request " + cacheKey + " data asynchronously", e );
                         } catch ( CacheSavingException e ) {
                             Log.e( LOG_CAT, "An error occured on saving request " + cacheKey + " data asynchronously", e );
+                        } finally {
+                            // notify that saving is finished for test purpose
+                            lock.lock();
+                            condition.signal();
+                            lock.unlock();
                         }
                     };
                 }.start();
@@ -132,6 +138,19 @@ public final class InJSonFileObjectPersister< T > extends InFileObjectPersister<
     @Override
     public boolean canHandleClass( Class< ? > clazz ) {
         return true;
+    }
+
+    /** for testing purpose only. Overriding allows to regive package level visibility. */
+    @Override
+    protected void awaitForSaveAsyncTermination( long time, TimeUnit timeUnit ) throws InterruptedException {
+        super.awaitForSaveAsyncTermination( time, timeUnit );
+    }
+
+    /** for testing purpose only. Overriding allows to regive package level visibility. */
+    @Override
+    protected File getCacheFile( Object cacheKey ) {
+        // TODO Auto-generated method stub
+        return super.getCacheFile( cacheKey );
     }
 
 }

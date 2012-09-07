@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.util.concurrent.TimeUnit;
 
 import android.app.Application;
 import android.util.Log;
@@ -53,6 +54,7 @@ public final class InFileStringObjectPersister extends InFileObjectPersister< St
         Log.v( LOG_CAT, "Saving String " + data + " into cacheKey = " + cacheKey );
         try {
             if ( isAsyncSaveEnabled ) {
+
                 new Thread() {
                     @Override
                     public void run() {
@@ -60,6 +62,11 @@ public final class InFileStringObjectPersister extends InFileObjectPersister< St
                             Files.write( data, getCacheFile( cacheKey ), Charset.forName( "UTF-8" ) );
                         } catch ( IOException e ) {
                             Log.e( LOG_CAT, "An error occured on saving request " + cacheKey + " data asynchronously", e );
+                        } finally {
+                            // notify that saving is finished for test purpose
+                            lock.lock();
+                            condition.signal();
+                            lock.unlock();
                         }
                     };
                 }.start();
@@ -70,6 +77,12 @@ public final class InFileStringObjectPersister extends InFileObjectPersister< St
             throw new CacheSavingException( e );
         }
         return data;
+    }
+
+    /** for testing purpose only. Overriding allows to regive package level visibility. */
+    @Override
+    protected void awaitForSaveAsyncTermination( long time, TimeUnit timeUnit ) throws InterruptedException {
+        super.awaitForSaveAsyncTermination( time, timeUnit );
     }
 
 }

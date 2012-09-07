@@ -28,6 +28,8 @@ import com.octo.android.rest.client.request.RequestProcessor;
  */
 public abstract class ContentService extends Service {
 
+    private static final int DEFAULT_THREAD_COUNT = 1;
+
     private final static String LOG_CAT = "ContentService";
 
     // ============================================================================================
@@ -60,9 +62,18 @@ public abstract class ContentService extends Service {
     public void onCreate() {
         super.onCreate();
         cacheManager = createCacheManager( getApplication() );
-        requestProcessor = new RequestProcessor( getApplicationContext(), cacheManager );
+        requestProcessor = new RequestProcessor( getApplicationContext(), cacheManager, getThreadCount() );
 
         Log.d( LOG_CAT, "Content Service instance created." );
+    }
+
+    /**
+     * Override this method to set the number of threads used to execute requests.
+     * 
+     * @return the number of threads to use when executing requests.
+     */
+    public int getThreadCount() {
+        return DEFAULT_THREAD_COUNT;
     }
 
     public abstract CacheManager createCacheManager( Application application );
