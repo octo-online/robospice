@@ -18,7 +18,6 @@ public class CachedContentRequest< RESULT > extends ContentRequest< RESULT > {
         this.contentRequest = contentRequest;
     }
 
-    @TargetApi(3)
     @SuppressWarnings("unchecked")
     public < Params, Progress > CachedContentRequest( AsyncTask< Params, Progress, RESULT > asyncTask, String requestCacheKey, long cacheDuration,
             Params... params ) {
