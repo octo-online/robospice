@@ -29,7 +29,7 @@
 			<scope>provided</scope>
 			<version>${project.version}</version>
 		</dependency>
-			<dependency>
+		<dependency>
 			<!-- JAR for eclipse, provided for maven not to re-include it -->
 			<groupId>com.octo.android.content-manager</groupId>
 			<artifactId>content-manager-sample</artifactId>
@@ -41,9 +41,9 @@
 			<artifactId>junit</artifactId>
 		</dependency>
 		<dependency>
-		    <groupId>org.easymock</groupId>
-		    <artifactId>easymock</artifactId>
-		    <version>2.5.2</version>
+		    <groupId>org.easymock</groupId>
+		    <artifactId>easymock</artifactId>
+		    <version>2.5.2</version>
 		</dependency>
 	</dependencies>
 	
