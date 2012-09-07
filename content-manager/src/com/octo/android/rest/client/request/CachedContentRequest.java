@@ -2,7 +2,6 @@ package com.octo.android.rest.client.request;
 
 import java.lang.reflect.ParameterizedType;
 
-import android.annotation.TargetApi;
 import android.os.AsyncTask;
 
 public class CachedContentRequest< RESULT > extends ContentRequest< RESULT > {
@@ -64,7 +63,6 @@ public class CachedContentRequest< RESULT > extends ContentRequest< RESULT > {
         return "CachedContentRequest [requestCacheKey=" + requestCacheKey + ", cacheDuration=" + cacheDuration + ", contentRequest=" + contentRequest + "]";
     }
 
-    @TargetApi(3)
     private class AsyncTaskWrapper< Params, Progress > extends ContentRequest< RESULT > {
 
         private AsyncTask< Params, Progress, RESULT > asyncTask;
