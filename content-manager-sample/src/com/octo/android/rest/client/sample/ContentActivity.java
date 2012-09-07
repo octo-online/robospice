@@ -1,6 +1,6 @@
 package com.octo.android.rest.client.sample;
 
-import android.app.Activity;
+import roboguice.activity.RoboActivity;
 import android.os.Bundle;
 
 import com.octo.android.rest.client.ContentManager;
@@ -14,7 +14,7 @@ import com.octo.android.rest.client.ContentManager;
  * @author sni
  * 
  */
-public class ContentActivity extends Activity {
+public class ContentActivity extends RoboActivity {
     private ContentManager contentManager = new ContentManager();
 
     @Override

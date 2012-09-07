@@ -24,6 +24,12 @@
 			<version>${project.version}</version>
 			<type>jar</type>
 		</dependency>
+		<dependency>
+			<groupId>com.octo.android.content-manager</groupId>
+			<artifactId>content-manager-spring-android</artifactId>
+			<version>${project.version}</version>
+			<type>jar</type>
+		</dependency>
 	</dependencies>
 
 	<build>
