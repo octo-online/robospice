@@ -10,7 +10,6 @@ import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.Service;
 import android.content.ComponentName;
@@ -126,7 +125,6 @@ public class ContentManager extends Thread {
      */
     // TODO get rig of request listener, they should be provided by
     // async task postExecute..
-    @TargetApi(3)
     public < Params, Progress, Result > void execute( AsyncTask< Params, Progress, Result > asyncTask, String requestCacheKey, long cacheDuration,
             RequestListener< Result > requestListener, Params... params ) {
 
