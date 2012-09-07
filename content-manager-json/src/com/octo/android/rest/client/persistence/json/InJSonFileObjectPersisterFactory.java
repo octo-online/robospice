@@ -5,9 +5,9 @@ import android.app.Application;
 import com.octo.android.rest.client.persistence.file.InFileObjectPersister;
 import com.octo.android.rest.client.persistence.file.InFileObjectPersisterFactory;
 
-public class JSonPersistenceManageFactory extends InFileObjectPersisterFactory {
+public class InJSonFileObjectPersisterFactory extends InFileObjectPersisterFactory {
 
-    public JSonPersistenceManageFactory( Application application ) {
+    public InJSonFileObjectPersisterFactory( Application application ) {
         super( application );
     }
 
@@ -19,7 +19,9 @@ public class JSonPersistenceManageFactory extends InFileObjectPersisterFactory {
     @Override
     @SuppressWarnings({ "rawtypes", "unchecked" })
     public < DATA > InFileObjectPersister< DATA > createClassCacheManager( Class< DATA > clazz ) {
-        return new JSonPersistenceManager( getApplication(), clazz, getCachePrefix() );
+        InFileObjectPersister inFileObjectPersister = new InJSonFileObjectPersister( getApplication(), clazz, getCachePrefix() );
+        inFileObjectPersister.setAsyncSaveEnabled( isAsyncSaveEnabled );
+        return inFileObjectPersister;
     }
 
 }

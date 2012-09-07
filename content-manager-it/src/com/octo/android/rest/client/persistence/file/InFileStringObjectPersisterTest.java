@@ -39,6 +39,19 @@ public class InFileStringObjectPersisterTest extends ActivityInstrumentationTest
         assertEquals( "coucou", actual.get( 0 ) );
     }
 
+    public void testSaveDataToCacheAndReturnData_async() throws Exception {
+        stringCacheManager.setAsyncSaveEnabled( true );
+        stringCacheManager.saveDataToCacheAndReturnData( "coucou", TEST_CACHE_KEY );
+
+        Thread.sleep( 500 );
+        File cachedFile = stringCacheManager.getCacheFile( TEST_CACHE_KEY );
+        assertTrue( cachedFile.exists() );
+
+        List< String > actual = Files.readLines( cachedFile, Charset.forName( "UTF-8" ) );
+        assertEquals( 1, actual.size() );
+        assertEquals( "coucou", actual.get( 0 ) );
+    }
+
     public void testLoadDataFromCache_no_expiracy() throws Exception {
         File cachedFile = stringCacheManager.getCacheFile( TEST_CACHE_KEY );
         Files.write( "coucou", cachedFile, Charset.forName( "UTF-8" ) );

@@ -8,7 +8,7 @@ import android.test.ActivityInstrumentationTestCase2;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import com.octo.android.rest.client.persistence.DurationInMillis;
-import com.octo.android.rest.client.persistence.json.JSonPersistenceManageFactory;
+import com.octo.android.rest.client.persistence.json.InJSonFileObjectPersisterFactory;
 import com.octo.android.rest.client.sample.TestActivity;
 import com.octo.android.rest.client.sample.model.Curren_weather;
 import com.octo.android.rest.client.sample.model.Weather;
@@ -25,7 +25,7 @@ public class InFileWeatherPersisterTest extends ActivityInstrumentationTestCase2
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        JSonPersistenceManageFactory factory = new JSonPersistenceManageFactory( getActivity().getApplication() );
+        InJSonFileObjectPersisterFactory factory = new InJSonFileObjectPersisterFactory( getActivity().getApplication() );
         dataPersistenceManager = factory.createClassCacheManager( WeatherResult.class );
     }
 
@@ -42,6 +42,19 @@ public class InFileWeatherPersisterTest extends ActivityInstrumentationTestCase2
         WeatherResult weatherReturned = dataPersistenceManager.saveDataToCacheAndReturnData( weatherRequestStatus, "weather.json" );
 
         // THEN
+        assertEquals( "28", weatherReturned.getWeather().getCurren_weather().get( 0 ).getTemp() );
+    }
+
+    public void test_saveDataAndReturnData_async() throws Exception {
+        // GIVEN
+        WeatherResult weatherRequestStatus = buildWeather();
+
+        // WHEN
+        dataPersistenceManager.setAsyncSaveEnabled( true );
+        WeatherResult weatherReturned = dataPersistenceManager.saveDataToCacheAndReturnData( weatherRequestStatus, "weather.json" );
+
+        // THEN
+        Thread.sleep( 500 );
         assertEquals( "28", weatherReturned.getWeather().getCurren_weather().get( 0 ).getTemp() );
     }
 

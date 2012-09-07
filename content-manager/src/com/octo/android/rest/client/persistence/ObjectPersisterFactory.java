@@ -17,6 +17,7 @@ import android.app.Application;
 public abstract class ObjectPersisterFactory {
 
     private Application mApplication;
+    protected boolean isAsyncSaveEnabled;
 
     /**
      * 
@@ -53,4 +54,12 @@ public abstract class ObjectPersisterFactory {
      * Removes all data from cache that has been saved by the {@link ObjectPersister} instances created by the factory.
      */
     public abstract void removeAllDataFromCache();
+
+    public void setAsyncSaveEnabled( boolean isAsyncSaveEnabled ) {
+        this.isAsyncSaveEnabled = isAsyncSaveEnabled;
+    }
+
+    public boolean isAsyncSaveEnabled() {
+        return isAsyncSaveEnabled;
+    }
 }

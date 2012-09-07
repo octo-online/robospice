@@ -2,8 +2,11 @@ package com.octo.android.rest.client.persistence.json;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.nio.charset.Charset;
 
+import org.codehaus.jackson.JsonGenerationException;
+import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
 
 import android.app.Application;
@@ -16,9 +19,9 @@ import com.octo.android.rest.client.exception.CacheLoadingException;
 import com.octo.android.rest.client.exception.CacheSavingException;
 import com.octo.android.rest.client.persistence.file.InFileObjectPersister;
 
-public final class JSonPersistenceManager< T > extends InFileObjectPersister< T > {
+public final class InJSonFileObjectPersister< T > extends InFileObjectPersister< T > {
 
-    private final static String LOG_CAT = JSonPersistenceManager.class.getSimpleName();
+    private final static String LOG_CAT = InJSonFileObjectPersister.class.getSimpleName();
 
     // ============================================================================================
     // ATTRIBUTES
@@ -33,7 +36,7 @@ public final class JSonPersistenceManager< T > extends InFileObjectPersister< T 
     // ============================================================================================
     // CONSTRUCTOR
     // ============================================================================================
-    public JSonPersistenceManager( Application application, Class< T > clazz, String factoryPrefix ) {
+    public InJSonFileObjectPersister( Application application, Class< T > clazz, String factoryPrefix ) {
         super( application );
         this.clazz = clazz;
         this.mJsonMapper = new ObjectMapper();
@@ -86,18 +89,24 @@ public final class JSonPersistenceManager< T > extends InFileObjectPersister< T 
     }
 
     @Override
-    public T saveDataToCacheAndReturnData( T data, Object cacheKey ) throws CacheSavingException {
-        String resultJson = null;
+    public T saveDataToCacheAndReturnData( final T data, final Object cacheKey ) throws CacheSavingException {
 
         try {
-            // transform the content in json to store it in the cache
-            resultJson = mJsonMapper.writeValueAsString( data );
-
-            // finally store the json in the cache
-            if ( !Strings.isNullOrEmpty( resultJson ) ) {
-                Files.write( resultJson, getCacheFile( cacheKey ), Charset.forName( "UTF-8" ) );
+            if ( isAsyncSaveEnabled ) {
+                new Thread() {
+                    @Override
+                    public void run() {
+                        try {
+                            saveData( data, cacheKey );
+                        } catch ( IOException e ) {
+                            Log.e( LOG_CAT, "An error occured on saving request " + cacheKey + " data asynchronously", e );
+                        } catch ( CacheSavingException e ) {
+                            Log.e( LOG_CAT, "An error occured on saving request " + cacheKey + " data asynchronously", e );
+                        }
+                    };
+                }.start();
             } else {
-                throw new CacheSavingException( "Data could not be serialized in json" );
+                saveData( data, cacheKey );
             }
         } catch ( CacheSavingException e ) {
             throw e;
@@ -105,6 +114,19 @@ public final class JSonPersistenceManager< T > extends InFileObjectPersister< T 
             throw new CacheSavingException( e );
         }
         return data;
+    }
+
+    private void saveData( T data, Object cacheKey ) throws IOException, JsonGenerationException, JsonMappingException, CacheSavingException {
+        String resultJson;
+        // transform the content in json to store it in the cache
+        resultJson = mJsonMapper.writeValueAsString( data );
+
+        // finally store the json in the cache
+        if ( !Strings.isNullOrEmpty( resultJson ) ) {
+            Files.write( resultJson, getCacheFile( cacheKey ), Charset.forName( "UTF-8" ) );
+        } else {
+            throw new CacheSavingException( "Data was null and could not be serialized in json" );
+        }
     }
 
     @Override

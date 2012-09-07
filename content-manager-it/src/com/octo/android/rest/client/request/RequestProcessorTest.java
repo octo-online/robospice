@@ -41,6 +41,28 @@ public class RequestProcessorTest extends InstrumentationTestCase {
     // TESTING WITH FAIL ON ERROR = false
     // ============================================================================================
 
+    public void testAddRequest_when_cache_is_not_used() throws CacheLoadingException, CacheSavingException, InterruptedException {
+        // given
+        String cacheKey = null;
+        CachedContentRequestStub< String > stubRequest = createSuccessfulRequest( TEST_CLASS, cacheKey, TEST_DURATION, TEST_RETURNED_DATA );
+
+        RequestListenerStub< String > mockRequestListener = new RequestListenerStub< String >();
+        Set< RequestListener< ? > > requestListenerSet = new HashSet< RequestListener< ? > >();
+        requestListenerSet.add( mockRequestListener );
+
+        EasyMock.replay( mockCacheManager );
+
+        // when
+        requestProcessorUnderTest.addRequest( stubRequest, requestListenerSet );
+        mockRequestListener.await( REQUEST_COMPLETION_TIME_OUT );
+
+        // then
+        EasyMock.verify( mockCacheManager );
+        assertTrue( stubRequest.isLoadDataFromNetworkCalled() );
+        assertTrue( mockRequestListener.isExecutedInUIThread() );
+        assertTrue( mockRequestListener.isSuccessful() );
+    }
+
     public void testAddRequest_when_something_is_found_in_cache() throws CacheLoadingException, CacheSavingException, InterruptedException {
         // given
         CachedContentRequestStub< String > stubRequest = createSuccessfulRequest( TEST_CLASS, TEST_CACHE_KEY, TEST_DURATION, TEST_RETURNED_DATA );

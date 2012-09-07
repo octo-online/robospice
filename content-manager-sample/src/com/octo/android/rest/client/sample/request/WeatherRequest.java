@@ -4,9 +4,10 @@ import org.springframework.web.client.RestClientException;
 
 import android.util.Log;
 
+import com.octo.android.rest.client.request.springandroid.RestContentRequest;
 import com.octo.android.rest.client.sample.model.WeatherResult;
 
-public final class WeatherRequest extends com.octo.android.rest.client.request.springandroid.RestContentRequest< WeatherResult > {
+public final class WeatherRequest extends RestContentRequest< WeatherResult > {
 
     private String baseUrl;
 

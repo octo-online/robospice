@@ -27,7 +27,8 @@ import com.octo.android.rest.client.exception.NoNetworkException;
 import com.octo.android.rest.client.persistence.ICacheManager;
 
 /**
- * Delegate class of the {@link ContentService}, easier to test than an Android {@link Service}
+ * Delegate class of the {@link ContentService}, easier to test than an Android {@link Service}. TODO make it possible
+ * to set the number of threads in the {@link ExecutorService}
  * 
  * @author jva
  * 
@@ -105,15 +106,17 @@ public class RequestProcessor {
         T result = null;
         Set< RequestListener< ? >> requestListeners = mapRequestToRequestListener.get( request );
 
-        // First, search cata in cache
-        try {
-            Log.d( LOG_CAT, "Loading request from cache : " + request );
-            result = loadDataFromCache( request.getResultType(), request.getRequestCacheKey(), request.getCacheDuration() );
-        } catch ( CacheLoadingException e ) {
-            Log.d( getClass().getName(), "Cache file could not be read.", e );
-            if ( failOnCacheError ) {
-                handlerResponse.post( new ResultRunnable( requestListeners, e ) );
-                return;
+        if ( request.getRequestCacheKey() != null ) {
+            // First, search data in cache
+            try {
+                Log.d( LOG_CAT, "Loading request from cache : " + request );
+                result = loadDataFromCache( request.getResultType(), request.getRequestCacheKey(), request.getCacheDuration() );
+            } catch ( CacheLoadingException e ) {
+                Log.d( getClass().getName(), "Cache file could not be read.", e );
+                if ( failOnCacheError ) {
+                    handlerResponse.post( new ResultRunnable( requestListeners, e ) );
+                    return;
+                }
             }
         }
 
@@ -140,17 +143,19 @@ public class RequestProcessor {
                     return;
                 }
 
-                // request worked and result is not null
-                try {
-                    Log.d( LOG_CAT, "Start caching content..." );
-                    result = saveDataToCacheAndReturnData( result, request.getRequestCacheKey() );
-                    handlerResponse.post( new ResultRunnable( requestListeners, result ) );
-                    return;
-                } catch ( CacheSavingException e ) {
-                    Log.d( LOG_CAT, "An exception occured during service execution :" + e.getMessage(), e );
-                    if ( failOnCacheError ) {
-                        handlerResponse.post( new ResultRunnable( requestListeners, e ) );
+                if ( request.getRequestCacheKey() != null ) {
+                    // request worked and result is not null
+                    try {
+                        Log.d( LOG_CAT, "Start caching content..." );
+                        result = saveDataToCacheAndReturnData( result, request.getRequestCacheKey() );
+                        handlerResponse.post( new ResultRunnable( requestListeners, result ) );
                         return;
+                    } catch ( CacheSavingException e ) {
+                        Log.d( LOG_CAT, "An exception occured during service execution :" + e.getMessage(), e );
+                        if ( failOnCacheError ) {
+                            handlerResponse.post( new ResultRunnable( requestListeners, e ) );
+                            return;
+                        }
                     }
                 }
             }

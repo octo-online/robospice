@@ -147,6 +147,32 @@ public class ContentManager extends Thread {
     }
 
     /**
+     * Execute a request, without using cache.
+     * 
+     * @param request
+     *            the request to execute.
+     * @param requestListener
+     *            the listener to notify when the request will finish.
+     */
+    public < T > void execute( ContentRequest< T > request, RequestListener< T > requestListener ) {
+
+        checkHasBeenStartedAndIsNotStopped();
+        synchronized ( lockQueue ) {
+            CachedContentRequest< T > cachedContentRequest = new CachedContentRequest< T >( request, null, DurationInMillis.ALWAYS );
+            // add listener to listeners list for this request
+            Set< RequestListener< ? >> listeners = mapRequestToRequestListener.get( cachedContentRequest );
+            if ( listeners == null ) {
+                listeners = new HashSet< RequestListener< ? >>();
+                this.mapRequestToRequestListener.put( cachedContentRequest, listeners );
+            }
+            listeners.add( requestListener );
+
+            this.requestQueue.add( cachedContentRequest );
+            lockQueue.notifyAll();
+        }
+    }
+
+    /**
      * Execute a request, put the result in cache with key <i>requestCacheKey</i> during <i>cacheDuration</i>
      * millisecond and register listeners to notify when request is finished.
      * 

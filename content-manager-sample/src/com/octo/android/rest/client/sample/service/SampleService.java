@@ -15,7 +15,7 @@ import com.octo.android.rest.client.SpringAndroidContentService;
 import com.octo.android.rest.client.persistence.CacheManager;
 import com.octo.android.rest.client.persistence.file.InFileInputStreamObjectPersister;
 import com.octo.android.rest.client.persistence.file.InFileStringObjectPersister;
-import com.octo.android.rest.client.persistence.json.JSonPersistenceManageFactory;
+import com.octo.android.rest.client.persistence.json.InJSonFileObjectPersisterFactory;
 
 public class SampleService extends SpringAndroidContentService {
 
@@ -26,13 +26,17 @@ public class SampleService extends SpringAndroidContentService {
         CacheManager cacheManager = new CacheManager();
 
         // init
-        InFileStringObjectPersister stringPersistenceManager = new InFileStringObjectPersister( application );
-        InFileInputStreamObjectPersister binaryPersistenceManager = new InFileInputStreamObjectPersister( application );
-        JSonPersistenceManageFactory jSonPersistenceManageFactory = new JSonPersistenceManageFactory( application );
+        InFileStringObjectPersister inFileStringObjectPersister = new InFileStringObjectPersister( application );
+        InFileInputStreamObjectPersister inFileInputStreamObjectPersister = new InFileInputStreamObjectPersister( application );
+        InJSonFileObjectPersisterFactory inJSonFileObjectPersisterFactory = new InJSonFileObjectPersisterFactory( application );
 
-        cacheManager.addObjectPersisterFactory( stringPersistenceManager );
-        cacheManager.addObjectPersisterFactory( binaryPersistenceManager );
-        cacheManager.addObjectPersisterFactory( jSonPersistenceManageFactory );
+        inFileStringObjectPersister.setAsyncSaveEnabled( true );
+        inFileInputStreamObjectPersister.setAsyncSaveEnabled( true );
+        inJSonFileObjectPersisterFactory.setAsyncSaveEnabled( true );
+
+        cacheManager.addObjectPersisterFactory( inFileStringObjectPersister );
+        cacheManager.addObjectPersisterFactory( inJSonFileObjectPersisterFactory );
+        cacheManager.addObjectPersisterFactory( inJSonFileObjectPersisterFactory );
         return cacheManager;
     }
 

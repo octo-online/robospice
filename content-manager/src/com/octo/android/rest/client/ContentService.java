@@ -19,9 +19,12 @@ import com.octo.android.rest.client.request.RequestProcessor;
 /**
  * This is an abstract class used to manage the cache and provide web service result to an activity. <br/>
  * 
- * Extends this class to provide a service able to load content from web service or cache (if available and enabled)
+ * Extends this class to provide a service able to load content from web service or cache (if available and enabled).
+ * You will have to implement {@link #createCacheManager(Application)} to configure the {@link CacheManager} used by all
+ * requests to persist their results in the cache (and load them from cache if possible).
  * 
- * @author jva & sni
+ * @author jva
+ * @author sni
  */
 public abstract class ContentService extends Service {
 

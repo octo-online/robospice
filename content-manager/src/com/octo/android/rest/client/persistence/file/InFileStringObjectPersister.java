@@ -2,6 +2,7 @@ package com.octo.android.rest.client.persistence.file;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.nio.charset.Charset;
 
 import android.app.Application;
@@ -48,10 +49,23 @@ public final class InFileStringObjectPersister extends InFileObjectPersister< St
     }
 
     @Override
-    public String saveDataToCacheAndReturnData( String data, Object cacheKey ) throws CacheSavingException {
+    public String saveDataToCacheAndReturnData( final String data, final Object cacheKey ) throws CacheSavingException {
         Log.v( LOG_CAT, "Saving String " + data + " into cacheKey = " + cacheKey );
         try {
-            Files.write( data, getCacheFile( cacheKey ), Charset.forName( "UTF-8" ) );
+            if ( isAsyncSaveEnabled ) {
+                new Thread() {
+                    @Override
+                    public void run() {
+                        try {
+                            Files.write( data, getCacheFile( cacheKey ), Charset.forName( "UTF-8" ) );
+                        } catch ( IOException e ) {
+                            Log.e( LOG_CAT, "An error occured on saving request " + cacheKey + " data asynchronously", e );
+                        }
+                    };
+                }.start();
+            } else {
+                Files.write( data, getCacheFile( cacheKey ), Charset.forName( "UTF-8" ) );
+            }
         } catch ( Exception e ) {
             throw new CacheSavingException( e );
         }

@@ -18,6 +18,8 @@ import com.octo.android.rest.client.exception.CacheSavingException;
  */
 public abstract class ObjectPersister< DATA > extends ObjectPersisterFactory {
 
+    protected boolean isAsyncSaveEnabled;
+
     public ObjectPersister( Application application ) {
         super( application );
     }
@@ -50,4 +52,11 @@ public abstract class ObjectPersister< DATA > extends ObjectPersisterFactory {
 
     public abstract boolean removeDataFromCache( Object cacheKey );
 
+    public boolean isAsyncSaveEnabled() {
+        return isAsyncSaveEnabled;
+    }
+
+    public void setAsyncSaveEnabled( boolean isAsyncSaveEnabled ) {
+        this.isAsyncSaveEnabled = isAsyncSaveEnabled;
+    }
 }

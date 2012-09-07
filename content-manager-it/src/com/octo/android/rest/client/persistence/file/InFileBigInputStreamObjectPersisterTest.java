@@ -16,38 +16,25 @@ import com.octo.android.rest.client.persistence.DurationInMillis;
 import com.octo.android.rest.client.sample.TestActivity;
 
 @MediumTest
-public class InFileInputStreamObjectPersisterTest extends ActivityInstrumentationTestCase2< TestActivity > {
+public class InFileBigInputStreamObjectPersisterTest extends ActivityInstrumentationTestCase2< TestActivity > {
 
     private static final String TEST_CACHE_KEY = "TEST_CACHE_KEY";
 
-    private InFileInputStreamObjectPersister inputStreamCacheManager;
+    private InFileBigInputStreamObjectPersister inputStreamCacheManager;
 
-    public InFileInputStreamObjectPersisterTest() {
+    public InFileBigInputStreamObjectPersisterTest() {
         super( "com.octo.android.Rest.client", TestActivity.class );
     }
 
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        inputStreamCacheManager = new InFileInputStreamObjectPersister( getActivity().getApplication() );
+        inputStreamCacheManager = new InFileBigInputStreamObjectPersister( getActivity().getApplication() );
     }
 
     public void testSaveDataToCacheAndReturnData() throws Exception {
         inputStreamCacheManager.saveDataToCacheAndReturnData( new ByteArrayInputStream( "coucou".getBytes() ), TEST_CACHE_KEY );
 
-        File cachedFile = inputStreamCacheManager.getCacheFile( TEST_CACHE_KEY );
-        assertTrue( cachedFile.exists() );
-
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        ByteStreams.copy( new FileInputStream( cachedFile ), bos );
-        assertTrue( Arrays.equals( "coucou".getBytes(), bos.toByteArray() ) );
-    }
-
-    public void testSaveDataToCacheAndReturnData_async() throws Exception {
-        inputStreamCacheManager.setAsyncSaveEnabled( true );
-        inputStreamCacheManager.saveDataToCacheAndReturnData( new ByteArrayInputStream( "coucou".getBytes() ), TEST_CACHE_KEY );
-
-        Thread.sleep( 500 );
         File cachedFile = inputStreamCacheManager.getCacheFile( TEST_CACHE_KEY );
         assertTrue( cachedFile.exists() );
 
