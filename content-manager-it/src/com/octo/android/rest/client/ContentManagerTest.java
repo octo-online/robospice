@@ -24,7 +24,7 @@ public class ContentManagerTest extends InstrumentationTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        contentManager = new ContentManager();
+        contentManager = new ContentManager( "com.octo.android.rest.client.ContentService" );
     }
 
     @Override
@@ -63,8 +63,7 @@ public class ContentManagerTest extends InstrumentationTestCase {
     public void test_executeContentRequest_shouldFailIfStopped() throws InterruptedException {
         // given
         contentManager.start( getInstrumentation().getContext() );
-        contentManager.shouldStop();
-        contentManager.join( REQUEST_COMPLETION_TIME_OUT );
+        contentManager.shouldStopAndJoin( REQUEST_COMPLETION_TIME_OUT );
 
         // when
         try {

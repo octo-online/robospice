@@ -10,6 +10,7 @@ import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.Service;
 import android.content.ComponentName;
@@ -18,6 +19,7 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.AsyncTask;
 import android.os.IBinder;
+import android.util.Log;
 
 import com.octo.android.rest.client.ContentService.ContentServiceBinder;
 import com.octo.android.rest.client.persistence.DurationInMillis;
@@ -36,7 +38,9 @@ import com.octo.android.rest.client.request.RequestListener;
  * @author jva & sni
  * 
  */
-public class ContentManager extends Thread {
+public class ContentManager implements Runnable {
+
+    private static final String LOG_TAG = ContentManager.class.getSimpleName();
 
     private ContentService contentService;
     private ContentServiceConnection contentServiceConnection = new ContentServiceConnection();
@@ -54,21 +58,34 @@ public class ContentManager extends Thread {
     // TODO use semaphore
     private Object lockAcquireService = new Object();
 
+    private String serviceActionName;
+
+    private Thread runner;
+
     // ============================================================================================
     // THREAD BEHAVIOR
     // ============================================================================================
 
-    @Override
+    public ContentManager( String serviceActionName ) {
+        this.serviceActionName = serviceActionName;
+    }
+
     public final synchronized void start() {
         throw new IllegalStateException( "Can't be started without context." );
     }
 
     public synchronized void start( Context context ) {
         this.context = context;
-        super.start();
+        if ( runner != null ) {
+            throw new IllegalStateException( "Already started." );
+        } else {
+            Log.d( LOG_TAG, "Content manager started." );
+            runner = new Thread( this );
+            this.isStopped = false;
+            runner.start();
+        }
     }
 
-    @Override
     public void run() {
         bindService( context );
 
@@ -80,6 +97,7 @@ public class ContentManager extends Thread {
                     CachedContentRequest< ? > restRequest = requestQueue.poll();
                     Set< RequestListener< ? >> listRequestListener = mapRequestToRequestListener.get( restRequest );
                     mapRequestToRequestListener.remove( restRequest );
+                    Log.d( LOG_TAG, "Sending request to service : " + restRequest.getClass().getSimpleName() );
                     contentService.addRequest( restRequest, listRequestListener );
                 }
 
@@ -104,8 +122,24 @@ public class ContentManager extends Thread {
      * Call this in {@link Activity#onDestroy} to stop the {@link ContentManager} and all request
      */
     public void shouldStop() {
+        if ( this.runner == null ) {
+            throw new IllegalStateException( "Not started yet" );
+        }
         this.isStopped = true;
         unbindService( context );
+        this.runner = null;
+        Log.d( LOG_TAG, "Content manager stopped." );
+    }
+
+    public void shouldStopAndJoin( long timeOut ) throws InterruptedException {
+        if ( this.runner == null ) {
+            throw new IllegalStateException( "Not started yet" );
+        }
+        this.isStopped = true;
+        unbindService( context );
+        Log.d( LOG_TAG, "Content manager stopped. Joining" );
+        this.runner.join( timeOut );
+        this.runner = null;
     }
 
     /**
@@ -125,6 +159,7 @@ public class ContentManager extends Thread {
      */
     // TODO get rig of request listener, they should be provided by
     // async task postExecute..
+    @TargetApi(3)
     public < Params, Progress, Result > void execute( AsyncTask< Params, Progress, Result > asyncTask, String requestCacheKey, long cacheDuration,
             RequestListener< Result > requestListener, Params... params ) {
 
@@ -358,7 +393,10 @@ public class ContentManager extends Thread {
     public class ContentServiceConnection implements ServiceConnection {
 
         public void onServiceConnected( ComponentName name, IBinder service ) {
-            contentService = ( (ContentServiceBinder) service ).getContentService();
+            synchronized ( this ) {
+                contentService = ( (ContentServiceBinder) service ).getContentService();
+                Log.d( LOG_TAG, "Bound to service : " + contentService.getClass().getSimpleName() );
+            }
             synchronized ( lockAcquireService ) {
                 lockAcquireService.notifyAll();
             }
@@ -386,7 +424,8 @@ public class ContentManager extends Thread {
 
     private void bindService( Context context ) {
         Intent intentService = new Intent();
-        intentService.setAction( "com.octo.android.rest.client.ContentService" );
+        Log.d( LOG_TAG, "Binding to service action : " + serviceActionName );
+        intentService.setAction( serviceActionName );
         contentServiceConnection = new ContentServiceConnection();
         context.bindService( intentService, contentServiceConnection, Context.BIND_AUTO_CREATE );
     }

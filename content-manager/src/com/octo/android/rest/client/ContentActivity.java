@@ -1,7 +1,6 @@
 package com.octo.android.rest.client;
 
 import android.app.Activity;
-import android.os.Bundle;
 
 /**
  * This class is more a sample than a real ready-to-use class. It shows how you can build your base Activity class in
@@ -13,24 +12,19 @@ import android.os.Bundle;
  */
 public class ContentActivity extends Activity {
 
-    private ContentManager contentManager = new ContentManager();
+    private ContentManager contentManager = new ContentManager( "<Replace by your own service action as declared in AndroidManifest>" );
 
     @Override
-    protected void onCreate( Bundle savedInstanceState ) {
-        super.onCreate( savedInstanceState );
+    protected void onResume() {
         contentManager.start( this );
+        super.onResume();
     }
 
     @Override
     protected void onPause() {
         contentManager.cancelAllRequests();
-        super.onPause();
-    }
-
-    @Override
-    protected void onDestroy() {
         contentManager.shouldStop();
-        super.onDestroy();
+        super.onPause();
     }
 
     public ContentManager getContentManager() {

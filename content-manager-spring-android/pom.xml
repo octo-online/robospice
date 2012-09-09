@@ -72,6 +72,10 @@
 	                    <goals>
 	                        <goal>jar</goal>
 	                    </goals>
+						<configuration>
+							<noindex>private</noindex>
+							<nohelp>true</nohelp>
+						</configuration>	                    
 	                </execution>
 	            </executions>
 	        </plugin>

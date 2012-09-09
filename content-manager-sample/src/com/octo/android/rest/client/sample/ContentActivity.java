@@ -15,7 +15,7 @@ import com.octo.android.rest.client.ContentManager;
  * 
  */
 public class ContentActivity extends RoboActivity {
-    private ContentManager contentManager = new ContentManager();
+    private ContentManager contentManager = new ContentManager( "com.octo.android.rest.client.ContentService" );
 
     @Override
     protected void onCreate( Bundle savedInstanceState ) {
