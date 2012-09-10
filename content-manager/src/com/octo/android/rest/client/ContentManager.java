@@ -58,16 +58,18 @@ public class ContentManager implements Runnable {
     // TODO use semaphore
     private Object lockAcquireService = new Object();
 
-    private String serviceActionName;
-
     private Thread runner;
+
+    private boolean isUnbinding;
+
+    private Class< ? extends ContentService > contentServiceClass;
 
     // ============================================================================================
     // THREAD BEHAVIOR
     // ============================================================================================
 
-    public ContentManager( String serviceActionName ) {
-        this.serviceActionName = serviceActionName;
+    public ContentManager( Class< ? extends ContentService > contentServiceClass ) {
+        this.contentServiceClass = contentServiceClass;
     }
 
     public final synchronized void start() {
@@ -79,6 +81,11 @@ public class ContentManager implements Runnable {
         if ( runner != null ) {
             throw new IllegalStateException( "Already started." );
         } else {
+            Intent intentCheck = new Intent( context, contentServiceClass );
+            if ( context.getPackageManager().queryIntentServices( intentCheck, 0 ).isEmpty() ) {
+                throw new RuntimeException( "Impossible to start content manager as no service of class : " + contentServiceClass.getName()
+                        + " is registered in AndroidManifest.xml file !" );
+            }
             Log.d( LOG_TAG, "Content manager started." );
             runner = new Thread( this );
             this.isStopped = false;
@@ -126,8 +133,8 @@ public class ContentManager implements Runnable {
             throw new IllegalStateException( "Not started yet" );
         }
         this.isStopped = true;
-        unbindService( context );
         this.runner = null;
+        unbindService( context );
         Log.d( LOG_TAG, "Content manager stopped." );
     }
 
@@ -136,8 +143,8 @@ public class ContentManager implements Runnable {
             throw new IllegalStateException( "Not started yet" );
         }
         this.isStopped = true;
-        unbindService( context );
         Log.d( LOG_TAG, "Content manager stopped. Joining" );
+        unbindService( context );
         this.runner.join( timeOut );
         this.runner = null;
     }
@@ -163,7 +170,6 @@ public class ContentManager implements Runnable {
     public < Params, Progress, Result > void execute( AsyncTask< Params, Progress, Result > asyncTask, String requestCacheKey, long cacheDuration,
             RequestListener< Result > requestListener, Params... params ) {
 
-        checkHasBeenStartedAndIsNotStopped();
         synchronized ( lockQueue ) {
             CachedContentRequest< Result > cachedContentRequest = new CachedContentRequest< Result >( asyncTask, requestCacheKey, cacheDuration, params );
             // add listener to listeners list for this request
@@ -189,7 +195,6 @@ public class ContentManager implements Runnable {
      */
     public < T > void execute( ContentRequest< T > request, RequestListener< T > requestListener ) {
 
-        checkHasBeenStartedAndIsNotStopped();
         synchronized ( lockQueue ) {
             CachedContentRequest< T > cachedContentRequest = new CachedContentRequest< T >( request, null, DurationInMillis.ALWAYS );
             // add listener to listeners list for this request
@@ -220,7 +225,6 @@ public class ContentManager implements Runnable {
      */
     public < T > void execute( ContentRequest< T > request, String requestCacheKey, long cacheDuration, RequestListener< T > requestListener ) {
 
-        checkHasBeenStartedAndIsNotStopped();
         synchronized ( lockQueue ) {
             CachedContentRequest< T > cachedContentRequest = new CachedContentRequest< T >( request, requestCacheKey, cacheDuration );
             // add listener to listeners list for this request
@@ -246,7 +250,6 @@ public class ContentManager implements Runnable {
      *            the listener to notify when the request will finish
      */
     public < T > void execute( CachedContentRequest< T > cachedContentRequest, RequestListener< T > requestListener ) {
-        checkHasBeenStartedAndIsNotStopped();
         synchronized ( lockQueue ) {
             // add listener to listeners list for this request
             Set< RequestListener< ? >> listeners = mapRequestToRequestListener.get( cachedContentRequest );
@@ -330,7 +333,7 @@ public class ContentManager implements Runnable {
 
     private void waitForServiceToBeBound() {
         synchronized ( lockAcquireService ) {
-            while ( contentService == null ) {
+            while ( contentService == null && !isStopped ) {
                 try {
                     lockAcquireService.wait();
                 } catch ( InterruptedException e ) {
@@ -405,6 +408,11 @@ public class ContentManager implements Runnable {
         public void onServiceDisconnected( ComponentName name ) {
             synchronized ( this ) {
                 contentService = null;
+                isUnbinding = false;
+            }
+
+            synchronized ( lockAcquireService ) {
+                lockAcquireService.notifyAll();
             }
         }
     }
@@ -413,26 +421,17 @@ public class ContentManager implements Runnable {
     // PRIVATE
     // ============================================================================================
 
-    private void checkHasBeenStartedAndIsNotStopped() {
-        if ( context == null ) {
-            throw new IllegalStateException( "Content Manager has not been started. Invoke start(Context context)" );
-        }
-        if ( isStopped ) {
-            throw new IllegalStateException( "Content Manager has been stopped." );
-        }
-    }
-
     private void bindService( Context context ) {
-        Intent intentService = new Intent();
-        Log.d( LOG_TAG, "Binding to service action : " + serviceActionName );
-        intentService.setAction( serviceActionName );
+        Intent intentService = new Intent( context, contentServiceClass );
+        Log.d( LOG_TAG, "Binding to service." );
         contentServiceConnection = new ContentServiceConnection();
         context.bindService( intentService, contentServiceConnection, Context.BIND_AUTO_CREATE );
     }
 
     private void unbindService( Context context ) {
         synchronized ( this ) {
-            if ( contentService != null ) {
+            if ( contentService != null && !isUnbinding ) {
+                isUnbinding = true;
                 context.unbindService( this.contentServiceConnection );
             }
         }

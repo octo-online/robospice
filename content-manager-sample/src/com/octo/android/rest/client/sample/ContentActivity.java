@@ -4,6 +4,7 @@ import roboguice.activity.RoboActivity;
 import android.os.Bundle;
 
 import com.octo.android.rest.client.ContentManager;
+import com.octo.android.rest.client.SpringAndroidContentService;
 
 /**
  * This class is the base class of all activities of the sample project.
@@ -15,7 +16,7 @@ import com.octo.android.rest.client.ContentManager;
  * 
  */
 public class ContentActivity extends RoboActivity {
-    private ContentManager contentManager = new ContentManager( "com.octo.android.rest.client.ContentService" );
+    private ContentManager contentManager = new ContentManager( SpringAndroidContentService.class );
 
     @Override
     protected void onCreate( Bundle savedInstanceState ) {

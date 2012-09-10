@@ -12,7 +12,7 @@ import android.app.Activity;
  */
 public class ContentActivity extends Activity {
 
-    private ContentManager contentManager = new ContentManager( "<Replace by your own service action as declared in AndroidManifest>" );
+    private ContentManager contentManager = new ContentManager( ContentService.class );
 
     @Override
     protected void onResume() {
@@ -22,7 +22,7 @@ public class ContentActivity extends Activity {
 
     @Override
     protected void onPause() {
-        contentManager.cancelAllRequests();
+        contentManager.dontNotifyAnyRequestListeners();
         contentManager.shouldStop();
         super.onPause();
     }

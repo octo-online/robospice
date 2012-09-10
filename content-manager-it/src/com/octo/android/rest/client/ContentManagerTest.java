@@ -24,7 +24,7 @@ public class ContentManagerTest extends InstrumentationTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        contentManager = new ContentManager( "com.octo.android.rest.client.ContentService" );
+        contentManager = new ContentManager();
     }
 
     @Override

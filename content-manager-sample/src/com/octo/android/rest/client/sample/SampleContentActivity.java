@@ -15,13 +15,13 @@ import android.widget.Toast;
 import com.octo.android.rest.client.exception.ContentManagerException;
 import com.octo.android.rest.client.persistence.DurationInMillis;
 import com.octo.android.rest.client.request.RequestListener;
-import com.octo.android.rest.client.request.simple.SimpleImageRequest;
 import com.octo.android.rest.client.request.simple.SimpleTextRequest;
+import com.octo.android.rest.client.request.simple.SmallBinaryRequest;
 import com.octo.android.rest.client.sample.model.WeatherResult;
 import com.octo.android.rest.client.sample.request.WeatherRequest;
 
 @ContentView(R.layout.main)
-public class HelloAndroidActivity extends ContentActivity {
+public class SampleContentActivity extends ContentActivity {
 
     // ============================================================================================
     // ATTRIBUTES
@@ -35,7 +35,7 @@ public class HelloAndroidActivity extends ContentActivity {
     private TextView mImageTextView;
 
     SimpleTextRequest loremRequest;
-    SimpleImageRequest imageRequest;
+    SmallBinaryRequest imageRequest;
     WeatherRequest weatherRequest;
 
     // ============================================================================================
@@ -52,7 +52,7 @@ public class HelloAndroidActivity extends ContentActivity {
 
         loremRequest = new SimpleTextRequest( "http://www.loremipsum.de/downloads/original.txt" );
         weatherRequest = new WeatherRequest( "75000" );
-        imageRequest = new SimpleImageRequest( "http://earthobservatory.nasa.gov/blogs/elegantfigures/files/2011/10/globe_west_2048.jpg" );
+        imageRequest = new SmallBinaryRequest( "http://earthobservatory.nasa.gov/blogs/elegantfigures/files/2011/10/globe_west_2048.jpg" );
         // imageRequest = new SimpleImageRequest("http://cdn1.iconfinder.com/data/icons/softicons/PNG/Programming.png");
     }
 
@@ -72,12 +72,12 @@ public class HelloAndroidActivity extends ContentActivity {
 
         @Override
         public void onRequestFailure( ContentManagerException contentManagerException ) {
-            Toast.makeText( HelloAndroidActivity.this, "failure", Toast.LENGTH_SHORT ).show();
+            Toast.makeText( SampleContentActivity.this, "failure", Toast.LENGTH_SHORT ).show();
         }
 
         @Override
         public void onRequestSuccess( final String result ) {
-            Toast.makeText( HelloAndroidActivity.this, "success", Toast.LENGTH_SHORT ).show();
+            Toast.makeText( SampleContentActivity.this, "success", Toast.LENGTH_SHORT ).show();
             String originalText = mLoremTextView.getText().toString();
             mLoremTextView.setText( originalText + result );
         }
@@ -87,12 +87,12 @@ public class HelloAndroidActivity extends ContentActivity {
 
         @Override
         public void onRequestFailure( ContentManagerException contentManagerException ) {
-            Toast.makeText( HelloAndroidActivity.this, "failure", Toast.LENGTH_SHORT ).show();
+            Toast.makeText( SampleContentActivity.this, "failure", Toast.LENGTH_SHORT ).show();
         }
 
         @Override
         public void onRequestSuccess( final WeatherResult result ) {
-            Toast.makeText( HelloAndroidActivity.this, "success", Toast.LENGTH_SHORT ).show();
+            Toast.makeText( SampleContentActivity.this, "success", Toast.LENGTH_SHORT ).show();
             String originalText = mCurrentWeatherTextView.getText().toString();
             mCurrentWeatherTextView.setText( originalText + result.toString() );
         }
@@ -102,14 +102,14 @@ public class HelloAndroidActivity extends ContentActivity {
 
         @Override
         public void onRequestFailure( ContentManagerException contentManagerException ) {
-            Toast.makeText( HelloAndroidActivity.this, "failure", Toast.LENGTH_SHORT ).show();
+            Toast.makeText( SampleContentActivity.this, "failure", Toast.LENGTH_SHORT ).show();
         }
 
         @Override
         public void onRequestSuccess( final InputStream result ) {
             Bitmap bitmap = BitmapFactory.decodeStream( result );
             BitmapDrawable drawable = new BitmapDrawable( bitmap );
-            Toast.makeText( HelloAndroidActivity.this, "success", Toast.LENGTH_SHORT ).show();
+            Toast.makeText( SampleContentActivity.this, "success", Toast.LENGTH_SHORT ).show();
             mImageTextView.setBackgroundDrawable( drawable );
             mImageTextView.setText( "" );
         }

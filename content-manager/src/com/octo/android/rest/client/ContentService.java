@@ -26,7 +26,7 @@ import com.octo.android.rest.client.request.RequestProcessor;
  * @author jva
  * @author sni
  */
-public abstract class ContentService extends Service {
+public class ContentService extends Service {
 
     private static final int DEFAULT_THREAD_COUNT = 1;
 
@@ -61,7 +61,11 @@ public abstract class ContentService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
-        cacheManager = createCacheManager( getApplication() );
+        if ( !( getApplication() instanceof ContentConfiguration ) ) {
+            throw new RuntimeException( "Application class :" + getApplication().getClass().getName() + " doesn't implement "
+                    + ContentConfiguration.class.getName() );
+        }
+        cacheManager = ( (ContentConfiguration) getApplication() ).getCacheManager();
         requestProcessor = new RequestProcessor( getApplicationContext(), cacheManager, getThreadCount() );
 
         Log.d( LOG_CAT, "Content Service instance created." );
@@ -75,8 +79,6 @@ public abstract class ContentService extends Service {
     public int getThreadCount() {
         return DEFAULT_THREAD_COUNT;
     }
-
-    public abstract CacheManager createCacheManager( Application application );
 
     // ============================================================================================
     // DELEGATE METHODS (to ease tests)
