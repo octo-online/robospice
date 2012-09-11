@@ -46,7 +46,7 @@ public class ContentManager implements Runnable {
     private ContentServiceConnection contentServiceConnection = new ContentServiceConnection();
     private Context context;
 
-    private boolean isStopped;
+    private boolean isStopped = true;
     private Queue< CachedContentRequest< ? >> requestQueue = new LinkedList< CachedContentRequest< ? >>();
     private Map< CachedContentRequest< ? >, Set< RequestListener< ? >>> mapRequestToRequestListener = Collections
             .synchronizedMap( new IdentityHashMap< CachedContentRequest< ? >, Set< RequestListener< ? >>>() );
@@ -91,6 +91,10 @@ public class ContentManager implements Runnable {
             this.isStopped = false;
             runner.start();
         }
+    }
+
+    public boolean isStarted() {
+        return !isStopped;
     }
 
     public void run() {
