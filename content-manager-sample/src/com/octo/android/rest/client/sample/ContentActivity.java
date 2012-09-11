@@ -1,7 +1,6 @@
 package com.octo.android.rest.client.sample;
 
 import roboguice.activity.RoboActivity;
-import android.os.Bundle;
 
 import com.octo.android.rest.client.ContentManager;
 import com.octo.android.rest.client.SpringAndroidContentService;
@@ -19,23 +18,15 @@ public class ContentActivity extends RoboActivity {
     private ContentManager contentManager = new ContentManager( SpringAndroidContentService.class );
 
     @Override
-    protected void onCreate( Bundle savedInstanceState ) {
-        super.onCreate( savedInstanceState );
+    protected void onStart() {
         contentManager.start( this );
+        super.onStart();
     }
 
     @Override
-    protected void onPause() {
-        // either avoid notify listeners (requests will finish but no listener will be notified)
-        // either cancel requests
-        contentManager.dontNotifyAnyRequestListeners();
-        super.onPause();
-    }
-
-    @Override
-    protected void onDestroy() {
+    protected void onStop() {
         contentManager.shouldStop();
-        super.onDestroy();
+        super.onStop();
     }
 
     public ContentManager getContentManager() {

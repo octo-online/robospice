@@ -178,8 +178,7 @@ public class ContentManagerTest extends InstrumentationTestCase {
 
         // when
         contentManager.execute( contentRequestStub, TEST_CACHE_KEY, TEST_DURATION, requestListenerStub );
-        // contentManager.dontNotifyRequestListenersForRequest( contentRequestStub );
-        contentManager.dontNotifyAnyRequestListeners();
+        contentManager.dontNotifyRequestListenersForRequest( contentRequestStub );
         contentManager.execute( contentRequestStub2, TEST_CACHE_KEY, TEST_DURATION, requestListenerStub2 );
 
         contentRequestStub.await( REQUEST_COMPLETION_TIME_OUT );

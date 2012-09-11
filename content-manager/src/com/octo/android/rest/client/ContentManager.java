@@ -136,9 +136,11 @@ public class ContentManager implements Runnable {
         if ( this.runner == null ) {
             throw new IllegalStateException( "Not started yet" );
         }
+        Log.d( LOG_TAG, "Content manager stopping." );
+        dontNotifyAnyRequestListenersInternal();
+        unbindService( context );
         this.isStopped = true;
         this.runner = null;
-        unbindService( context );
         Log.d( LOG_TAG, "Content manager stopped." );
     }
 
@@ -146,11 +148,13 @@ public class ContentManager implements Runnable {
         if ( this.runner == null ) {
             throw new IllegalStateException( "Not started yet" );
         }
-        this.isStopped = true;
-        Log.d( LOG_TAG, "Content manager stopped. Joining" );
+        Log.d( LOG_TAG, "Content manager stopping. Joining" );
+        dontNotifyAnyRequestListenersInternal();
         unbindService( context );
+        this.isStopped = true;
         this.runner.join( timeOut );
         this.runner = null;
+        Log.d( LOG_TAG, "Content manager stopped." );
     }
 
     /**
@@ -336,6 +340,7 @@ public class ContentManager implements Runnable {
     }
 
     private void waitForServiceToBeBound() {
+        Log.d( LOG_TAG, "Waiting for service to be bound." );
         synchronized ( lockAcquireService ) {
             while ( contentService == null && !isStopped ) {
                 try {
@@ -369,29 +374,38 @@ public class ContentManager implements Runnable {
         }
     }
 
+    protected void dontNotifyRequestListenersForRequestInternal( final ContentRequest< ? > request, CachedContentRequest< ? > cachedContentRequest ) {
+        final Set< RequestListener< ? >> setRequestListeners = mapRequestToRequestListener.get( cachedContentRequest );
+        executorService.execute( new Runnable() {
+            public void run() {
+                waitForServiceToBeBound();
+                contentService.dontNotifyRequestListenersForRequest( request, setRequestListeners );
+            }
+        } );
+    }
+
     /**
      * Disable request listeners notifications for all requests. <br/>
      * Should be called in {@link Activity#onPause}
      */
     public void dontNotifyAnyRequestListeners() {
         synchronized ( lockQueue ) {
-            for ( CachedContentRequest< ? > cachedContentRequest : mapRequestToRequestListener.keySet() ) {
-                final ContentRequest< ? > request = cachedContentRequest.getContentRequest();
-                dontNotifyRequestListenersForRequestInternal( request, cachedContentRequest );
-            }
-            mapRequestToRequestListener.clear();
+            executorService.execute( new Runnable() {
+                public void run() {
+                    dontNotifyAnyRequestListenersInternal();
+                }
+            } );
         }
     }
 
-    protected void dontNotifyRequestListenersForRequestInternal( final ContentRequest< ? > request, CachedContentRequest< ? > cachedContentRequest ) {
-        final Set< RequestListener< ? >> setRequestListeners = mapRequestToRequestListener.get( cachedContentRequest );
-        executorService.execute( new Runnable() {
-
-            public void run() {
-                waitForServiceToBeBound();
-                contentService.dontNotifyRequestListenersForRequest( request, setRequestListeners );
-            }
-        } );
+    protected void dontNotifyAnyRequestListenersInternal() {
+        waitForServiceToBeBound();
+        for ( CachedContentRequest< ? > cachedContentRequest : mapRequestToRequestListener.keySet() ) {
+            final ContentRequest< ? > request = cachedContentRequest.getContentRequest();
+            final Set< RequestListener< ? >> setRequestListeners = mapRequestToRequestListener.get( cachedContentRequest );
+            contentService.dontNotifyRequestListenersForRequest( request, setRequestListeners );
+        }
+        mapRequestToRequestListener.clear();
     }
 
     // ============================================================================================

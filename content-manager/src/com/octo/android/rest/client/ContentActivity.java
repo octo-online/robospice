@@ -7,6 +7,10 @@ import android.app.Activity;
  * your own project. Whatever super class you use (sherlock, fragmentactivity, guice, etc.) you can just copy past the
  * methods below to enable all your activities to use the framework.
  * 
+ * The binding can take place, at best during <a
+ * href="http://stackoverflow.com/questions/2304086/binding-to-service-in-oncreate-or-in-onresume">certain lifecycle
+ * operations </a>: {@link #onStart()} and {@link #onStop()}.
+ * 
  * @author sni
  * 
  */
@@ -15,16 +19,15 @@ public class ContentActivity extends Activity {
     private ContentManager contentManager = new ContentManager( ContentService.class );
 
     @Override
-    protected void onResume() {
+    protected void onStart() {
         contentManager.start( this );
-        super.onResume();
+        super.onStart();
     }
 
     @Override
-    protected void onPause() {
-        contentManager.dontNotifyAnyRequestListeners();
+    protected void onStop() {
         contentManager.shouldStop();
-        super.onPause();
+        super.onStop();
     }
 
     public ContentManager getContentManager() {

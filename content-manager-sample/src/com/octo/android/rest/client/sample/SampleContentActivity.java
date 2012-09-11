@@ -57,8 +57,8 @@ public class SampleContentActivity extends ContentActivity {
     }
 
     @Override
-    protected void onResume() {
-        super.onResume();
+    protected void onStart() {
+        super.onStart();
         getContentManager().execute( loremRequest, "lorem.txt", DurationInMillis.ONE_DAY, new LoremRequestListener() );
         getContentManager().execute( weatherRequest, "75000.weather", DurationInMillis.ONE_DAY, new WeatherRequestListener() );
         getContentManager().execute( imageRequest, "logo", DurationInMillis.ONE_DAY, new ImageRequestListener() );
