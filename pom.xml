@@ -26,13 +26,13 @@
 
     <distributionManagement>
      <repository>
-       <id>nexus.octo</id>
+       <id>octo</id>
        <name>Maven OCTO Release Repository</name>
        <url>https://projets.octo.com/nexus/content/repositories/releases/</url>
      </repository>
 
      <snapshotRepository>
-       <id>nexus.octo</id>
+       <id>octo</id>
        <name>Maven OCTO Snapshots Repository</name>
        <url>https://projets.octo.com/nexus/content/repositories/snapshots/</url>
        <uniqueVersion>false</uniqueVersion>
