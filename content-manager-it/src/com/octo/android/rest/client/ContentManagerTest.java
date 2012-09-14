@@ -16,6 +16,7 @@ public class ContentManagerTest extends InstrumentationTestCase {
     private final static String TEST_CACHE_KEY = "12345";
     private final static long TEST_DURATION = DurationInMillis.ONE_SECOND;
     private final static String TEST_RETURNED_DATA = "coucou";
+    private static final long WAIT_BEFORE_EXECUTING_REQUEST = 1000;
     private static final long REQUEST_COMPLETION_TIME_OUT = 500;
     private static final long CONTENT_MANAGER_WAIT_TIMEOUT = 500;
 
@@ -157,7 +158,7 @@ public class ContentManagerTest extends InstrumentationTestCase {
     public void test_dontNotifyRequestListenersForRequest() throws InterruptedException {
         // given
         contentManager.start( getInstrumentation().getTargetContext() );
-        ContentRequestStub< String > contentRequestStub = new ContentRequestFailingStub< String >( TEST_CLASS );
+        ContentRequestStub< String > contentRequestStub = new ContentRequestFailingStub< String >( TEST_CLASS, WAIT_BEFORE_EXECUTING_REQUEST );
         ContentRequestStub< String > contentRequestStub2 = new ContentRequestFailingStub< String >( TEST_CLASS );
         RequestListenerStub< String > requestListenerStub = new RequestListenerStub< String >();
         RequestListenerStub< String > requestListenerStub2 = new RequestListenerStub< String >();
@@ -167,7 +168,7 @@ public class ContentManagerTest extends InstrumentationTestCase {
         contentManager.dontNotifyRequestListenersForRequest( contentRequestStub );
         contentManager.execute( contentRequestStub2, TEST_CACHE_KEY, TEST_DURATION, requestListenerStub2 );
 
-        contentRequestStub.await( REQUEST_COMPLETION_TIME_OUT );
+        contentRequestStub.await( WAIT_BEFORE_EXECUTING_REQUEST + REQUEST_COMPLETION_TIME_OUT );
         contentRequestStub2.await( REQUEST_COMPLETION_TIME_OUT );
 
         // test
@@ -190,7 +191,7 @@ public class ContentManagerTest extends InstrumentationTestCase {
         contentManager.execute( contentRequestStub2, TEST_CACHE_KEY, TEST_DURATION, requestListenerStub2 );
         contentManager.dontNotifyAnyRequestListeners();
 
-        contentRequestStub.await( REQUEST_COMPLETION_TIME_OUT );
+        contentRequestStub.await( WAIT_BEFORE_EXECUTING_REQUEST + REQUEST_COMPLETION_TIME_OUT );
         contentRequestStub2.await( REQUEST_COMPLETION_TIME_OUT );
 
         // test

@@ -27,6 +27,7 @@ public class RequestProcessorTest extends InstrumentationTestCase {
     private final static long TEST_DURATION = DurationInMillis.ONE_SECOND;
     private final static String TEST_RETURNED_DATA = "coucou";
     private static final long REQUEST_COMPLETION_TIME_OUT = 500;
+	private static final long WAIT_BEFORE_REQUEST_EXECUTION = 1000;
 
     private ICacheManager mockCacheManager;
     private RequestProcessor requestProcessorUnderTest;
@@ -254,7 +255,7 @@ public class RequestProcessorTest extends InstrumentationTestCase {
     public void test_dontNotifyRequestListenersForRequest_with_2_request_and_one_not_notified() throws InterruptedException, CacheLoadingException,
             CacheSavingException {
         // given
-        CachedContentRequestStub< String > stubRequest = createSuccessfulRequest( TEST_CLASS, TEST_CACHE_KEY, TEST_DURATION, TEST_RETURNED_DATA );
+        CachedContentRequestStub< String > stubRequest = createSuccessfulRequest( TEST_CLASS, TEST_CACHE_KEY, TEST_DURATION, TEST_RETURNED_DATA, WAIT_BEFORE_REQUEST_EXECUTION );
         CachedContentRequestStub< String > stubRequest2 = createSuccessfulRequest( TEST_CLASS, TEST_CACHE_KEY, TEST_DURATION, TEST_RETURNED_DATA );
         RequestListenerStub< String > requestListenerStub = new RequestListenerStub< String >();
         RequestListenerStub< String > requestListenerStub2 = new RequestListenerStub< String >();
@@ -274,7 +275,7 @@ public class RequestProcessorTest extends InstrumentationTestCase {
         requestProcessorUnderTest.addRequest( stubRequest2, requestListenerSet2 );
         requestProcessorUnderTest.dontNotifyRequestListenersForRequest( stubRequest.getContentRequest(), requestListenerSet );
 
-        stubRequest.await( REQUEST_COMPLETION_TIME_OUT );
+        stubRequest.await( WAIT_BEFORE_REQUEST_EXECUTION + REQUEST_COMPLETION_TIME_OUT );
         requestListenerStub2.await( REQUEST_COMPLETION_TIME_OUT );
 
         // test
@@ -375,6 +376,11 @@ public class RequestProcessorTest extends InstrumentationTestCase {
 
     private < T > CachedContentRequestStub< T > createSuccessfulRequest( Class< T > clazz, String cacheKey, long maxTimeInCache, T returnedData ) {
         ContentRequestStub< T > stubContentRequest = new ContentRequestSucceedingStub< T >( clazz, returnedData );
+        return new CachedContentRequestStub< T >( stubContentRequest, cacheKey, maxTimeInCache );
+    }
+    
+    private < T > CachedContentRequestStub< T > createSuccessfulRequest( Class< T > clazz, String cacheKey, long maxTimeInCache, T returnedData, long waitBeforeExecution ) {
+        ContentRequestStub< T > stubContentRequest = new ContentRequestSucceedingStub< T >( clazz, returnedData, waitBeforeExecution );
         return new CachedContentRequestStub< T >( stubContentRequest, cacheKey, maxTimeInCache );
     }
 
