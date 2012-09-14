@@ -304,13 +304,4 @@ public class RequestProcessor {
         }
     }
 
-    public void cancellAllPendingRequests() {
-        for ( CachedContentRequest< ? > cachedContentRequest : mapRequestToRequestListener.keySet() ) {
-            Log.v( LOG_CAT, "Cancelling request :" + cachedContentRequest );
-            cachedContentRequest.cancel();
-        }
-
-        // executorService.shutdownNow();
-        // initiateExecutorService( threadCount );
-    }
 }

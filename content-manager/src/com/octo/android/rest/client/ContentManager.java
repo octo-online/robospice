@@ -282,12 +282,11 @@ public class ContentManager implements Runnable {
      * Cancel all requests
      */
     public void cancelAllRequests() {
-        executorService.execute( new Runnable() {
-            public void run() {
-                waitForServiceToBeBound();
-                contentService.cancellAllPendingRequests();
+        synchronized ( lockQueue ) {
+            for ( CachedContentRequest< ? > cachedContentRequest : mapRequestToRequestListener.keySet() ) {
+                cachedContentRequest.cancel();
             }
-        } );
+        }
     }
 
     /**

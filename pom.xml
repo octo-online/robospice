@@ -22,6 +22,8 @@
 
     <properties>
         <platform.version>2.1.2</platform.version>
+	    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    	<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     </properties>
 
     <distributionManagement>
@@ -42,6 +44,12 @@
 
     <dependencyManagement>
         <dependencies>
+            <dependency>
+                <groupId>com.google.android</groupId>
+                <artifactId>annotations</artifactId>
+                <version>r7</version>
+                <scope>provided</scope>
+            </dependency>
             <dependency>
                 <groupId>com.google.android</groupId>
                 <artifactId>android</artifactId>
@@ -71,6 +79,11 @@
                 <version>4.10</version>
                 <scope>provided</scope>
             </dependency>
+		<dependency>
+			<groupId>com.google.guava</groupId>
+			<artifactId>guava</artifactId>
+			<version>13.0-rc1</version>
+		</dependency>            
         </dependencies>
     </dependencyManagement>
 

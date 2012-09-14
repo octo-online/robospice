@@ -112,10 +112,6 @@ public class ContentService extends Service {
         requestProcessor.dontNotifyRequestListenersForRequest( request, listRequestListener );
     }
 
-    public void cancellAllPendingRequests() {
-        requestProcessor.cancellAllPendingRequests();
-    }
-
     // ============================================================================================
     // SERVICE METHODS
     // ============================================================================================
