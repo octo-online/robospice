@@ -4,7 +4,7 @@
 
     <groupId>com.octo.android.content-manager</groupId>
     <artifactId>content-manager-parent</artifactId>
-    <version>0.0.10-SNAPSHOT</version>
+    <version>0.0.11-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Octo Content Manager - Parent</name>
     <scm>
@@ -26,13 +26,13 @@
 
     <distributionManagement>
      <repository>
-       <id>nexus.octo</id>
+       <id>octo</id>
        <name>Maven OCTO Release Repository</name>
        <url>https://projets.octo.com/nexus/content/repositories/releases/</url>
      </repository>
 
      <snapshotRepository>
-       <id>nexus.octo</id>
+       <id>octo</id>
        <name>Maven OCTO Snapshots Repository</name>
        <url>https://projets.octo.com/nexus/content/repositories/snapshots/</url>
        <uniqueVersion>false</uniqueVersion>
