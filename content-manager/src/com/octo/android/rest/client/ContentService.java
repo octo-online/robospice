@@ -28,7 +28,7 @@ import com.octo.android.rest.client.request.RequestProcessor;
  */
 public class ContentService extends Service {
 
-    private static final int DEFAULT_THREAD_COUNT = 1;
+    private static final int DEFAULT_THREAD_COUNT = 4;
 
     private final static String LOG_CAT = "ContentService";
 
@@ -110,6 +110,10 @@ public class ContentService extends Service {
 
     public void dontNotifyRequestListenersForRequest( ContentRequest< ? > request, Collection< RequestListener< ? >> listRequestListener ) {
         requestProcessor.dontNotifyRequestListenersForRequest( request, listRequestListener );
+    }
+
+    public void cancellAllPendingRequests() {
+        requestProcessor.cancellAllPendingRequests();
     }
 
     // ============================================================================================

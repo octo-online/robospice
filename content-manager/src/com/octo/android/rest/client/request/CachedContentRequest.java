@@ -1,6 +1,7 @@
 package com.octo.android.rest.client.request;
 
 import java.lang.reflect.ParameterizedType;
+import java.util.concurrent.Future;
 
 import android.os.AsyncTask;
 
@@ -34,6 +35,17 @@ public class CachedContentRequest< RESULT > extends ContentRequest< RESULT > {
     @Override
     public Class< RESULT > getResultType() {
         return contentRequest.getResultType();
+    }
+
+    /**
+     * Sets the future of this request, used to cancel it.
+     * 
+     * @param future
+     *            the future result of this request.
+     */
+    @Override
+    protected void setFuture( Future< ? > future ) {
+        contentRequest.setFuture( future );
     }
 
     @Override

@@ -1,9 +1,12 @@
 package com.octo.android.rest.client.request;
 
+import java.util.concurrent.Future;
+
 public abstract class ContentRequest< RESULT > {
 
     private Class< RESULT > resultType;
     private boolean isCanceled = false;
+    private Future< ? > future;
 
     public ContentRequest( Class< RESULT > clazz ) {
         this.resultType = clazz;
@@ -17,10 +20,17 @@ public abstract class ContentRequest< RESULT > {
 
     public void cancel() {
         this.isCanceled = true;
+        if ( future != null ) {
+            future.cancel( true );
+        }
     }
 
     public boolean isCancelled() {
         return this.isCanceled;
+    }
+
+    protected void setFuture( Future< ? > future ) {
+        this.future = future;
     }
 
 }

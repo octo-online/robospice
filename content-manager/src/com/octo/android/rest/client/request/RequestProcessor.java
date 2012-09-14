@@ -8,6 +8,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.ThreadFactory;
 
 import android.app.Activity;
 import android.app.Service;
@@ -24,6 +26,7 @@ import com.octo.android.rest.client.exception.CacheSavingException;
 import com.octo.android.rest.client.exception.ContentManagerException;
 import com.octo.android.rest.client.exception.NetworkException;
 import com.octo.android.rest.client.exception.NoNetworkException;
+import com.octo.android.rest.client.exception.RequestCancelledException;
 import com.octo.android.rest.client.persistence.ICacheManager;
 
 /**
@@ -68,12 +71,21 @@ public class RequestProcessor {
         this.applicationContext = context;
         this.cacheManager = cacheManager;
         handlerResponse = new Handler( Looper.getMainLooper() );
+        initiateExecutorService( threadCount );
+    }
+
+    protected void initiateExecutorService( int threadCount ) {
         if ( threadCount <= 0 ) {
             throw new IllegalArgumentException( "Thread count must be >= 1" );
         } else if ( threadCount == 1 ) {
             executorService = Executors.newSingleThreadExecutor();
         } else {
-            Executors.newFixedThreadPool( threadCount );
+            executorService = Executors.newFixedThreadPool( threadCount, new ThreadFactory() {
+
+                public Thread newThread( Runnable r ) {
+                    return new Thread( r );
+                }
+            } );
         }
     }
 
@@ -94,24 +106,27 @@ public class RequestProcessor {
             listRequestListenerForThisRequest.addAll( listRequestListener );
         }
 
-        executorService.execute( new Runnable() {
+        Future< ? > future = executorService.submit( new Runnable() {
             public void run() {
                 processRequest( request );
             }
         } );
+        request.setFuture( future );
     }
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
     protected < T > void processRequest( CachedContentRequest< T > request ) {
         Log.d( LOG_CAT, "Processing request : " + request );
 
-        if ( request.isCancelled() ) {
-            Log.d( LOG_CAT, "Not processing request : " + request + " as it is cancelled. " );
-            return;
-        }
-
         T result = null;
         Set< RequestListener< ? >> requestListeners = mapRequestToRequestListener.get( request );
+        mapRequestToRequestListener.remove( request );
+
+        if ( request.isCancelled() ) {
+            Log.d( LOG_CAT, "Not processing request : " + request + " as it is cancelled. " );
+            handlerResponse.post( new ResultRunnable( requestListeners, new RequestCancelledException( "Request has been cancelled explicitely." ) ) );
+            return;
+        }
 
         if ( request.getRequestCacheKey() != null ) {
             // First, search data in cache
@@ -127,6 +142,12 @@ public class RequestProcessor {
             }
         }
 
+        if ( request.isCancelled() ) {
+            Log.d( LOG_CAT, "Not calling network request : " + request + " as it is cancelled. " );
+            handlerResponse.post( new ResultRunnable( requestListeners, new RequestCancelledException( "Request has been cancelled explicitely." ) ) );
+            return;
+        }
+
         if ( result == null && !request.isCancelled() ) {
             // if file is not found or the date is a day after or cache disabled, call the web service
             Log.d( LOG_CAT, "Cache content not available or expired or disabled" );
@@ -137,6 +158,7 @@ public class RequestProcessor {
             } else {
                 // Nothing found in cache (or cache expired), load from network
                 try {
+                    Log.d( LOG_CAT, "Calling netwok request. " );
                     result = request.loadDataFromNetwork();
                     if ( result == null ) {
                         Log.d( LOG_CAT, "Unable to get web service result : " + request.getResultType() );
@@ -144,9 +166,21 @@ public class RequestProcessor {
                         return;
                     }
                 } catch ( Exception e ) {
+                    if ( request.isCancelled() ) {
+                        Log.d( LOG_CAT, "Request received error and is cancelled." );
+                        handlerResponse.post( new ResultRunnable( requestListeners,
+                                new RequestCancelledException( "Request has been cancelled explicitely.", e ) ) );
+                        return;
+                    }
                     Log.e( LOG_CAT, "A rest client exception occured during service execution :" + e.getMessage(), e );
                     handlerResponse
                             .post( new ResultRunnable( requestListeners, new NetworkException( "Exception occured during invocation of web service.", e ) ) );
+                    return;
+                }
+
+                if ( request.isCancelled() ) {
+                    Log.d( LOG_CAT, "Request did not receive error but is cancelled." );
+                    handlerResponse.post( new ResultRunnable( requestListeners, new RequestCancelledException( "Request has been cancelled explicitely." ) ) );
                     return;
                 }
 
@@ -268,5 +302,15 @@ public class RequestProcessor {
                 }
             }
         }
+    }
+
+    public void cancellAllPendingRequests() {
+        for ( CachedContentRequest< ? > cachedContentRequest : mapRequestToRequestListener.keySet() ) {
+            Log.v( LOG_CAT, "Cancelling request :" + cachedContentRequest );
+            cachedContentRequest.cancel();
+        }
+
+        // executorService.shutdownNow();
+        // initiateExecutorService( threadCount );
     }
 }

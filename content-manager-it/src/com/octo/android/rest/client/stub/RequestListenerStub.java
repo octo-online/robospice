@@ -16,13 +16,15 @@ public class RequestListenerStub< T > implements RequestListener< T > {
 
     private ReentrantLock lock = new ReentrantLock();
     private Condition requestFinishedCondition = lock.newCondition();
+    private Exception exception;
 
     @Override
-    public void onRequestFailure( ContentManagerException arg0 ) {
+    public void onRequestFailure( ContentManagerException exception ) {
         lock.lock();
         try {
             checkIsExectuedInUIThread();
             isSuccessful = false;
+            this.exception = exception;
             requestFinishedCondition.signal();
         } finally {
             lock.unlock();
@@ -49,6 +51,10 @@ public class RequestListenerStub< T > implements RequestListener< T > {
 
     public Boolean isSuccessful() {
         return isSuccessful;
+    }
+
+    public Exception getReceivedException() {
+        return exception;
     }
 
     public boolean isExecutedInUIThread() {

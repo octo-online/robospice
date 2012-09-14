@@ -10,6 +10,7 @@ import android.test.suitebuilder.annotation.SmallTest;
 
 import com.octo.android.rest.client.exception.CacheLoadingException;
 import com.octo.android.rest.client.exception.CacheSavingException;
+import com.octo.android.rest.client.exception.RequestCancelledException;
 import com.octo.android.rest.client.persistence.DurationInMillis;
 import com.octo.android.rest.client.persistence.ICacheManager;
 import com.octo.android.rest.client.stub.CachedContentRequestStub;
@@ -315,7 +316,8 @@ public class RequestProcessorTest extends InstrumentationTestCase {
         EasyMock.verify( mockCacheManager );
         assertFalse( stubRequest.isLoadDataFromNetworkCalled() );
         assertTrue( stubRequest2.isLoadDataFromNetworkCalled() );
-        assertNull( requestListenerStub.isSuccessful() );
+        assertFalse( requestListenerStub.isSuccessful() );
+        assertTrue( requestListenerStub.getReceivedException() instanceof RequestCancelledException );
         assertTrue( requestListenerStub2.isSuccessful() );
     }
 

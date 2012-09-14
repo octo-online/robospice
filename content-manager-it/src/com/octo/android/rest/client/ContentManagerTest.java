@@ -36,20 +36,6 @@ public class ContentManagerTest extends InstrumentationTestCase {
         super.tearDown();
     }
 
-    public void test_start_shouldNotBeCalledWithoutContext() throws Exception {
-        // given
-
-        // when
-        try {
-            contentManager.start();
-            // then
-            fail();
-        } catch ( Exception ex ) {
-            // then
-            assertTrue( true );
-        }
-    }
-
     public void test_executeContentRequest_shouldFailIfNotStarted() {
         // given
 
@@ -194,7 +180,7 @@ public class ContentManagerTest extends InstrumentationTestCase {
     public void test_dontNotifyAnyRequestListeners() throws InterruptedException {
         // given
         contentManager.start( getInstrumentation().getTargetContext() );
-        ContentRequestStub< String > contentRequestStub = new ContentRequestFailingStub< String >( TEST_CLASS );
+        ContentRequestStub< String > contentRequestStub = new ContentRequestFailingStub< String >( TEST_CLASS, 500 );
         ContentRequestStub< String > contentRequestStub2 = new ContentRequestFailingStub< String >( TEST_CLASS );
         RequestListenerStub< String > requestListenerStub = new RequestListenerStub< String >();
         RequestListenerStub< String > requestListenerStub2 = new RequestListenerStub< String >();

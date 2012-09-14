@@ -72,10 +72,6 @@ public class ContentManager implements Runnable {
         this.contentServiceClass = contentServiceClass;
     }
 
-    public final synchronized void start() {
-        throw new IllegalStateException( "Can't be started without context." );
-    }
-
     public synchronized void start( Context context ) {
         this.context = context;
         if ( runner != null ) {
@@ -286,11 +282,12 @@ public class ContentManager implements Runnable {
      * Cancel all requests
      */
     public void cancelAllRequests() {
-        synchronized ( lockQueue ) {
-            for ( ContentRequest< ? > restRequest : requestQueue ) {
-                restRequest.cancel();
+        executorService.execute( new Runnable() {
+            public void run() {
+                waitForServiceToBeBound();
+                contentService.cancellAllPendingRequests();
             }
-        }
+        } );
     }
 
     /**
@@ -389,23 +386,23 @@ public class ContentManager implements Runnable {
      * Should be called in {@link Activity#onPause}
      */
     public void dontNotifyAnyRequestListeners() {
-        synchronized ( lockQueue ) {
-            executorService.execute( new Runnable() {
-                public void run() {
-                    dontNotifyAnyRequestListenersInternal();
-                }
-            } );
-        }
+        executorService.execute( new Runnable() {
+            public void run() {
+                dontNotifyAnyRequestListenersInternal();
+            }
+        } );
     }
 
     protected void dontNotifyAnyRequestListenersInternal() {
         waitForServiceToBeBound();
-        for ( CachedContentRequest< ? > cachedContentRequest : mapRequestToRequestListener.keySet() ) {
-            final ContentRequest< ? > request = cachedContentRequest.getContentRequest();
-            final Set< RequestListener< ? >> setRequestListeners = mapRequestToRequestListener.get( cachedContentRequest );
-            contentService.dontNotifyRequestListenersForRequest( request, setRequestListeners );
+        synchronized ( lockQueue ) {
+            for ( CachedContentRequest< ? > cachedContentRequest : mapRequestToRequestListener.keySet() ) {
+                final ContentRequest< ? > request = cachedContentRequest.getContentRequest();
+                final Set< RequestListener< ? >> setRequestListeners = mapRequestToRequestListener.get( cachedContentRequest );
+                contentService.dontNotifyRequestListenersForRequest( request, setRequestListeners );
+            }
+            mapRequestToRequestListener.clear();
         }
-        mapRequestToRequestListener.clear();
     }
 
     // ============================================================================================
