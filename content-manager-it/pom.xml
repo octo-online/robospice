@@ -16,26 +16,28 @@
 		<dependency>
 			<groupId>com.google.android</groupId>
 			<artifactId>android</artifactId>
+			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>com.google.android</groupId>
 			<artifactId>android-test</artifactId>
+			<scope>provided</scope>
 		</dependency>
 		<dependency>
-			<!-- JAR for eclipse, provided for maven not to re-include it -->
 			<groupId>com.octo.android.content-manager</groupId>
 			<artifactId>content-manager-sample</artifactId>
+			<version>${project.version}</version>
 			<type>apk</type>
 			<scope>provided</scope>
-			<version>${project.version}</version>
 		</dependency>
 		<dependency>
-			<!-- JAR for eclipse, provided for maven not to re-include it -->
 			<groupId>com.octo.android.content-manager</groupId>
 			<artifactId>content-manager-sample</artifactId>
-			<type>jar</type>
 			<version>${project.version}</version>
+			<type>jar</type>
+			<scope>provided</scope>
 		</dependency>
+
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>

@@ -180,7 +180,7 @@ public class ContentManagerTest extends InstrumentationTestCase {
     public void test_dontNotifyAnyRequestListeners() throws InterruptedException {
         // given
         contentManager.start( getInstrumentation().getTargetContext() );
-        ContentRequestStub< String > contentRequestStub = new ContentRequestFailingStub< String >( TEST_CLASS, 500 );
+        ContentRequestStub< String > contentRequestStub = new ContentRequestFailingStub< String >( TEST_CLASS, 1000 );
         ContentRequestStub< String > contentRequestStub2 = new ContentRequestFailingStub< String >( TEST_CLASS );
         RequestListenerStub< String > requestListenerStub = new RequestListenerStub< String >();
         RequestListenerStub< String > requestListenerStub2 = new RequestListenerStub< String >();
@@ -196,8 +196,8 @@ public class ContentManagerTest extends InstrumentationTestCase {
         // test
         assertTrue( contentRequestStub.isLoadDataFromNetworkCalled() );
         assertTrue( contentRequestStub2.isLoadDataFromNetworkCalled() );
-        // TODO comment to release
-        // assertNull( requestListenerStub.isSuccessful() );
+
+        assertNull( requestListenerStub.isSuccessful() );
         assertNull( requestListenerStub2.isSuccessful() );
     }
 
