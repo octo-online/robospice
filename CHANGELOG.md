@@ -1,3 +1,10 @@
+Version 0.0.12
+- back to previous dependency injection model inside services.
+- content manager is now more robust and more stable
+- dropped the idea of integrating AsyncTasks into the framework.
+- minor enhancements.
+
+
 Version 0.0.11
 - configuration is now entirely mavenized. No libs folder anymore, every dependency is controlled by maven.
 Most dependencies are standard although some of the android dependencies are still missing in maven, in that case,
