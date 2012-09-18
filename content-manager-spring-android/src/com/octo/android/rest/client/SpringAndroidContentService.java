@@ -18,20 +18,19 @@ import com.octo.android.rest.client.request.springandroid.RestContentRequest;
  * @author sni
  * 
  */
-public class SpringAndroidContentService extends ContentService {
+public abstract class SpringAndroidContentService extends ContentService {
 
     private RestTemplate restTemplate;
 
     @Override
     public void onCreate() {
         super.onCreate();
-        if ( !( getApplication() instanceof RestContentConfiguration ) ) {
-            throw new RuntimeException( "Application class :" + getApplication().getClass().getName() + " doesn't implement "
-                    + RestContentConfiguration.class.getName() );
-        }
-        restTemplate = ( (RestContentConfiguration) getApplication() ).getRestTemplate();
+        restTemplate = createRestTemplate();
     }
 
+    public abstract RestTemplate createRestTemplate();
+
+    
     @Override
     public void addRequest( CachedContentRequest< ? > request, Set< RequestListener< ? >> listRequestListener ) {
         if ( request.getContentRequest() instanceof RestContentRequest ) {
@@ -39,4 +38,6 @@ public class SpringAndroidContentService extends ContentService {
         }
         super.addRequest( request, listRequestListener );
     }
+    
+
 }

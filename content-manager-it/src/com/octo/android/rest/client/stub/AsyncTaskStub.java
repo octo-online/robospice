@@ -5,44 +5,68 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
 import android.os.AsyncTask;
-import android.util.Log;
+import android.os.Looper;
 
-public class AsyncTaskStub< Params, Progress, Result > extends AsyncTask< Params, Progress, Result > {
-    protected boolean isLoadDataFromNetworkCalled = false;
+public class AsyncTaskStub<Params, Progress, Result> extends AsyncTask<Params, Progress, Result> {
+	protected boolean isLoadDataFromNetworkCalled = false;
 
-    private ReentrantLock lock = new ReentrantLock();
-    private Condition requestFinishedCondition = lock.newCondition();
+	private ReentrantLock lock = new ReentrantLock();
+	private Condition requestFinishedCondition = lock.newCondition();
 
-    @Override
-    protected Result doInBackground( Params... params ) {
-        Log.d( "ed", "edd" );
+	private Result returnedData;
 
-        lock.lock();
-        try {
-            isLoadDataFromNetworkCalled = true;
-            requestFinishedCondition.signal();
-        } finally {
-            lock.unlock();
-        }
-        return null;
-    }
+	private boolean isExecutedInUIThread;
 
-    public boolean isLoadDataFromNetworkCalled() {
-        lock.lock();
-        try {
-            requestFinishedCondition.signal();
-        } finally {
-            lock.unlock();
-        }
-        return isLoadDataFromNetworkCalled;
-    }
+	private boolean isPostExecuteCalled = false;
 
-    public void await( long millisecond ) throws InterruptedException {
-        lock.lock();
-        try {
-            requestFinishedCondition.await( millisecond, TimeUnit.MILLISECONDS );
-        } finally {
-            lock.unlock();
-        }
-    }
+	public AsyncTaskStub(Result returnedData) {
+		this.returnedData = returnedData;
+	}
+
+	@Override
+	protected Result doInBackground(Params... params) {
+		isLoadDataFromNetworkCalled = true;
+		return returnedData;
+	}
+
+	@Override
+	protected void onPostExecute(Result result) {
+		this.isPostExecuteCalled = true;
+		checkIsExectuedInUIThread();
+
+		lock.lock();
+		try {
+			requestFinishedCondition.signal();
+		} finally {
+			lock.unlock();
+		}
+		super.onPostExecute(result);
+	}
+
+	public boolean isLoadDataFromNetworkCalled() {
+		return isLoadDataFromNetworkCalled;
+	}
+
+	public void await(long millisecond) throws InterruptedException {
+		lock.lock();
+		try {
+			requestFinishedCondition.await(millisecond, TimeUnit.MILLISECONDS);
+		} finally {
+			lock.unlock();
+		}
+	}
+
+	protected void checkIsExectuedInUIThread() {
+		if (Looper.myLooper() != null && Looper.myLooper() == Looper.getMainLooper()) {
+			isExecutedInUIThread = true;
+		}
+	}
+
+	public boolean isExecutedInUIThread() {
+		return isExecutedInUIThread;
+	}
+
+	public boolean isPostExecuteCalled() {
+		return isPostExecuteCalled;
+	}
 }

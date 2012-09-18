@@ -21,7 +21,7 @@ import com.octo.android.rest.client.sample.model.WeatherResult;
 import com.octo.android.rest.client.sample.request.WeatherRequest;
 
 @ContentView(R.layout.main)
-public class SampleContentActivity extends ContentActivity {
+public class SampleContentActivity extends BaseSampleContentActivity {
 
     // ============================================================================================
     // ATTRIBUTES

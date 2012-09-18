@@ -3,23 +3,23 @@ package com.octo.android.rest.client;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
-import java.util.LinkedList;
 import java.util.Map;
-import java.util.Queue;
 import java.util.Set;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.ReentrantLock;
 
-import android.annotation.TargetApi;
 import android.app.Activity;
-import android.app.Service;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
-import android.os.AsyncTask;
 import android.os.IBinder;
 import android.util.Log;
+import android.webkit.CacheManager;
 
 import com.octo.android.rest.client.ContentService.ContentServiceBinder;
 import com.octo.android.rest.client.persistence.DurationInMillis;
@@ -28,426 +28,723 @@ import com.octo.android.rest.client.request.ContentRequest;
 import com.octo.android.rest.client.request.RequestListener;
 
 /**
- * Class used to manage content received from web service. <br/>
- * <ul>
- * <li>Start a {@link Service} to request the web service</li>
- * <li>Manage the communication between the Service and the Activity or Fragment : maintains a list of requests and a
- * list of result receiver (listener)</li>
- * </ul>
+ * The instances of this class allow to acces the {@link ContentService}. <br/>
  * 
- * @author jva & sni
+ * They are tied to activities and obtain a local binding to the
+ * {@link ContentService}. When binding occurs, the {@link ContentManager} will
+ * send commadnds to the {@link ContentService}, to execute requests, clear
+ * cache, prevent listeners from beeing called and so on.
  * 
+ * Basically, all features of the {@link ContentService} are accessible from the
+ * {@link ContentManager}. It acts as an asynchronous proxy : every call to a
+ * {@link ContentService} method is asynchronous and will occur as soon as
+ * possible when the {@link ContentManager} successfully binds to the service.
+ * 
+ * @author jva
+ * @author sni
+ * @author mwa
+ * 
+ */
+
+/*
+ * Note to maintainers : This class is quite complex and requires background
+ * knowledge in multi-threading & local service binding in android.
  */
 public class ContentManager implements Runnable {
 
-    private static final String LOG_TAG = ContentManager.class.getSimpleName();
+	private static final String LOG_TAG = ContentManager.class.getSimpleName();
 
-    private ContentService contentService;
-    private ContentServiceConnection contentServiceConnection = new ContentServiceConnection();
-    private Context context;
+	/** The class of the {@link ContentService} to bind to. */
+	private Class<? extends ContentService> contentServiceClass;
 
-    private boolean isStopped = true;
-    private Queue< CachedContentRequest< ? >> requestQueue = new LinkedList< CachedContentRequest< ? >>();
-    private Map< CachedContentRequest< ? >, Set< RequestListener< ? >>> mapRequestToRequestListener = Collections
-            .synchronizedMap( new IdentityHashMap< CachedContentRequest< ? >, Set< RequestListener< ? >>>() );
+	/** A reference on the {@link ContentService} obtained by local binding. */
+	private ContentService contentService;
+	/** {@link ContentService} binder. */
+	private ContentServiceConnection contentServiceConnection = new ContentServiceConnection();
 
-    private ExecutorService executorService = Executors.newSingleThreadExecutor();
+	/** The context used to bind to the service from. */
+	private Context context;
 
-    // TODO use blocking queue
-    private Object lockQueue = new Object();
-    // TODO use semaphore
-    private Object lockAcquireService = new Object();
+	/** Wether or not {@link ContentManager} is started. */
+	private boolean isStopped = true;
 
-    private Thread runner;
+	/** The queue of requests to be sent to the service. */
+	private BlockingQueue<CachedContentRequest<?>> requestQueue = new LinkedBlockingQueue<CachedContentRequest<?>>();
 
-    private boolean isUnbinding;
+	/**
+	 * The list of all requests that have not yet been passed to the service.
+	 * All iterations must be synchronized.
+	 */
+	private Map<CachedContentRequest<?>, Set<RequestListener<?>>> mapRequestToLaunchToRequestListener = Collections
+			.synchronizedMap(new IdentityHashMap<CachedContentRequest<?>, Set<RequestListener<?>>>());
+	/**
+	 * The list of all requests that have already been passed to the service.
+	 * All iterations must be synchronized.
+	 */
+	private Map<CachedContentRequest<?>, Set<RequestListener<?>>> mapPendingRequestToRequestListener = Collections
+			.synchronizedMap(new IdentityHashMap<CachedContentRequest<?>, Set<RequestListener<?>>>());
 
-    private Class< ? extends ContentService > contentServiceClass;
+	private ExecutorService executorService = Executors.newSingleThreadExecutor();
 
-    // ============================================================================================
-    // THREAD BEHAVIOR
-    // ============================================================================================
+	/**
+	 * Lock used to synchronize binding to / unbing from the
+	 * {@link ContentService}.
+	 */
+	private ReentrantLock lockAcquireService = new ReentrantLock();
+	/** A monitor to ensure service is bound before accessing it. */
+	private Condition conditionServiceAcquired = lockAcquireService.newCondition();
 
-    public ContentManager( Class< ? extends ContentService > contentServiceClass ) {
-        this.contentServiceClass = contentServiceClass;
-    }
+	/**
+	 * Lock used to synchronize transmission of requests to the
+	 * {@link ContentService}.
+	 */
+	private ReentrantLock lockSendRequestsToService = new ReentrantLock();
 
-    public synchronized void start( Context context ) {
-        this.context = context;
-        if ( runner != null ) {
-            throw new IllegalStateException( "Already started." );
-        } else {
-            Intent intentCheck = new Intent( context, contentServiceClass );
-            if ( context.getPackageManager().queryIntentServices( intentCheck, 0 ).isEmpty() ) {
-                throw new RuntimeException( "Impossible to start content manager as no service of class : " + contentServiceClass.getName()
-                        + " is registered in AndroidManifest.xml file !" );
-            }
-            Log.d( LOG_TAG, "Content manager started." );
-            runner = new Thread( this );
-            this.isStopped = false;
-            runner.start();
-        }
-    }
+	/** Thread running runnable code. */
+	private Thread runner;
 
-    public boolean isStarted() {
-        return !isStopped;
-    }
+	/** Reacts to service processing of requests. */
+	private RequestRemoverContentServiceListener removerContentServiceListener = new RequestRemoverContentServiceListener();
 
-    public void run() {
-        bindService( context );
+	/** Whether or not we are unbinding (to prevent unbinding twice. */
+	public boolean isUnbinding = false;
 
-        waitForServiceToBeBound();
+	// ============================================================================================
+	// THREAD BEHAVIOR
+	// ============================================================================================
 
-        while ( !isStopped ) {
-            synchronized ( lockQueue ) {
-                if ( !requestQueue.isEmpty() ) {
-                    CachedContentRequest< ? > restRequest = requestQueue.poll();
-                    Set< RequestListener< ? >> listRequestListener = mapRequestToRequestListener.get( restRequest );
-                    mapRequestToRequestListener.remove( restRequest );
-                    Log.d( LOG_TAG, "Sending request to service : " + restRequest.getClass().getSimpleName() );
-                    contentService.addRequest( restRequest, listRequestListener );
-                }
+	/**
+	 * Creates a {@link ContentManager}. Typically this occurs in the
+	 * construction of an Activity or Fragment.
+	 * 
+	 * This method will check if the service to bind to has been properly
+	 * declared in AndroidManifest.
+	 * 
+	 * @param contentServiceClass
+	 *            the service class to bind to.
+	 */
+	public ContentManager(Class<? extends ContentService> contentServiceClass) {
+		this.contentServiceClass = contentServiceClass;
+	}
 
-                while ( requestQueue.isEmpty() ) {
-                    try {
-                        lockQueue.wait();
-                    } catch ( InterruptedException e ) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-        }
+	/**
+	 * Start the {@link ContentManager}. It will bind asynchronously to the
+	 * {@link ContentService}.
+	 * 
+	 * @param context
+	 *            a context that will be used to bind to the service. Typically,
+	 *            the Activity or Fragment that needs to interact with the
+	 *            {@link ContentService}.
+	 */
+	public synchronized void start(Context context) {
+		this.context = context;
+		if (runner != null) {
+			throw new IllegalStateException("Already started.");
+		} else {
+			checkServiceIsProperlyDeclaredInAndroidManifest(context);
+			Log.d(LOG_TAG, "Content manager started.");
+			runner = new Thread(this);
+			isStopped = false;
+			runner.start();
+		}
+	}
 
-        unbindService( context );
-    }
+	/**
+	 * Method is synchronized with {@link #start(Context)}.
+	 * 
+	 * @return whether or not the {@link ContentManager} is started.
+	 */
+	public synchronized boolean isStarted() {
+		return !isStopped;
+	}
 
-    // ============================================================================================
-    // PUBLIC EXPOSED METHODS
-    // ============================================================================================
+	public void run() {
+		bindToService(context);
 
-    /**
-     * Call this in {@link Activity#onDestroy} to stop the {@link ContentManager} and all request
-     */
-    public void shouldStop() {
-        if ( this.runner == null ) {
-            throw new IllegalStateException( "Not started yet" );
-        }
-        Log.d( LOG_TAG, "Content manager stopping." );
-        dontNotifyAnyRequestListenersInternal();
-        unbindService( context );
-        this.isStopped = true;
-        this.runner = null;
-        Log.d( LOG_TAG, "Content manager stopped." );
-    }
+		try {
+			waitForServiceToBeBound();
+			while (!isStopped) {
+				try {
+					lockSendRequestsToService.lock();
+					if (!requestQueue.isEmpty()) {
+						CachedContentRequest<?> restRequest;
+						restRequest = requestQueue.take();
+						Set<RequestListener<?>> listRequestListener = mapRequestToLaunchToRequestListener.get(restRequest);
+						mapRequestToLaunchToRequestListener.remove(restRequest);
+						mapPendingRequestToRequestListener.put(restRequest, listRequestListener);
+						Log.d(LOG_TAG, "Sending request to service : " + restRequest.getClass().getSimpleName());
+						contentService.addRequest(restRequest, listRequestListener);
+					}
+				} finally {
+					lockSendRequestsToService.unlock();
+				}
+			}
+		} catch (InterruptedException e) {
+			Log.e(LOG_TAG, "Interrupted while waiting for acquiring service.");
+		} finally {
+			unbindFromService(context);
+		}
+	}
 
-    public void shouldStopAndJoin( long timeOut ) throws InterruptedException {
-        if ( this.runner == null ) {
-            throw new IllegalStateException( "Not started yet" );
-        }
-        Log.d( LOG_TAG, "Content manager stopping. Joining" );
-        dontNotifyAnyRequestListenersInternal();
-        unbindService( context );
-        this.isStopped = true;
-        this.runner.join( timeOut );
-        this.runner = null;
-        Log.d( LOG_TAG, "Content manager stopped." );
-    }
+	/**
+	 * Stops the {@link ContentManager}. It will unbind from
+	 * {@link ContentService}. All request listeners that had been registered to
+	 * listen to {@link ContentRequest}s sent from this {@link ContentManager}
+	 * will be unregistered. None of them will be notified with the results of
+	 * their {@link ContentRequest}s.
+	 * 
+	 * Unbinding will occur asynchronously.
+	 */
+	public synchronized void shouldStop() {
+		if (this.runner == null) {
+			throw new IllegalStateException("Not started yet");
+		}
+		Log.d(LOG_TAG, "Content manager stopping.");
+		dontNotifyAnyRequestListenersInternal();
+		unbindFromService(context);
+		this.isStopped = true;
+		this.runner = null;
+		Log.d(LOG_TAG, "Content manager stopped.");
+	}
 
-    /**
-     * Execute a {@link AsyncTask}, put the result in cache with key <i>requestCacheKey</i> during <i>cacheDuration</i>
-     * millisecond and register listeners to notify when request is finished.
-     * 
-     * @param asyncTask
-     *            the AsyncTask to execute
-     * @param requestCacheKey
-     *            the key used to store and retrieve the result of the request in the cache
-     * @param cacheDuration
-     *            the time in millisecond to keep cache alive (see {@link DurationInMillis})
-     * @param requestListener
-     *            the listener to notify when the request will finish
-     * @param params
-     *            the params of the asynctask to execute
-     */
-    // TODO get rig of request listener, they should be provided by
-    // async task postExecute..
-    @TargetApi(3)
-    public < Params, Progress, Result > void execute( AsyncTask< Params, Progress, Result > asyncTask, String requestCacheKey, long cacheDuration,
-            RequestListener< Result > requestListener, Params... params ) {
+	/**
+	 * This is mostly a testing method.
+	 * 
+	 * Stops the {@link ContentManager}. It will unbind from
+	 * {@link ContentService}. All request listeners that had been registered to
+	 * listen to {@link ContentRequest}s sent from this {@link ContentManager}
+	 * will be unregistered. None of them will be notified with the results of
+	 * their {@link ContentRequest}s.
+	 * 
+	 * Unbinding will occur syncrhonously : the method returns when all events
+	 * have been unregistered and when main processing thread stops.
+	 * 
+	 */
+	public synchronized void shouldStopAndJoin(long timeOut) throws InterruptedException {
+		if (this.runner == null) {
+			throw new IllegalStateException("Not started yet");
+		}
 
-        synchronized ( lockQueue ) {
-            CachedContentRequest< Result > cachedContentRequest = new CachedContentRequest< Result >( asyncTask, requestCacheKey, cacheDuration, params );
-            // add listener to listeners list for this request
-            Set< RequestListener< ? >> listeners = mapRequestToRequestListener.get( cachedContentRequest );
-            if ( listeners == null ) {
-                listeners = new HashSet< RequestListener< ? >>();
-                this.mapRequestToRequestListener.put( cachedContentRequest, listeners );
-            }
-            listeners.add( requestListener );
+		Log.d(LOG_TAG, "Content manager stopping. Joining");
+		dontNotifyAnyRequestListenersInternal();
+		unbindFromService(context);
+		this.isStopped = true;
 
-            this.requestQueue.add( cachedContentRequest );
-            lockQueue.notifyAll();
-        }
-    }
+		this.runner.join(timeOut);
+		this.runner = null;
+		Log.d(LOG_TAG, "Content manager stopped.");
+	}
 
-    /**
-     * Execute a request, without using cache.
-     * 
-     * @param request
-     *            the request to execute.
-     * @param requestListener
-     *            the listener to notify when the request will finish.
-     */
-    public < T > void execute( ContentRequest< T > request, RequestListener< T > requestListener ) {
+	// ============================================================================================
+	// PUBLIC EXPOSED METHODS : requests executions
+	// ============================================================================================
 
-        synchronized ( lockQueue ) {
-            CachedContentRequest< T > cachedContentRequest = new CachedContentRequest< T >( request, null, DurationInMillis.ALWAYS );
-            // add listener to listeners list for this request
-            Set< RequestListener< ? >> listeners = mapRequestToRequestListener.get( cachedContentRequest );
-            if ( listeners == null ) {
-                listeners = new HashSet< RequestListener< ? >>();
-                this.mapRequestToRequestListener.put( cachedContentRequest, listeners );
-            }
-            listeners.add( requestListener );
+	/**
+	 * Execute a request, without using cache.
+	 * 
+	 * @param request
+	 *            the request to execute.
+	 * @param requestListener
+	 *            the listener to notify when the request will finish.
+	 */
+	public <T> void execute(ContentRequest<T> request, RequestListener<T> requestListener) {
+		CachedContentRequest<T> cachedContentRequest = new CachedContentRequest<T>(request, null, DurationInMillis.ALWAYS);
+		execute(cachedContentRequest, requestListener);
+	}
 
-            this.requestQueue.add( cachedContentRequest );
-            lockQueue.notifyAll();
-        }
-    }
+	/**
+	 * Execute a request, put the result in cache with key
+	 * <i>requestCacheKey</i> during <i>cacheDuration</i> millisecond and
+	 * register listeners to notify when request is finished.
+	 * 
+	 * @param request
+	 *            the request to execute
+	 * @param requestCacheKey
+	 *            the key used to store and retrieve the result of the request
+	 *            in the cache
+	 * @param cacheDuration
+	 *            the time in millisecond to keep cache alive (see
+	 *            {@link DurationInMillis})
+	 * @param requestListener
+	 *            the listener to notify when the request will finish
+	 */
+	public <T> void execute(ContentRequest<T> request, String requestCacheKey, long cacheDuration, RequestListener<T> requestListener) {
+		CachedContentRequest<T> cachedContentRequest = new CachedContentRequest<T>(request, requestCacheKey, cacheDuration);
+		execute(cachedContentRequest, requestListener);
+	}
 
-    /**
-     * Execute a request, put the result in cache with key <i>requestCacheKey</i> during <i>cacheDuration</i>
-     * millisecond and register listeners to notify when request is finished.
-     * 
-     * @param request
-     *            the request to execute
-     * @param requestCacheKey
-     *            the key used to store and retrieve the result of the request in the cache
-     * @param cacheDuration
-     *            the time in millisecond to keep cache alive (see {@link DurationInMillis})
-     * @param requestListener
-     *            the listener to notify when the request will finish
-     */
-    public < T > void execute( ContentRequest< T > request, String requestCacheKey, long cacheDuration, RequestListener< T > requestListener ) {
+	/**
+	 * Execute a request, put the result in cache and register listeners to
+	 * notify when request is finished.
+	 * 
+	 * @param request
+	 *            the request to execute. {@link CachedContentRequest} is a
+	 *            wrapper of {@link ContentRequest} that contains cache key and
+	 *            cache duration
+	 * @param requestListener
+	 *            the listener to notify when the request will finish
+	 */
+	public <T> void execute(CachedContentRequest<T> cachedContentRequest, RequestListener<T> requestListener) {
+		addRequestListenerToListOfRequestListeners(cachedContentRequest, requestListener);
+		this.requestQueue.add(cachedContentRequest);
+	}
 
-        synchronized ( lockQueue ) {
-            CachedContentRequest< T > cachedContentRequest = new CachedContentRequest< T >( request, requestCacheKey, cacheDuration );
-            // add listener to listeners list for this request
-            Set< RequestListener< ? >> listeners = mapRequestToRequestListener.get( cachedContentRequest );
-            if ( listeners == null ) {
-                listeners = new HashSet< RequestListener< ? >>();
-                this.mapRequestToRequestListener.put( cachedContentRequest, listeners );
-            }
-            listeners.add( requestListener );
+	// ============================================================================================
+	// PUBLIC EXPOSED METHODS : unregister listeners
+	// ============================================================================================
 
-            this.requestQueue.add( cachedContentRequest );
-            lockQueue.notifyAll();
-        }
-    }
+	/**
+	 * Disable request listeners notifications for a specific request.<br/>
+	 * None of the listeners associated to this request will be called when
+	 * request will finish.<br/>
+	 * 
+	 * This method will ask (asynchronously) to the {@link ContentService} to
+	 * remove listeners if requests have already been sent to the
+	 * {@link ContentService} if the request has already been sent to the
+	 * service. Otherwise, it will just remove listeners before passing the
+	 * request to the {@link ContentService}.
+	 * 
+	 * Calling this method doesn't prevent request from beeing executed (and put
+	 * in cache) but will remove request's listeners notification.
+	 * 
+	 * @param request
+	 *            Request for which listeners are to unregistered.
+	 */
+	public void dontNotifyRequestListenersForRequest(final ContentRequest<?> request) {
+		executorService.execute(new Runnable() {
+			public void run() {
+				dontNotifyRequestListenersForRequestInternal(request);
+			}
+		});
+	}
 
-    /**
-     * Execute a request, put the result in cache and register listeners to notify when request is finished.
-     * 
-     * @param request
-     *            the request to execute. {@link CachedContentRequest} is a wrapper of {@link ContentRequest} that
-     *            contains cache key and cache duration
-     * @param requestListener
-     *            the listener to notify when the request will finish
-     */
-    public < T > void execute( CachedContentRequest< T > cachedContentRequest, RequestListener< T > requestListener ) {
-        synchronized ( lockQueue ) {
-            // add listener to listeners list for this request
-            Set< RequestListener< ? >> listeners = mapRequestToRequestListener.get( cachedContentRequest );
-            if ( listeners == null ) {
-                listeners = new HashSet< RequestListener< ? >>();
-            } else if ( !listeners.contains( requestListener ) ) {
-                listeners.add( requestListener );
-            }
-            this.mapRequestToRequestListener.put( cachedContentRequest, listeners );
-            this.requestQueue.add( cachedContentRequest );
-            lockQueue.notifyAll();
-        }
-    }
+	/**
+	 * Internal method to remove requests. If request has not been passed to the
+	 * {@link ContentService} yet, all listeners are unregistered locally before
+	 * beeing passed to the service. Otherwise, it will asynchronously ask to
+	 * the {@link ContentService} to remove the listeners of the request beeing
+	 * processed.
+	 * 
+	 * @param request
+	 *            Request for which listeners are to unregistered.
+	 */
+	protected void dontNotifyRequestListenersForRequestInternal(final ContentRequest<?> request) {
+		try {
+			lockSendRequestsToService.lock();
 
-    /**
-     * Cancel a specific request
-     * 
-     * @param request
-     *            the request to cancel
-     */
-    public void cancel( ContentRequest< ? > request ) {
-        request.cancel();
-    }
+			boolean requestNotPassedToServiceYet = removeListenersOfCachedRequestToLaunch(request);
+			Log.v(LOG_TAG, "Removed from requests to launch list : " + requestNotPassedToServiceYet);
 
-    /**
-     * Cancel all requests
-     */
-    public void cancelAllRequests() {
-        synchronized ( lockQueue ) {
-            for ( CachedContentRequest< ? > cachedContentRequest : mapRequestToRequestListener.keySet() ) {
-                cachedContentRequest.cancel();
-            }
-        }
-    }
+			// if the request was already passed to service, bind to service and
+			// unregister listeners.
+			if (!requestNotPassedToServiceYet) {
+				removeListenersOfPendingCachedRequest(request);
+				Log.v(LOG_TAG, "Removed from pending requests list");
+			}
 
-    /**
-     * Remove some specific content from cache
-     * 
-     * @param clazz
-     *            the Type of data you want to remove from cache
-     * @param cacheKey
-     *            the key of the object in cache
-     * @return true if the data has been deleted from cache
-     */
-    public < T > void removeDataFromCache( final Class< T > clazz, final Object cacheKey ) {
-        executorService.execute( new Runnable() {
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		} finally {
+			lockSendRequestsToService.unlock();
+		}
+	}
 
-            public void run() {
-                waitForServiceToBeBound();
-                contentService.removeDataFromCache( clazz, cacheKey );
-            }
-        } );
-    }
+	/**
+	 * Remove all listeners of a request that has not yet been passed to the
+	 * {@link ContentService}.
+	 * 
+	 * @param request
+	 *            the request for which listeners must be unregistered.
+	 * @return a boolean indicating if the request could be found inside the
+	 *         list of requests to be launched. If false, the request was
+	 *         already passed to the service.
+	 */
+	private boolean removeListenersOfCachedRequestToLaunch(final ContentRequest<?> request) {
+		synchronized (mapRequestToLaunchToRequestListener) {
+			for (CachedContentRequest<?> cachedContentRequest : mapRequestToLaunchToRequestListener.keySet()) {
+				if (match(cachedContentRequest, request)) {
+					final Set<RequestListener<?>> setRequestListeners = mapRequestToLaunchToRequestListener.get(cachedContentRequest);
+					setRequestListeners.clear();
+					return true;
+				}
+			}
+			return false;
+		}
+	}
 
-    public void removeAllDataFromCache() {
-        executorService.execute( new Runnable() {
+	/**
+	 * Remove all listeners of a request that may have already been passed to
+	 * the {@link ContentService}. If the request has already been passed to the
+	 * {@link ContentService}, the method will bind to the service and ask it to
+	 * remove listeners.
+	 * 
+	 * @param request
+	 *            the request for which listeners must be unregistered.
+	 */
+	private void removeListenersOfPendingCachedRequest(final ContentRequest<?> request) throws InterruptedException {
+		synchronized (mapPendingRequestToRequestListener) {
+			for (CachedContentRequest<?> cachedContentRequest : mapPendingRequestToRequestListener.keySet()) {
+				if (match(cachedContentRequest, request)) {
+					waitForServiceToBeBound();
+					final Set<RequestListener<?>> setRequestListeners = mapPendingRequestToRequestListener.get(cachedContentRequest);
+					contentService.dontNotifyRequestListenersForRequest(cachedContentRequest.getContentRequest(), setRequestListeners);
+					mapPendingRequestToRequestListener.remove(cachedContentRequest);
+					break;
+				}
+			}
+		}
+	}
 
-            public void run() {
-                waitForServiceToBeBound();
-                contentService.removeAllDataFromCache();
-            }
-        } );
-    }
+	/**
+	 * Disable request listeners notifications for all requests. <br/>
+	 * Should be called in {@link Activity#onStop}
+	 */
+	public void dontNotifyAnyRequestListeners() {
+		executorService.execute(new Runnable() {
+			public void run() {
+				dontNotifyAnyRequestListenersInternal();
+			}
+		});
+	}
 
-    /**
-     * Configure the behavior in case of error during reading/writing cache. <br/>
-     * Specify wether an error on reading/writing cache must fail the process.
-     * 
-     * @param failOnCacheError
-     *            true if an error must fail the process
-     */
-    public void setFailOnCacheError( final boolean failOnCacheError ) {
-        executorService.execute( new Runnable() {
+	/**
+	 * Remove all listeners of requests.
+	 * 
+	 * All requests that have not been yet passed to the service will see their
+	 * of listeners cleaned. For all requests that have been passed to the
+	 * service, we ask the service to remove their listeners.
+	 */
+	protected void dontNotifyAnyRequestListenersInternal() {
+		try {
+			lockSendRequestsToService.lock();
 
-            public void run() {
-                waitForServiceToBeBound();
-                contentService.setFailOnCacheError( failOnCacheError );
-            }
-        } );
-    }
+			mapRequestToLaunchToRequestListener.clear();
+			Log.v(LOG_TAG, "Cleared listeners of all requests to launch");
 
-    private void waitForServiceToBeBound() {
-        Log.d( LOG_TAG, "Waiting for service to be bound." );
-        synchronized ( lockAcquireService ) {
-            while ( contentService == null && !isStopped ) {
-                try {
-                    lockAcquireService.wait();
-                } catch ( InterruptedException e ) {
-                    e.printStackTrace();
-                }
-            }
-        }
-    }
+			removeListenersOfAllPendingCachedRequests();
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		} finally {
+			lockSendRequestsToService.unlock();
+		}
+	}
 
-    /**
-     * Disable request listeners notifications for a specific request.<br/>
-     * All listeners associated to this request won't be called when request will finish.<br/>
-     * Should be called in {@link Activity#onPause}
-     * 
-     * @param request
-     *            Request on which you want to disable listeners
-     */
-    public void dontNotifyRequestListenersForRequest( final ContentRequest< ? > request ) {
-        synchronized ( lockQueue ) {
-            // normally a list iterator would be better suited here
-            // but we exit the loop after first removal, so it's not needed
-            for ( CachedContentRequest< ? > cachedContentRequest : mapRequestToRequestListener.keySet() ) {
-                if ( cachedContentRequest.getContentRequest().equals( request ) ) {
-                    dontNotifyRequestListenersForRequestInternal( request, cachedContentRequest );
-                    mapRequestToRequestListener.remove( cachedContentRequest );
-                    break;
-                }
-            }
-        }
-    }
+	/**
+	 * Asynchronously ask service to remove all listeners of pending requests.
+	 * 
+	 * @throws InterruptedException
+	 *             in case service binding fails.
+	 */
+	private void removeListenersOfAllPendingCachedRequests() throws InterruptedException {
+		synchronized (mapPendingRequestToRequestListener) {
+			if (!mapPendingRequestToRequestListener.isEmpty()) {
+				waitForServiceToBeBound();
+			}
+			for (CachedContentRequest<?> cachedContentRequest : mapPendingRequestToRequestListener.keySet()) {
+				final ContentRequest<?> request = cachedContentRequest.getContentRequest();
+				final Set<RequestListener<?>> setRequestListeners = mapPendingRequestToRequestListener.get(cachedContentRequest);
+				contentService.dontNotifyRequestListenersForRequest(request, setRequestListeners);
+			}
+			mapPendingRequestToRequestListener.clear();
+			Log.v(LOG_TAG, "Cleared listeners of all pending requests");
+		}
+	}
 
-    protected void dontNotifyRequestListenersForRequestInternal( final ContentRequest< ? > request, CachedContentRequest< ? > cachedContentRequest ) {
-        final Set< RequestListener< ? >> setRequestListeners = mapRequestToRequestListener.get( cachedContentRequest );
-        executorService.execute( new Runnable() {
-            public void run() {
-                waitForServiceToBeBound();
-                contentService.dontNotifyRequestListenersForRequest( request, setRequestListeners );
-            }
-        } );
-    }
+	/**
+	 * Wether or not a given {@link CachedContentRequest} matches a
+	 * {@link ContentRequest}.
+	 * 
+	 * @param cachedContentRequest
+	 *            the request know by the {@link ContentManager}.
+	 * @param contentRequest
+	 *            the request that we wish to remove notification for.
+	 * @return true if {@link CachedContentRequest} matches contentRequest.
+	 */
+	private boolean match(CachedContentRequest<?> cachedContentRequest, ContentRequest<?> contentRequest) {
+		if (contentRequest instanceof CachedContentRequest) {
+			return contentRequest == cachedContentRequest;
+		} else {
+			return cachedContentRequest.getContentRequest() == contentRequest;
+		}
+	}
 
-    /**
-     * Disable request listeners notifications for all requests. <br/>
-     * Should be called in {@link Activity#onPause}
-     */
-    public void dontNotifyAnyRequestListeners() {
-        executorService.execute( new Runnable() {
-            public void run() {
-                dontNotifyAnyRequestListenersInternal();
-            }
-        } );
-    }
+	// ============================================================================================
+	// PUBLIC EXPOSED METHODS : content service driving.
+	// ============================================================================================
 
-    protected void dontNotifyAnyRequestListenersInternal() {
-        waitForServiceToBeBound();
-        synchronized ( lockQueue ) {
-            for ( CachedContentRequest< ? > cachedContentRequest : mapRequestToRequestListener.keySet() ) {
-                final ContentRequest< ? > request = cachedContentRequest.getContentRequest();
-                final Set< RequestListener< ? >> setRequestListeners = mapRequestToRequestListener.get( cachedContentRequest );
-                contentService.dontNotifyRequestListenersForRequest( request, setRequestListeners );
-            }
-            mapRequestToRequestListener.clear();
-        }
-    }
+	/**
+	 * Cancel a specific request
+	 * 
+	 * @param request
+	 *            the request to cancel
+	 */
+	public void cancel(ContentRequest<?> request) {
+		request.cancel();
+	}
 
-    // ============================================================================================
-    // INNER CLASS
-    // ============================================================================================
-    public class ContentServiceConnection implements ServiceConnection {
+	/**
+	 * Cancel all requests
+	 */
+	public void cancelAllRequests() {
+		try {
+			lockSendRequestsToService.lock();
+			// cancel each request that to be sent to service, and keep
+			// listening for
+			// cancellation.
+			synchronized (mapRequestToLaunchToRequestListener) {
+				for (CachedContentRequest<?> cachedContentRequest : mapRequestToLaunchToRequestListener.keySet()) {
+					cachedContentRequest.cancel();
+				}
+			}
 
-        public void onServiceConnected( ComponentName name, IBinder service ) {
-            synchronized ( this ) {
-                contentService = ( (ContentServiceBinder) service ).getContentService();
-                Log.d( LOG_TAG, "Bound to service : " + contentService.getClass().getSimpleName() );
-            }
-            synchronized ( lockAcquireService ) {
-                lockAcquireService.notifyAll();
-            }
-        }
+			// cancel each request that has been sent to service, and keep
+			// listening for
+			// cancellation.
+			synchronized (mapPendingRequestToRequestListener) {
+				for (CachedContentRequest<?> cachedContentRequest : mapPendingRequestToRequestListener.keySet()) {
+					cachedContentRequest.cancel();
+				}
+			}
+		} finally {
+			lockSendRequestsToService.unlock();
+		}
+	}
 
-        public void onServiceDisconnected( ComponentName name ) {
-            synchronized ( this ) {
-                contentService = null;
-                isUnbinding = false;
-            }
+	/**
+	 * Remove some specific content from cache
+	 * 
+	 * @param clazz
+	 *            the Type of data you want to remove from cache
+	 * @param cacheKey
+	 *            the key of the object in cache
+	 * @return true if the data has been deleted from cache
+	 */
+	public <T> void removeDataFromCache(final Class<T> clazz, final Object cacheKey) {
+		executorService.execute(new Runnable() {
 
-            synchronized ( lockAcquireService ) {
-                lockAcquireService.notifyAll();
-            }
-        }
-    }
+			public void run() {
+				try {
+					waitForServiceToBeBound();
+					contentService.removeDataFromCache(clazz, cacheKey);
+				} catch (InterruptedException e) {
+					Log.e(LOG_TAG, "Interrupted while waiting for acquiring service.");
+				}
+			}
+		});
+	}
 
-    // ============================================================================================
-    // PRIVATE
-    // ============================================================================================
+	/**
+	 * Remove all data from cache. This will clear all data stored by the
+	 * {@link CacheManager} of the {@link ContentService}.
+	 */
+	public void removeAllDataFromCache() {
+		executorService.execute(new Runnable() {
 
-    private void bindService( Context context ) {
-        Intent intentService = new Intent( context, contentServiceClass );
-        Log.d( LOG_TAG, "Binding to service." );
-        contentServiceConnection = new ContentServiceConnection();
-        context.bindService( intentService, contentServiceConnection, Context.BIND_AUTO_CREATE );
-    }
+			public void run() {
+				try {
+					waitForServiceToBeBound();
+					contentService.removeAllDataFromCache();
+				} catch (InterruptedException e) {
+					Log.e(LOG_TAG, "Interrupted while waiting for acquiring service.");
+				}
+			}
+		});
+	}
 
-    private void unbindService( Context context ) {
-        synchronized ( this ) {
-            if ( contentService != null && !isUnbinding ) {
-                isUnbinding = true;
-                context.unbindService( this.contentServiceConnection );
-            }
-        }
-    }
+	/**
+	 * Configure the behavior in case of error during reading/writing cache. <br/>
+	 * Specify wether an error on reading/writing cache must fail the process.
+	 * 
+	 * @param failOnCacheError
+	 *            true if an error must fail the process
+	 */
+	public void setFailOnCacheError(final boolean failOnCacheError) {
+		executorService.execute(new Runnable() {
+
+			public void run() {
+				try {
+					waitForServiceToBeBound();
+					contentService.setFailOnCacheError(failOnCacheError);
+				} catch (InterruptedException e) {
+					Log.e(LOG_TAG, "Interrupted while waiting for acquiring service.");
+				}
+			}
+		});
+	}
+
+	private <T> void addRequestListenerToListOfRequestListeners(CachedContentRequest<T> cachedContentRequest, RequestListener<T> requestListener) {
+		Set<RequestListener<?>> listeners = mapRequestToLaunchToRequestListener.get(cachedContentRequest);
+		if (listeners == null) {
+			listeners = new HashSet<RequestListener<?>>();
+			this.mapRequestToLaunchToRequestListener.put(cachedContentRequest, listeners);
+		}
+
+		if (!listeners.contains(requestListener)) {
+			listeners.add(requestListener);
+		}
+	}
+
+	// -------------------------------
+	// -------Listeners notification
+	// -------------------------------
+
+	/**
+	 * Dumps request processor state.
+	 */
+	public void dumpState() {
+
+		executorService.execute(new Runnable() {
+			public void run() {
+				try {
+					lockSendRequestsToService.lock();
+					StringBuilder stringBuilder = new StringBuilder();
+					stringBuilder.append("[ContentManager : ");
+
+					stringBuilder.append("Requests to be launched : \n");
+					dumpMap(stringBuilder, mapPendingRequestToRequestListener);
+
+					stringBuilder.append("Pending requests : \n");
+					dumpMap(stringBuilder, mapPendingRequestToRequestListener);
+
+					stringBuilder.append(']');
+
+					waitForServiceToBeBound();
+					contentService.dumpState();
+				} catch (InterruptedException e) {
+					Log.e(LOG_TAG, "Interrupted while waiting for acquiring service.");
+				} finally {
+					lockSendRequestsToService.unlock();
+				}
+			}
+		});
+	}
+
+	// ============================================================================================
+	// INNER CLASS
+	// ============================================================================================
+
+	/** Reacts to binding/unbinding with {@link ContentService}. */
+	public class ContentServiceConnection implements ServiceConnection {
+
+		public void onServiceConnected(ComponentName name, IBinder service) {
+			try {
+				lockAcquireService.lock();
+
+				contentService = ((ContentServiceBinder) service).getContentService();
+				contentService.addContentServiceListener(new RequestRemoverContentServiceListener());
+				Log.d(LOG_TAG, "Bound to service : " + contentService.getClass().getSimpleName());
+				conditionServiceAcquired.signalAll();
+			} finally {
+				lockAcquireService.unlock();
+			}
+		}
+
+		public void onServiceDisconnected(ComponentName name) {
+			try {
+				lockAcquireService.lock();
+				contentService = null;
+				Log.d(LOG_TAG, "Unbound from service : " + contentService.getClass().getSimpleName());
+				isUnbinding = false;
+				conditionServiceAcquired.signalAll();
+			} finally {
+				lockAcquireService.unlock();
+			}
+		}
+	}
+
+	/** Called when a request has been processed by the {@link ContentService}. */
+	private class RequestRemoverContentServiceListener implements ContentServiceListener {
+		public void onRequestProcessed(CachedContentRequest<?> contentRequest) {
+			try {
+				lockSendRequestsToService.lock();
+				mapPendingRequestToRequestListener.remove(contentRequest);
+			} finally {
+				lockSendRequestsToService.unlock();
+			}
+		}
+	}
+
+	// ============================================================================================
+	// PRIVATE METHODS : ContentService binding management.
+	// ============================================================================================
+
+	private void bindToService(Context context) {
+		try {
+			lockAcquireService.lock();
+
+			if (contentService == null) {
+				Intent intentService = new Intent(context, contentServiceClass);
+				Log.v(LOG_TAG, "Binding to service.");
+				contentServiceConnection = new ContentServiceConnection();
+				context.bindService(intentService, contentServiceConnection, Context.BIND_AUTO_CREATE);
+			}
+		} finally {
+			lockAcquireService.unlock();
+		}
+	}
+
+	private void unbindFromService(Context context) {
+		try {
+			lockAcquireService.lock();
+			if (contentService != null && !isUnbinding) {
+				isUnbinding = true;
+				contentService.removeContentServiceListener(removerContentServiceListener);
+				Log.v(LOG_TAG, "Unbinding from service.");
+				context.unbindService(this.contentServiceConnection);
+			}
+		} finally {
+			lockAcquireService.unlock();
+		}
+	}
+
+	/**
+	 * Wait for acquiring binding to {@link ContentService}.
+	 * 
+	 * @throws InterruptedException
+	 *             in case the binding is interrupted.
+	 */
+	protected void waitForServiceToBeBound() throws InterruptedException {
+		Log.d(LOG_TAG, "Waiting for service to be bound.");
+
+		lockAcquireService.lock();
+		try {
+			while (contentService == null && !isStopped) {
+				conditionServiceAcquired.await();
+			}
+		} finally {
+			lockAcquireService.unlock();
+		}
+	}
+
+	private void checkServiceIsProperlyDeclaredInAndroidManifest(Context context) {
+		Intent intentCheck = new Intent(context, contentServiceClass);
+		if (context.getPackageManager().queryIntentServices(intentCheck, 0).isEmpty()) {
+			throw new RuntimeException("Impossible to start content manager as no service of class : " + contentServiceClass.getName()
+					+ " is registered in AndroidManifest.xml file !");
+		}
+	}
+
+	private void dumpMap(StringBuilder stringBuilder, Map<CachedContentRequest<?>, Set<RequestListener<?>>> map) {
+		synchronized (map) {
+			stringBuilder.append(" request count= ");
+			stringBuilder.append(mapRequestToLaunchToRequestListener.keySet().size());
+
+			stringBuilder.append(", listeners per requests = [");
+			for (Map.Entry<CachedContentRequest<?>, Set<RequestListener<?>>> entry : map.entrySet()) {
+				stringBuilder.append(entry.getKey().getClass().getName());
+				stringBuilder.append(":");
+				stringBuilder.append(entry.getKey());
+				stringBuilder.append(" --> ");
+				if (entry.getValue() == null) {
+					stringBuilder.append(entry.getValue());
+				} else {
+					stringBuilder.append(entry.getValue().size());
+				}
+				stringBuilder.append(" listeners");
+				stringBuilder.append('\n');
+			}
+			stringBuilder.append(']');
+			stringBuilder.append('\n');
+		}
+	}
 }

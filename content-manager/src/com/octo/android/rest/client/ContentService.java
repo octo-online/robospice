@@ -17,113 +17,118 @@ import com.octo.android.rest.client.request.RequestListener;
 import com.octo.android.rest.client.request.RequestProcessor;
 
 /**
- * This is an abstract class used to manage the cache and provide web service result to an activity. <br/>
+ * This is an abstract class used to manage the cache and provide web service
+ * result to an activity. <br/>
  * 
- * Extends this class to provide a service able to load content from web service or cache (if available and enabled).
- * You will have to implement {@link #createCacheManager(Application)} to configure the {@link CacheManager} used by all
- * requests to persist their results in the cache (and load them from cache if possible).
+ * Extends this class to provide a service able to load content from web service
+ * or cache (if available and enabled). You will have to implement
+ * {@link #createCacheManager(Application)} to configure the
+ * {@link CacheManager} used by all requests to persist their results in the
+ * cache (and load them from cache if possible).
  * 
  * @author jva
  * @author sni
  */
-public class ContentService extends Service {
+public abstract class ContentService extends Service {
 
-    private static final int DEFAULT_THREAD_COUNT = 4;
+	private final static String LOG_CAT = "ContentService";
 
-    private final static String LOG_CAT = "ContentService";
+	private static final int DEFAULT_THREAD_COUNT = 1;
+	private static final boolean DEFAULT_FAIL_ON_CACHE_ERROR = false;
 
-    // ============================================================================================
-    // ATTRIBUTES
-    // ============================================================================================
+	// ============================================================================================
+	// ATTRIBUTES
+	// ============================================================================================
+	public ContentServiceBinder mContentServiceBinder;
 
-    // ============================================================================================
-    // ATTRIBUTES
-    // ============================================================================================
-    public ContentServiceBinder mContentServiceBinder;
+	/** Responsible for persisting data. */
 
-    /** Responsible for persisting data. */
-    private CacheManager cacheManager;
+	private RequestProcessor requestProcessor;
 
-    private RequestProcessor requestProcessor;
+	// ============================================================================================
+	// CONSTRUCTOR
+	// ============================================================================================
+	/**
+	 * Basic constructor
+	 * 
+	 * @param name
+	 */
+	public ContentService() {
+		mContentServiceBinder = new ContentServiceBinder();
+	}
 
-    // ============================================================================================
-    // CONSTRUCTOR
-    // ============================================================================================
-    /**
-     * Basic constructor
-     * 
-     * @param name
-     */
-    public ContentService() {
-        mContentServiceBinder = new ContentServiceBinder();
-    }
+	@Override
+	public void onCreate() {
+		super.onCreate();
 
-    @Override
-    public void onCreate() {
-        super.onCreate();
-        if ( !( getApplication() instanceof ContentConfiguration ) ) {
-            throw new RuntimeException( "Application class :" + getApplication().getClass().getName() + " doesn't implement "
-                    + ContentConfiguration.class.getName() );
-        }
-        cacheManager = ( (ContentConfiguration) getApplication() ).getCacheManager();
-        requestProcessor = new RequestProcessor( getApplicationContext(), cacheManager, getThreadCount() );
+		requestProcessor = new RequestProcessor(getApplicationContext(), createCacheManager(getApplication()), getThreadCount());
+		requestProcessor.setFailOnCacheError(DEFAULT_FAIL_ON_CACHE_ERROR);
 
-        Log.d( LOG_CAT, "Content Service instance created." );
-    }
+		Log.d(LOG_CAT, "Content Service instance created.");
+	}
 
-    /**
-     * Override this method to set the number of threads used to execute requests.
-     * 
-     * @return the number of threads to use when executing requests.
-     */
-    public int getThreadCount() {
-        return DEFAULT_THREAD_COUNT;
-    }
+	// ============================================================================================
+	// DELEGATE METHODS (delegation is used to ease tests)
+	// ============================================================================================
 
-    // ============================================================================================
-    // DELEGATE METHODS (to ease tests)
-    // ============================================================================================
+	public abstract CacheManager createCacheManager(Application application);
 
-    public void addRequest( final CachedContentRequest< ? > request, Set< RequestListener< ? >> listRequestListener ) {
-        requestProcessor.addRequest( request, listRequestListener );
-    }
+	public int getThreadCount() {
+		return DEFAULT_THREAD_COUNT;
+	}
 
-    public boolean removeDataFromCache( Class< ? > clazz, Object cacheKey ) {
-        return requestProcessor.removeDataFromCache( clazz, cacheKey );
-    }
+	public void addRequest(final CachedContentRequest<?> request, Set<RequestListener<?>> listRequestListener) {
+		requestProcessor.addRequest(request, listRequestListener);
+	}
 
-    public void removeAllDataFromCache( Class< ? > clazz ) {
-        requestProcessor.removeAllDataFromCache( clazz );
-    }
+	public boolean removeDataFromCache(Class<?> clazz, Object cacheKey) {
+		return requestProcessor.removeDataFromCache(clazz, cacheKey);
+	}
 
-    public void removeAllDataFromCache() {
-        requestProcessor.removeAllDataFromCache();
-    }
+	public void removeAllDataFromCache(Class<?> clazz) {
+		requestProcessor.removeAllDataFromCache(clazz);
+	}
 
-    public boolean isFailOnCacheError() {
-        return requestProcessor.isFailOnCacheError();
-    }
+	public void removeAllDataFromCache() {
+		requestProcessor.removeAllDataFromCache();
+	}
 
-    public void setFailOnCacheError( boolean failOnCacheError ) {
-        requestProcessor.setFailOnCacheError( failOnCacheError );
-    }
+	public boolean isFailOnCacheError() {
+		return requestProcessor.isFailOnCacheError();
+	}
 
-    public void dontNotifyRequestListenersForRequest( ContentRequest< ? > request, Collection< RequestListener< ? >> listRequestListener ) {
-        requestProcessor.dontNotifyRequestListenersForRequest( request, listRequestListener );
-    }
+	public void setFailOnCacheError(boolean failOnCacheError) {
+		requestProcessor.setFailOnCacheError(failOnCacheError);
+	}
 
-    // ============================================================================================
-    // SERVICE METHODS
-    // ============================================================================================
+	public void dontNotifyRequestListenersForRequest(ContentRequest<?> request, Collection<RequestListener<?>> listRequestListener) {
+		requestProcessor.dontNotifyRequestListenersForRequest(request, listRequestListener);
+	}
 
-    @Override
-    public IBinder onBind( Intent intent ) {
-        return mContentServiceBinder;
-    }
+	// ============================================================================================
+	// SERVICE METHODS
+	// ============================================================================================
 
-    public class ContentServiceBinder extends Binder {
-        public ContentService getContentService() {
-            return ContentService.this;
-        }
-    }
+	@Override
+	public IBinder onBind(Intent intent) {
+		return mContentServiceBinder;
+	}
+
+	public class ContentServiceBinder extends Binder {
+		public ContentService getContentService() {
+			return ContentService.this;
+		}
+	}
+
+	public void dumpState() {
+		Log.v(LOG_CAT, requestProcessor.toString());
+	}
+
+	public void addContentServiceListener(ContentServiceListener contentServiceListener) {
+		requestProcessor.addContentServiceListener(contentServiceListener);
+	}
+
+	public void removeContentServiceListener(ContentServiceListener contentServiceListener) {
+		requestProcessor.removeContentServiceListener(contentServiceListener);
+	}
 }

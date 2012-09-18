@@ -1,103 +1,67 @@
 package com.octo.android.rest.client.request;
 
-import java.lang.reflect.ParameterizedType;
 import java.util.concurrent.Future;
 
-import android.os.AsyncTask;
+public class CachedContentRequest<RESULT> extends ContentRequest<RESULT> {
 
-public class CachedContentRequest< RESULT > extends ContentRequest< RESULT > {
+	private String requestCacheKey;
+	private long cacheDuration;
+	private ContentRequest<RESULT> contentRequest;
 
-    private String requestCacheKey;
-    private long cacheDuration;
-    private ContentRequest< RESULT > contentRequest;
+	public CachedContentRequest(ContentRequest<RESULT> contentRequest, String requestCacheKey, long cacheDuration) {
+		super(contentRequest.getResultType());
+		this.requestCacheKey = requestCacheKey;
+		this.cacheDuration = cacheDuration;
+		this.contentRequest = contentRequest;
+	}
 
-    public CachedContentRequest( ContentRequest< RESULT > contentRequest, String requestCacheKey, long cacheDuration ) {
-        super( contentRequest.getResultType() );
-        this.requestCacheKey = requestCacheKey;
-        this.cacheDuration = cacheDuration;
-        this.contentRequest = contentRequest;
-    }
+	@Override
+	public RESULT loadDataFromNetwork() throws Exception {
+		return contentRequest.loadDataFromNetwork();
+	}
 
-    @SuppressWarnings("unchecked")
-    public < Params, Progress > CachedContentRequest( AsyncTask< Params, Progress, RESULT > asyncTask, String requestCacheKey, long cacheDuration,
-            Params... params ) {
-        super( (Class< RESULT >) ( (ParameterizedType) asyncTask.getClass().getGenericSuperclass() ).getActualTypeArguments()[ 2 ].getClass() );
-        this.requestCacheKey = requestCacheKey;
-        this.cacheDuration = cacheDuration;
-        this.contentRequest = new AsyncTaskWrapper< Params, Progress >( asyncTask, params );
-    }
+	@Override
+	public Class<RESULT> getResultType() {
+		return contentRequest.getResultType();
+	}
 
-    @Override
-    public RESULT loadDataFromNetwork() throws Exception {
-        return contentRequest.loadDataFromNetwork();
-    }
+	/**
+	 * Sets the future of this request, used to cancel it.
+	 * 
+	 * @param future
+	 *            the future result of this request.
+	 */
+	@Override
+	protected void setFuture(Future<?> future) {
+		contentRequest.setFuture(future);
+	}
 
-    @Override
-    public Class< RESULT > getResultType() {
-        return contentRequest.getResultType();
-    }
+	@Override
+	public void cancel() {
+		contentRequest.cancel();
+	}
 
-    /**
-     * Sets the future of this request, used to cancel it.
-     * 
-     * @param future
-     *            the future result of this request.
-     */
-    @Override
-    protected void setFuture( Future< ? > future ) {
-        contentRequest.setFuture( future );
-    }
+	@Override
+	public boolean isCancelled() {
+		return contentRequest.isCancelled();
+	}
 
-    @Override
-    public void cancel() {
-        contentRequest.cancel();
-    }
+	public String getRequestCacheKey() {
+		return requestCacheKey;
+	}
 
-    @Override
-    public boolean isCancelled() {
-        return contentRequest.isCancelled();
-    }
+	public long getCacheDuration() {
+		return cacheDuration;
+	}
 
-    public String getRequestCacheKey() {
-        return requestCacheKey;
-    }
+	public ContentRequest<RESULT> getContentRequest() {
+		return contentRequest;
+	}
 
-    public long getCacheDuration() {
-        return cacheDuration;
-    }
-
-    public ContentRequest< RESULT > getContentRequest() {
-        return contentRequest;
-    }
-
-    @Override
-    public String toString() {
-        return "CachedContentRequest [requestCacheKey=" + requestCacheKey + ", cacheDuration=" + cacheDuration + ", contentRequest=" + contentRequest + "]";
-    }
-
-    private class AsyncTaskWrapper< Params, Progress > extends ContentRequest< RESULT > {
-
-        private AsyncTask< Params, Progress, RESULT > asyncTask;
-        private Params[] params;
-
-        @SuppressWarnings("unchecked")
-        public AsyncTaskWrapper( AsyncTask< Params, Progress, RESULT > asyncTask, Params... params ) {
-            super( (Class< RESULT >) ( (ParameterizedType) asyncTask.getClass().getGenericSuperclass() ).getActualTypeArguments()[ 2 ].getClass() );
-            this.asyncTask = asyncTask;
-            this.params = params;
-        }
-
-        @Override
-        public RESULT loadDataFromNetwork() throws Exception {
-            asyncTask.execute( params );
-            return asyncTask.get();
-        }
-
-        @Override
-        public boolean isCancelled() {
-            return asyncTask.isCancelled();
-        }
-
-    }
+	@Override
+	public String toString() {
+		return "CachedContentRequest [requestCacheKey=" + requestCacheKey + ", cacheDuration=" + cacheDuration + ", contentRequest=" + contentRequest
+				+ "]";
+	}
 
 }
