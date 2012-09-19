@@ -1,3 +1,6 @@
+Version 0.0.13
+- minor enhancement of simple requests, exception stack traces were lost.
+
 Version 0.0.12
 - back to previous dependency injection model inside services.
 - content manager is now more robust and more stable
