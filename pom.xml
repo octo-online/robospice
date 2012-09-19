@@ -2,24 +2,24 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.octo.android.content-manager</groupId>
-    <artifactId>content-manager-parent</artifactId>
-    <version>0.0.13-SNAPSHOT</version>
+    <groupId>com.octo.android.robospice</groupId>
+    <artifactId>robospice-parent</artifactId>
+    <version>1.0</version>
     <packaging>pom</packaging>
-    <name>Octo Content Manager - Parent</name>
+    <name>Robospice - Parent</name>
     <scm>
        <developerConnection>scm:git:ssh://git@git.octo.com/team_mobility/OctoContentManagerForAndroid.git</developerConnection>
        <url>https://intranet.octo.com/ia/git_repository_folders/6/git_repositories/88</url>
   </scm>
 
     <modules>
-        <module>content-manager</module>
-    	<module>content-manager-json</module>
-    	<module>content-manager-spring-android</module>
-    	<module>content-manager-sample</module>
-        <module>content-manager-it</module>
+        <module>robospice</module>
+    	<module>robospice-json</module>
+    	<module>robospice-spring-android</module>
+    	<module>robospice-sample</module>
+        <module>robospice-sample-it</module>
   </modules>
-
+  
     <properties>
         <platform.version>2.1.2</platform.version>
 	    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -39,7 +39,6 @@
        <url>https://projets.octo.com/nexus/content/repositories/snapshots/</url>
        <uniqueVersion>false</uniqueVersion>
      </snapshotRepository>
-
     </distributionManagement>
 
     <dependencyManagement>
@@ -47,7 +46,7 @@
             <dependency>
                 <groupId>com.google.android</groupId>
                 <artifactId>annotations</artifactId>
-                <version>r7</version>
+                <version>4.1.1.4</version>
                 <scope>provided</scope>
             </dependency>
             <dependency>
@@ -97,4 +96,27 @@
             </plugins>
         </pluginManagement>
     </build>
+    
+    <repositories>
+        <repository>
+            <id>octo.releases</id>
+            <url>https://projets.octo.com/nexus/content/repositories/releases/</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+              <enabled>false</enabled>
+            </snapshots>
+        </repository>
+        <repository>
+            <id>octo.thirdparty</id>
+            <url>https://projets.octo.com/nexus/content/repositories/thirdparty/</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+              <enabled>false</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
 </project>
