@@ -7,10 +7,43 @@
     <version>1.0</version>
     <packaging>pom</packaging>
     <name>Robospice - Parent</name>
+    <description>RoboSpice is a modular android library that eases the development of Data-Driven Android applications.</description>
+    
     <scm>
+       <connection>scm:git:ssh://git@github.com:octo-online/robospice.git</connection>
+       <url>git:ssh://git@github.com:octo-online/robospice.git</url>
        <developerConnection>scm:git:ssh://git@github.com:octo-online/robospice.git</developerConnection>
-       <url>https://github.com/octo-online/robospice</url>
-  </scm>
+    </scm>
+    
+    <licenses>
+        <license>
+            <name>Apache 2</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+        </license>
+    </licenses>
+    
+    <issueManagement>
+        <system>Github Issue Tracker</system>
+        <url>https://github.com/octo-online/robospice/issues</url>
+    </issueManagement>
+    
+    <developers>
+        <developer>
+            <id>SNI</id>
+            <name>Stéphane Nicolas</name>
+            <email>snicolas@octo.com</email>
+        </developer>
+        <developer>
+            <id>VDL</id>
+            <name>Jérôme Van Der Linden</name>
+            <email>jvanderlinden@octo.com</email>
+        </developer>
+        <developer>
+            <id>MWA</id>
+            <name>Maxence Walbrou</name>
+            <email>mwalbrou@octo.com</email>
+        </developer>
+    </developers>
 
     <modules>
         <module>robospice</module>
@@ -18,7 +51,7 @@
     	<module>robospice-spring-android</module>
     	<module>robospice-sample</module>
         <module>robospice-sample-it</module>
-  </modules>
+    </modules>
   
     <properties>
         <platform.version>2.1.2</platform.version>
