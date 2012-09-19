@@ -8,8 +8,8 @@
     <packaging>pom</packaging>
     <name>Robospice - Parent</name>
     <scm>
-       <developerConnection>scm:git:ssh://git@git.octo.com/team_mobility/OctoContentManagerForAndroid.git</developerConnection>
-       <url>https://intranet.octo.com/ia/git_repository_folders/6/git_repositories/88</url>
+       <developerConnection>scm:git:ssh://git@github.com:octo-online/robospice.git</developerConnection>
+       <url>https://github.com/octo-online/robospice</url>
   </scm>
 
     <modules>
@@ -25,21 +25,6 @@
 	    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     	<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     </properties>
-
-    <distributionManagement>
-     <repository>
-       <id>octo</id>
-       <name>Maven OCTO Release Repository</name>
-       <url>https://projets.octo.com/nexus/content/repositories/releases/</url>
-     </repository>
-
-     <snapshotRepository>
-       <id>octo</id>
-       <name>Maven OCTO Snapshots Repository</name>
-       <url>https://projets.octo.com/nexus/content/repositories/snapshots/</url>
-       <uniqueVersion>false</uniqueVersion>
-     </snapshotRepository>
-    </distributionManagement>
 
     <dependencyManagement>
         <dependencies>
@@ -96,27 +81,5 @@
             </plugins>
         </pluginManagement>
     </build>
-    
-    <repositories>
-        <repository>
-            <id>octo.releases</id>
-            <url>https://projets.octo.com/nexus/content/repositories/releases/</url>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <snapshots>
-              <enabled>false</enabled>
-            </snapshots>
-        </repository>
-        <repository>
-            <id>octo.thirdparty</id>
-            <url>https://projets.octo.com/nexus/content/repositories/thirdparty/</url>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <snapshots>
-              <enabled>false</enabled>
-            </snapshots>
-        </repository>
-    </repositories>
+
 </project>
