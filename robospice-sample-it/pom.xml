@@ -73,34 +73,6 @@
 					<target>1.6</target>
 				</configuration>
 			</plugin>
-			<plugin>
-			        <groupId>org.apache.maven.plugins</groupId>
-			        <artifactId>maven-eclipse-plugin</artifactId>
-			        <version>2.9</version>
-			        <configuration>
-			        	<downloadSources>false</downloadSources>
-			        	<downloadJavadocs>false</downloadJavadocs>
-					<projectnatures>
-						<projectnature>org.eclipse.jdt.core.javanature</projectnature>
-						<projectnature>com.android.ide.eclipse.adt.AndroidNature</projectnature>
-					</projectnatures>
-					<buildcommands>
-						<buildcommand>com.android.ide.eclipse.adt.ResourceManagerBuilder</buildcommand>
-						<buildcommand>com.android.ide.eclipse.adt.PreCompilerBuilder</buildcommand>
-						<buildcommand>org.eclipse.jdt.core.javabuilder</buildcommand>
-						<buildcommand>com.android.ide.eclipse.adt.ApkBuilder</buildcommand>
-					</buildcommands>
-					<classpathContainers>
-						<classpathContainer>com.android.ide.eclipse.adt.ANDROID_FRAMEWORK</classpathContainer>
-						<classpathContainer>com.android.ide.eclipse.adt.LIBRARIES</classpathContainer>
-					</classpathContainers>
-					<sourceIncludes>
-						<sourceInclude>src</sourceInclude>
-						<sourceInclude>gen</sourceInclude>
-						<sourceInclude>/robospice-sample</sourceInclude>
-					</sourceIncludes>
-			        </configuration>
-			</plugin>
 		</plugins>
 	</build>
 </project>

@@ -229,12 +229,13 @@
 <profiles>
   <profile>
     <id>sign</id>
-    <activation>
+    <!-- <activation>
       <property>
         <name>performRelease</name>
         <value>true</value>
       </property>
     </activation>
+    -->
     <build>
       <plugins>
         <plugin>

@@ -28,6 +28,7 @@ release.properties
 .iml
 
 #Maven project files
+target/
 */target/
 
 #Maven release files
