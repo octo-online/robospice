@@ -7,10 +7,48 @@
     <version>1.0</version>
     <packaging>pom</packaging>
     <name>Robospice - Parent</name>
+    <description>RoboSpice is a modular android library that eases the development of Data-Driven Android applications.</description>
+    
     <scm>
-       <developerConnection>scm:git:ssh://git@git.octo.com/team_mobility/OctoContentManagerForAndroid.git</developerConnection>
-       <url>https://intranet.octo.com/ia/git_repository_folders/6/git_repositories/88</url>
-  </scm>
+       <connection>scm:git:ssh://git@github.com:octo-online/robospice.git</connection>
+       <url>git:ssh://git@github.com:octo-online/robospice.git</url>
+       <developerConnection>scm:git:ssh://git@github.com:octo-online/robospice.git</developerConnection>
+    </scm>
+    
+    <licenses>
+        <license>
+            <name>Apache 2</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+        </license>
+    </licenses>
+    
+    <issueManagement>
+        <system>Github Issue Tracker</system>
+        <url>https://github.com/octo-online/robospice/issues</url>
+    </issueManagement>
+    
+    <developers>
+        <developer>
+            <id>SNI</id>
+            <name>Stéphane Nicolas</name>
+            <email>snicolas@octo.com</email>
+        </developer>
+        <developer>
+            <id>VDL</id>
+            <name>Jérôme Van Der Linden</name>
+            <email>jvanderlinden@octo.com</email>
+        </developer>
+        <developer>
+            <id>MWA</id>
+            <name>Maxence Walbrou</name>
+            <email>mwalbrou@octo.com</email>
+        </developer>
+        <developer>
+            <id>MHA</id>
+            <name>Mathieu Hausherr</name>
+            <email>mhausherr@octo.com</email>
+        </developer>
+    </developers>
 
     <modules>
         <module>robospice</module>
@@ -18,7 +56,7 @@
     	<module>robospice-spring-android</module>
     	<module>robospice-sample</module>
         <module>robospice-sample-it</module>
-  </modules>
+    </modules>
   
     <properties>
         <platform.version>2.1.2</platform.version>
@@ -26,19 +64,19 @@
     	<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     </properties>
 
-    <distributionManagement>
-     <repository>
-       <id>octo</id>
-       <name>Maven OCTO Release Repository</name>
-       <url>https://projets.octo.com/nexus/content/repositories/releases/</url>
-     </repository>
+	<distributionManagement>
+       <repository>
+          <id>octo</id>
+          <name>Maven OCTO Release Repository</name>
+          <url>https://projets.octo.com/nexus/content/repositories/releases/</url>
+       </repository>
 
-     <snapshotRepository>
-       <id>octo</id>
-       <name>Maven OCTO Snapshots Repository</name>
-       <url>https://projets.octo.com/nexus/content/repositories/snapshots/</url>
-       <uniqueVersion>false</uniqueVersion>
-     </snapshotRepository>
+       <snapshotRepository>
+          <id>octo</id>
+          <name>Maven OCTO Snapshots Repository</name>
+          <url>https://projets.octo.com/nexus/content/repositories/snapshots/</url>
+          <uniqueVersion>false</uniqueVersion>
+       </snapshotRepository>
     </distributionManagement>
 
     <dependencyManagement>
@@ -93,30 +131,12 @@
                     <artifactId>maven-compiler-plugin</artifactId>
                     <version>2.3.2</version>
                 </plugin>
+                <plugin>
+                    <artifactId>maven-deploy-plugin</artifactId>
+                    <version>2.7</version>
+                </plugin>
             </plugins>
         </pluginManagement>
     </build>
-    
-    <repositories>
-        <repository>
-            <id>octo.releases</id>
-            <url>https://projets.octo.com/nexus/content/repositories/releases/</url>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <snapshots>
-              <enabled>false</enabled>
-            </snapshots>
-        </repository>
-        <repository>
-            <id>octo.thirdparty</id>
-            <url>https://projets.octo.com/nexus/content/repositories/thirdparty/</url>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <snapshots>
-              <enabled>false</enabled>
-            </snapshots>
-        </repository>
-    </repositories>
+   
 </project>
