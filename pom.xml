@@ -43,6 +43,11 @@
             <name>Maxence Walbrou</name>
             <email>mwalbrou@octo.com</email>
         </developer>
+        <developer>
+            <id>MHA</id>
+            <name>Mathieu Hausherr</name>
+            <email>mhausherr@octo.com</email>
+        </developer>
     </developers>
 
     <modules>
@@ -58,6 +63,21 @@
 	    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     	<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     </properties>
+
+	<distributionManagement>
+       <repository>
+          <id>octo</id>
+          <name>Maven OCTO Release Repository</name>
+          <url>https://projets.octo.com/nexus/content/repositories/releases/</url>
+       </repository>
+
+       <snapshotRepository>
+          <id>octo</id>
+          <name>Maven OCTO Snapshots Repository</name>
+          <url>https://projets.octo.com/nexus/content/repositories/snapshots/</url>
+          <uniqueVersion>false</uniqueVersion>
+       </snapshotRepository>
+    </distributionManagement>
 
     <dependencyManagement>
         <dependencies>
@@ -111,8 +131,12 @@
                     <artifactId>maven-compiler-plugin</artifactId>
                     <version>2.3.2</version>
                 </plugin>
+                <plugin>
+                    <artifactId>maven-deploy-plugin</artifactId>
+                    <version>2.7</version>
+                </plugin>
             </plugins>
         </pluginManagement>
     </build>
-
+   
 </project>
