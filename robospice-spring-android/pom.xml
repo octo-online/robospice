@@ -53,7 +53,6 @@
 		 	<plugin>
 	            <groupId>org.apache.maven.plugins</groupId>
 	            <artifactId>maven-javadoc-plugin</artifactId>
-	            <version>2.7</version>
 	            <executions>
 	                <execution>
 	                    <id>attach-javadoc</id>
@@ -70,7 +69,6 @@
 	        <plugin>
 	            <groupId>org.apache.maven.plugins</groupId>
 	            <artifactId>maven-source-plugin</artifactId>
-	            <version>2.1.2</version>
 	            <executions>
 	                <execution>
 	                    <id>attach-source</id>
@@ -79,7 +77,19 @@
 	                    </goals>
 	                </execution>
 	            </executions>
-	        </plugin>			
+	        </plugin>
+			<plugin>
+			      <groupId>com.github.github</groupId>
+			      <artifactId>downloads-maven-plugin</artifactId>
+			</plugin>
+			<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-site-plugin</artifactId>
+			</plugin>
+			<plugin>
+				<groupId>com.github.github</groupId>
+				<artifactId>site-maven-plugin</artifactId>
+			</plugin>			
 		</plugins>
 	</build>
 </project>
