@@ -32,3 +32,4 @@ release.properties
 
 #Maven release files
 .releaseBackup
+.versionsBackup
