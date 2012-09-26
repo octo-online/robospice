@@ -4,7 +4,7 @@ import com.octo.android.robospice.exception.CacheLoadingException;
 import com.octo.android.robospice.exception.CacheSavingException;
 
 /**
- * This interface is mainly used for mocking/testing. Developpers should use directly the class {@link CacheManager} and
+ * This interface is mainly used for mocking/testing. Developers should use directly the class {@link CacheManager} and
  * should not have to implement this interface. Defines the behavior of a cache manager, a bus of
  * {@link ObjectPersister}.
  * 

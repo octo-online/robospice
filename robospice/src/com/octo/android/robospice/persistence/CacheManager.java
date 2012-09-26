@@ -7,7 +7,7 @@ import com.octo.android.robospice.exception.CacheLoadingException;
 import com.octo.android.robospice.exception.CacheSavingException;
 
 /**
- * An entity responsible for loading/saving data from/to cache. It implements a Chain of Responsability pattern,
+ * An entity responsible for loading/saving data from/to cache. It implements a Chain of Responsibility pattern,
  * delegating loading and saving operations to {@link ObjectPersister} or {@link ObjectPersisterFactory} elements.
  * 
  * The chain of responsibility is ordered. This means that the order used to register elements matters. All elements in
@@ -19,7 +19,7 @@ import com.octo.android.robospice.exception.CacheSavingException;
  */
 public class CacheManager implements ICacheManager {
 
-    /** The Chain of Responsability list of all {@link ObjectPersisterFactory}. */
+    /** The Chain of Responsibility list of all {@link ObjectPersisterFactory}. */
     private Collection< ObjectPersisterFactory > factoryList = new ArrayList< ObjectPersisterFactory >();
 
     /** {@inheritDoc} */
