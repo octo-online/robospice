@@ -25,7 +25,7 @@ release.properties
 
 #Intelli J project files
 .idea/
-.iml
+*.iml
 
 #Maven project files
 target/
