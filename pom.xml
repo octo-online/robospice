@@ -14,16 +14,16 @@
 
     <groupId>com.octo.android.robospice</groupId>
     <artifactId>robospice-parent</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
+    <version>1.0.1-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Robospice - Parent</name>
     <description>RoboSpice is a modular android library that eases the development of Data-Driven Android applications.</description>
     <url>https://github.com/octo-online/robospice</url>
     
     <scm>
-       <connection>scm:git:ssh://git@github.com:octo-online/robospice.git</connection>
-       <url>git:ssh://git@github.com:octo-online/robospice.git</url>
-       <developerConnection>scm:git:ssh://git@github.com:octo-online/robospice.git</developerConnection>
+       <connection>scm:git:ssh://git@github.com/octo-online/robospice.git</connection>
+       <url>git:ssh://git@github.com/octo-online/robospice.git</url>
+       <developerConnection>scm:git:ssh://git@github.com/octo-online/robospice.git</developerConnection>
     </scm>
     
     <licenses>
@@ -169,6 +169,9 @@
 			        <description>${project.version} release of ${project.name}</description>
 			        <override>true</override>
 			        <includeAttached>true</includeAttached>
+			        <includes>
+			        	<include>${project.artifactId}-${project.version}.jar</include>
+			        </includes>
 			      </configuration>
 			      <executions>
 				 	 <execution>
@@ -221,8 +224,8 @@
 					</configuration>
 				</plugin>
 				<plugin>
-				        <groupId>org.apache.maven.plugins</groupId>
-				        <artifactId>maven-gpg-plugin</artifactId>
+				    <groupId>org.apache.maven.plugins</groupId>
+				    <artifactId>maven-gpg-plugin</artifactId>
 					<version>1.1</version>
 				        <executions>
 				          <execution>
