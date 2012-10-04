@@ -216,7 +216,7 @@ public class ContentManager implements Runnable {
 	 * will be unregistered. None of them will be notified with the results of
 	 * their {@link ContentRequest}s.
 	 * 
-	 * Unbinding will occur syncrhonously : the method returns when all events
+	 * Unbinding will occur synchronously : the method returns when all events
 	 * have been unregistered and when main processing thread stops.
 	 * 
 	 */
@@ -277,7 +277,7 @@ public class ContentManager implements Runnable {
 	 * Execute a request, put the result in cache and register listeners to
 	 * notify when request is finished.
 	 * 
-	 * @param request
+	 * @param cachedContentRequest
 	 *            the request to execute. {@link CachedContentRequest} is a
 	 *            wrapper of {@link ContentRequest} that contains cache key and
 	 *            cache duration
@@ -304,7 +304,7 @@ public class ContentManager implements Runnable {
 	 * service. Otherwise, it will just remove listeners before passing the
 	 * request to the {@link ContentService}.
 	 * 
-	 * Calling this method doesn't prevent request from beeing executed (and put
+	 * Calling this method doesn't prevent request from being executed (and put
 	 * in cache) but will remove request's listeners notification.
 	 * 
 	 * @param request
@@ -321,8 +321,8 @@ public class ContentManager implements Runnable {
 	/**
 	 * Internal method to remove requests. If request has not been passed to the
 	 * {@link ContentService} yet, all listeners are unregistered locally before
-	 * beeing passed to the service. Otherwise, it will asynchronously ask to
-	 * the {@link ContentService} to remove the listeners of the request beeing
+	 * being passed to the service. Otherwise, it will asynchronously ask to
+	 * the {@link ContentService} to remove the listeners of the request being
 	 * processed.
 	 * 
 	 * @param request
@@ -336,7 +336,7 @@ public class ContentManager implements Runnable {
 			Log.v(LOG_TAG, "Removed from requests to launch list : " + requestNotPassedToServiceYet);
 
 			// if the request was already passed to service, bind to service and
-			// unregister listeners.
+			// unregistered listeners.
 			if (!requestNotPassedToServiceYet) {
 				removeListenersOfPendingCachedRequest(request);
 				Log.v(LOG_TAG, "Removed from pending requests list");
@@ -451,7 +451,7 @@ public class ContentManager implements Runnable {
 	}
 
 	/**
-	 * Wether or not a given {@link CachedContentRequest} matches a
+	 * Either or not a given {@link CachedContentRequest} matches a
 	 * {@link ContentRequest}.
 	 * 
 	 * @param cachedContentRequest
@@ -553,7 +553,7 @@ public class ContentManager implements Runnable {
 
 	/**
 	 * Configure the behavior in case of error during reading/writing cache. <br/>
-	 * Specify wether an error on reading/writing cache must fail the process.
+	 * Specify either an error on reading/writing cache must fail the process.
 	 * 
 	 * @param failOnCacheError
 	 *            true if an error must fail the process
