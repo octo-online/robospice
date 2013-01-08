@@ -6,6 +6,8 @@ import android.app.Application;
 import android.content.pm.ApplicationInfo;
 import android.util.Log;
 
+import com.google.inject.Inject;
+
 /**
  * A more natural android logging facility. WARNING: CHECK OUT COMMON PITFALLS
  * BELOW Unlike {@link android.util.Log}, Log provides sensible defaults. Debug
@@ -38,14 +40,14 @@ public final class Ln {
      * replaced by BaseConfig(ContextSingleton) during guice static injection
      * pass.
      */
-    protected static BaseConfig config = new BaseConfig();
+    @Inject protected static BaseConfig config = new BaseConfig();
 
     /**
      * print is initially set to Print(), then replaced by guice during static
      * injection pass. This allows overriding where the log message is delivered
      * to.
      */
-    protected static Print print = new Print();
+    @Inject protected static Print print = new Print();
 
     private Ln() {
     }
