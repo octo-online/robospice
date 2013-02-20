@@ -21,11 +21,8 @@ out/
 local.properties
 release.properties
 
-# Eclipse project files
-.classpath
-.project
-.settings
-.settings/
+# Eclipse/Ant library files
+libs/
 .DS_Store
 
 #Intelli J project files
