@@ -7,11 +7,15 @@
 
 # Java class files
 *.class
+jarlist.cache
+
+#checkstyle
+.checkstyle
 
 # generated files
-*/bin/
-*/gen/
-*/out/
+bin/
+gen/
+out/
 
 # Local configuration file (sdk path, etc)
 local.properties
@@ -25,8 +29,8 @@ release.properties
 .DS_Store
 
 #Intelli J project files
-.idea/
-.iml
+*.idea/
+*.iml
 
 #Maven project files
 target/

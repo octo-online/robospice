@@ -1,6 +1,58 @@
 Release notes for RoboSpice
 ===========================
 
+Version Cache module 1.4.1 (planned)
+-------------
+
+* Adding LRU ObjectPersister from David Stemmer, Mike Jancola
+
+------------------
+Release on February 8 2013
+------------------
+
+Version 1.4.0 (to be released )
+-------------
+
+Enhancements : 
+
+* Riccardo Ciovati joined the team.
+* Added removeAllDataFromCache overload in spice manager : thx to Kaan Meralan
+* Added retrofit module with tests and samples
+* Enhanced cancel mechanism
+* Enhanced core testing and extension testing.
+* Added first UI module in RoboSpice to create ListViews using RoboSpice.
+* CacheKey is now of type Object and not String anymore. Thx to Fernando Franco Gíraldez for his pull request.
+* Added dedicated services to each module. They provide all configurations out of the box for processing web services and caching.
+* Enhanced NetworkStateChecker interface in order to refine permission checking and allow real processing of request that
+are not related to networking.
+* Peer review of multi tasking aspects of RoboSpice by Henri Tremblay.
+* Hosted on Sonar's Nemo.
+
+Documentation : 
+* Added documentation on Wiki pages for Advanced RoboSpice usages and FAQ, samples, maven and non maven setup, software design, contributors, etc.
+* Added samples for most of the RoboSpice extensions.
+* Added maven site
+* Added repository branch on GitHub to assist non maven users to setup RoboSpice.
+* Enhanced javadocs
+
+Bug fix :
+
+* Minor bugs of undesired aggregation of offline requests solved. Thanks to djusv.
+* Minor bugs solved in persistence module.
+* Minor bug in GsonObjectPersister solved. Thx to Alessio Bianchi. 
+
+For contributors :
+ 
+* Completely reviewed maven structure. Introduction of an easier extension mechanism and simpler samples. Thx to pommedeterresauté
+* All project layouts inside RoboSpice are mavenized
+* Added wiki pages for contributors, common tasks and so on.
+
+
+Version 1.3.1 (december 2012)
+-------------
+
+* Bug fix release, listeners where not detached properly
+
 Version 1.3.0 (december 2012)
 -------------
 
@@ -15,8 +67,7 @@ Version 1.3.0 (december 2012)
 * Refactored request cancelation mechanism. Thx to Philippe Prados for help with handlers.
 * Added tests for request cancelation mechanism.
 * RoboSpice reached the milestone of 103 tests. This is also a QA release.
-* TODO add documentation on Wiki pages to use spring android and google http client module
-* TODO add documentation on Wiki pages for Advanced RoboSpice usages.
+
 
 Version 1.2.0 (november 12 2012)
 -------------
