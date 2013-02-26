@@ -196,10 +196,12 @@ public class RequestProcessor {
                 Ln.d("Loading request from cache : " + request);
                 request.setStatus(RequestStatus.READING_FROM_CACHE);
                 result = loadDataFromCache(request.getResultType(), request.getRequestCacheKey(), request.getCacheDuration());
-                if (result != null && !useDirtyCache) {
+                if (result != null) {
                     Ln.d("Request loaded from cache : " + request + " result=" + result);
-                    notifyListenersOfRequestSuccess(request, result);
-                    return;
+                    notifyListenersOfRequestSuccess(request, result, !useDirtyCache);
+                    if (!useDirtyCache) {
+                        return;
+                    }
                 }
             } catch (final CacheLoadingException e) {
                 Ln.d(e, "Cache file could not be read.");
@@ -216,7 +218,7 @@ public class RequestProcessor {
         }
 
         // if result is not in cache or using dirty cache, load data from network
-        Ln.d("Cache content not available or expired or disabled");
+        Ln.d("Cache content not available or expired or disabled or dirty");
         if (!isNetworkAvailable(applicationContext)) {
             Ln.e("Network is down.");
             notifyListenersOfRequestFailure(request, new NoNetworkException());
@@ -294,10 +296,13 @@ public class RequestProcessor {
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
     private <T> void notifyListenersOfRequestSuccess(final CachedSpiceRequest<T> request, final T result) {
+        notifyListenersOfRequestSuccess(request, result, true);
+    }
+    private <T> void notifyListenersOfRequestSuccess(final CachedSpiceRequest<T> request, final T result, final boolean remove) {
         final Set<RequestListener<?>> listeners = mapRequestToRequestListener.get(request);
         notifyListenersOfRequestProgress(request, listeners, RequestStatus.COMPLETE);
         post(new ResultRunnable(listeners, result), request.getRequestCacheKey());
-        notifyOfRequestProcessed(request);
+        notifyOfRequestProcessed(request, remove);
     }
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
@@ -492,8 +497,14 @@ public class RequestProcessor {
     }
 
     protected void notifyOfRequestProcessed(final CachedSpiceRequest<?> request) {
+        notifyOfRequestProcessed(request, false);
+    }
+
+    protected void notifyOfRequestProcessed(final CachedSpiceRequest<?> request, final boolean remove) {
         Ln.v("Removing %s  size is %d", request, mapRequestToRequestListener.size());
-        mapRequestToRequestListener.remove(request);
+        if (remove) {
+            mapRequestToRequestListener.remove(request);
+        }
 
         checkAllRequestComplete();
         synchronized (spiceServiceListenerSet) {
@@ -502,4 +513,6 @@ public class RequestProcessor {
             }
         }
     }
+
+
 }
