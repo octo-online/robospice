@@ -858,6 +858,30 @@ public class SpiceManager implements Runnable {
         });
     }
 
+    /**
+     * Configure the behavior of reading cache even if it is expired. <br/>
+     * Specify if robospice return cache values even if it is expired
+     * @param useDirtyCache
+     *            true allow dirty cache
+     */
+    public void setUseDirtyCache(final boolean useDirtyCache) {
+        executorService.execute(new Runnable() {
+
+            @Override
+            public void run() {
+                try {
+                    waitForServiceToBeBound();
+                    if (spiceService == null) {
+                        return;
+                    }
+                    spiceService.setUseDirtyCache(useDirtyCache);
+                } catch (final InterruptedException e) {
+                    Ln.e(e, "Interrupted while waiting for acquiring service.");
+                }
+            }
+        });
+    }
+
     private <T> void addRequestListenerToListOfRequestListeners(
         final CachedSpiceRequest<T> cachedSpiceRequest,
         final RequestListener<T> requestListener) {

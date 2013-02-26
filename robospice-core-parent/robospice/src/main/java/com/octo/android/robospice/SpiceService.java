@@ -45,6 +45,7 @@ public abstract class SpiceService extends Service {
 
     private static final int DEFAULT_THREAD_COUNT = 1;
     private static final boolean DEFAULT_FAIL_ON_CACHE_ERROR = false;
+    private static final boolean DEFAULT_USE_DIRTY_CACHE = false;
 
     // ============================================================================================
     // ATTRIBUTES
@@ -93,7 +94,7 @@ public abstract class SpiceService extends Service {
             cacheManager, executorService, requestProcessorListener,
             networkStateChecker);
         requestProcessor.setFailOnCacheError(DEFAULT_FAIL_ON_CACHE_ERROR);
-
+        requestProcessor.setUseDirtyCache(DEFAULT_USE_DIRTY_CACHE);
         notification = createDefaultNotification();
         startForeground(notification);
 
@@ -217,6 +218,14 @@ public abstract class SpiceService extends Service {
 
     public void setFailOnCacheError(final boolean failOnCacheError) {
         requestProcessor.setFailOnCacheError(failOnCacheError);
+    }
+
+    public boolean isUseDirtyCache() {
+        return requestProcessor.isUseDirtyCache();
+    }
+
+    public void setUseDirtyCache(final boolean useDirtyCache) {
+        requestProcessor.setUseDirtyCache(useDirtyCache);
     }
 
     public void dontNotifyRequestListenersForRequest(
