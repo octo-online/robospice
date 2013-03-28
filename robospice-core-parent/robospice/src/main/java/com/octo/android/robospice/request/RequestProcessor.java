@@ -114,26 +114,31 @@ public class RequestProcessor {
             }
         }
 
-        boolean aggregated = false;
+        if (request.getRequestCacheKey() != null && listRequestListener != null) {
+            if (request.isJustAddingListener()) {
+                Set<RequestListener<?>> listRequestListenerForThisRequest = mapRequestToRequestListener.get(request);
+                if (listRequestListenerForThisRequest != null) {
+                    listRequestListenerForThisRequest.addAll(listRequestListener);
+                    notifyOfRequestProcessed(request);
+                } else if (request.isGettingFromCache()) {
+                    getFromCache(request, listRequestListener);
+                }
+                return;
+            } else if (request.isGettingFromCache()) {
+                getFromCache(request, listRequestListener);
+                return;
+            }
+        }
+
         if (listRequestListener != null) {
             Set<RequestListener<?>> listRequestListenerForThisRequest = mapRequestToRequestListener.get(request);
 
             if (listRequestListenerForThisRequest == null) {
                 listRequestListenerForThisRequest = new HashSet<RequestListener<?>>();
                 this.mapRequestToRequestListener.put(request, listRequestListenerForThisRequest);
-            } else {
-                Ln.d(String.format("Request for type %s and cacheKey %s already exists.", request.getResultType(), request.getRequestCacheKey()));
-                aggregated = true;
             }
-
             listRequestListenerForThisRequest.addAll(listRequestListener);
-            if (request.isProcessable()) {
-                notifyListenersOfRequestProgress(request, listRequestListener, request.getProgress());
-            }
-        }
-
-        if (aggregated) {
-            return;
+            notifyListenersOfRequestProgress(request, listRequestListener, request.getProgress());
         }
 
         final RequestCancellationListener requestCancellationListener = new RequestCancellationListener() {
@@ -158,7 +163,7 @@ public class RequestProcessor {
                     try {
                         processRequest(request);
                     } catch (final Throwable t) {
-                        Ln.d(t, "An unexpected error occured when processsing request %s", request.toString());
+                        Ln.d(t, "An unexpected error occurred when processing request %s", request.toString());
 
                     }
                 }
@@ -167,15 +172,23 @@ public class RequestProcessor {
         }
     }
 
+    private <T> void getFromCache(CachedSpiceRequest<T> request, final Set<RequestListener<?>> listRequestListener) {
+        T result = null;
+        request.setStatus(RequestStatus.READING_FROM_CACHE);
+        try {
+            result = loadDataFromCache(request.getResultType(), request.getRequestCacheKey(), request.getCacheDuration());
+        } catch (CacheLoadingException e) {
+            cacheManager.removeDataFromCache(request.getResultType(),  request.getRequestCacheKey());
+        }
+        Ln.d("Request loaded from cache : " + request + " result=" + result);
+        notifyListenersOfRequestSuccess(request, result, listRequestListener);
+    }
+
     protected <T> void processRequest(final CachedSpiceRequest<T> request) {
 
         Ln.d("Processing request : " + request);
 
         T result = null;
-        if (!request.isProcessable()) {
-            notifyOfRequestProcessed(request);
-            return;
-        }
 
         // add a progress listener to the request to be notified of
         // progress during load data from network
@@ -285,6 +298,13 @@ public class RequestProcessor {
         if (mapRequestToRequestListener.isEmpty()) {
             requestProcessorListener.allRequestComplete();
         }
+    }
+
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+    private <T> void notifyListenersOfRequestSuccess(final CachedSpiceRequest<T> request, final T result, Set<RequestListener<?>> listeners) {
+        notifyListenersOfRequestProgress(request, listeners, RequestStatus.COMPLETE);
+        post(new ResultRunnable(listeners, result), request.getRequestCacheKey());
+        notifyOfRequestProcessed(request);
     }
 
     @SuppressWarnings({ "rawtypes", "unchecked" })

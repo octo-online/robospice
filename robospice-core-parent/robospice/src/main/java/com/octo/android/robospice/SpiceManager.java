@@ -308,14 +308,10 @@ public class SpiceManager implements Runnable {
             public T loadDataFromNetwork() throws Exception {
                 return null;
             }
-
-            @Override
-            public boolean isAggregatable() {
-                return false;
-            }
         };
         final CachedSpiceRequest<T> cachedSpiceRequest = new CachedSpiceRequest<T>(
             request, requestCacheKey, cacheExpiryDuration);
+        cachedSpiceRequest.setGettingFromCache(true);
         execute(cachedSpiceRequest, requestListener);
     }
 
@@ -349,7 +345,7 @@ public class SpiceManager implements Runnable {
         };
         final CachedSpiceRequest<T> cachedSpiceRequest = new CachedSpiceRequest<T>(
             request, requestCacheKey, DurationInMillis.NEVER);
-        cachedSpiceRequest.setProcessable(false);
+        cachedSpiceRequest.setJustAddingListener(true);
         execute(cachedSpiceRequest, requestListener);
     }
 
@@ -438,7 +434,6 @@ public class SpiceManager implements Runnable {
         };
         final CachedSpiceRequest<T> cachedSpiceRequest = new CachedSpiceRequest<T>(
             request, requestCacheKey, DurationInMillis.NEVER);
-        cachedSpiceRequest.setProcessable(false);
         cachedSpiceRequest.cancel();
         execute(cachedSpiceRequest, null);
     }
