@@ -12,7 +12,8 @@ public class CachedSpiceRequest<RESULT> extends SpiceRequest<RESULT> {
     private Object requestCacheKey;
     private final long cacheDuration;
     private final SpiceRequest<RESULT> spiceRequest;
-    private boolean isProcessable = true;
+    private boolean isJustAddingListener;
+    private boolean isGettingFromCache;
 
     public CachedSpiceRequest(final SpiceRequest<RESULT> spiceRequest,
         final Object requestCacheKey, final long cacheDuration) {
@@ -32,22 +33,20 @@ public class CachedSpiceRequest<RESULT> extends SpiceRequest<RESULT> {
         return spiceRequest.getResultType();
     }
 
-    @Override
-    public boolean isAggregatable() {
-        return spiceRequest.isAggregatable();
+    public boolean isGettingFromCache() {
+        return isGettingFromCache;
     }
 
-    @Override
-    public void setAggregatable(final boolean isAggregatable) {
-        spiceRequest.setAggregatable(isAggregatable);
+    public void setGettingFromCache(boolean gettingFromCache) {
+        isGettingFromCache = gettingFromCache;
     }
 
-    public boolean isProcessable() {
-        return isProcessable;
+    public boolean isJustAddingListener() {
+        return isJustAddingListener;
     }
 
-    public void setProcessable(final boolean isProcessable) {
-        this.isProcessable = isProcessable;
+    public void setJustAddingListener(boolean justAddingListener) {
+        isJustAddingListener = justAddingListener;
     }
 
     /**
@@ -138,10 +137,6 @@ public class CachedSpiceRequest<RESULT> extends SpiceRequest<RESULT> {
             }
         } else if (!spiceRequest.getResultType().equals(
             other.spiceRequest.getResultType())) {
-            return false;
-        }
-        if (spiceRequest.isAggregatable() != other.spiceRequest
-            .isAggregatable()) {
             return false;
         }
         if (requestCacheKey == null) {

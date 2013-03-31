@@ -24,7 +24,6 @@ public abstract class SpiceRequest<RESULT> {
     private boolean isCanceled = false;
     private Future<?> future;
     private RequestProgressListener requestProgressListener;
-    private boolean isAggregatable = true;
     private RequestProgress progress = new RequestProgress(
         RequestStatus.PENDING);
     private RequestCancellationListener requestCancellationListener;
@@ -76,14 +75,6 @@ public abstract class SpiceRequest<RESULT> {
 
     public boolean isCancelled() {
         return this.isCanceled;
-    }
-
-    public boolean isAggregatable() {
-        return isAggregatable;
-    }
-
-    public void setAggregatable(final boolean isAggregatable) {
-        this.isAggregatable = isAggregatable;
     }
 
     protected void setFuture(final Future<?> future) {

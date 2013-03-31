@@ -21,6 +21,7 @@ import com.octo.android.robospice.exception.NetworkException;
 import com.octo.android.robospice.exception.NoNetworkException;
 import com.octo.android.robospice.exception.RequestCancelledException;
 import com.octo.android.robospice.networkstate.NetworkStateChecker;
+import com.octo.android.robospice.persistence.DurationInMillis;
 import com.octo.android.robospice.persistence.ICacheManager;
 import com.octo.android.robospice.persistence.exception.CacheLoadingException;
 import com.octo.android.robospice.persistence.exception.CacheSavingException;
@@ -114,26 +115,36 @@ public class RequestProcessor {
             }
         }
 
-        boolean aggregated = false;
+        if (request.getRequestCacheKey() != null && listRequestListener != null) {
+            if (request.isJustAddingListener()) {
+                Set<RequestListener<?>> listRequestListenerForThisRequest = mapRequestToRequestListener.get(request);
+                if (listRequestListenerForThisRequest != null) {
+                    listRequestListenerForThisRequest.addAll(listRequestListener);
+                    notifyOfAddListenerIfPendingRequestProcessed(request);
+                    return;
+                }
+                if (request.isGettingFromCache()) {
+                    getFromCache(request, listRequestListener);
+                    return;
+                } else { // listRequestListenerForThisRequest == null
+                    notifyOfAddListenerIfPendingRequestProcessed(request);
+                    return;
+                }
+            } else if (request.isGettingFromCache()) {
+                getFromCache(request, listRequestListener);
+                return;
+            }
+        }
+
         if (listRequestListener != null) {
             Set<RequestListener<?>> listRequestListenerForThisRequest = mapRequestToRequestListener.get(request);
 
             if (listRequestListenerForThisRequest == null) {
                 listRequestListenerForThisRequest = new HashSet<RequestListener<?>>();
                 this.mapRequestToRequestListener.put(request, listRequestListenerForThisRequest);
-            } else {
-                Ln.d(String.format("Request for type %s and cacheKey %s already exists.", request.getResultType(), request.getRequestCacheKey()));
-                aggregated = true;
             }
-
             listRequestListenerForThisRequest.addAll(listRequestListener);
-            if (request.isProcessable()) {
-                notifyListenersOfRequestProgress(request, listRequestListener, request.getProgress());
-            }
-        }
-
-        if (aggregated) {
-            return;
+            notifyListenersOfRequestProgress(request, listRequestListener, request.getProgress());
         }
 
         final RequestCancellationListener requestCancellationListener = new RequestCancellationListener() {
@@ -158,7 +169,7 @@ public class RequestProcessor {
                     try {
                         processRequest(request);
                     } catch (final Throwable t) {
-                        Ln.d(t, "An unexpected error occured when processsing request %s", request.toString());
+                        Ln.d(t, "An unexpected error occurred when processing request %s", request.toString());
 
                     }
                 }
@@ -167,15 +178,31 @@ public class RequestProcessor {
         }
     }
 
+    private <T> void getFromCache(CachedSpiceRequest<T> request, final Set<RequestListener<?>> listRequestListener) {
+        T result = null;
+        if (request.getCacheDuration() != DurationInMillis.NEVER) {
+            request.setStatus(RequestStatus.READING_FROM_CACHE);
+            try {
+                result = loadDataFromCache(request.getResultType(), request.getRequestCacheKey(), request.getCacheDuration());
+            } catch (CacheLoadingException e) {
+                Ln.d(e, "Cache file could not be read.");
+                if (failOnCacheError) {
+                    notifyListenersOfRequestFailure(request, e);
+                    return;
+                }
+                cacheManager.removeDataFromCache(request.getResultType(), request.getRequestCacheKey());
+                Ln.d(e, "Cache file deleted.");
+            }
+        }
+        Ln.d("Request loaded from cache : " + request + " result=" + result);
+        notifyListenersOfRequestSuccess(request, result, listRequestListener);
+    }
+
     protected <T> void processRequest(final CachedSpiceRequest<T> request) {
 
         Ln.d("Processing request : " + request);
 
         T result = null;
-        if (!request.isProcessable()) {
-            notifyOfRequestProcessed(request);
-            return;
-        }
 
         // add a progress listener to the request to be notified of
         // progress during load data from network
@@ -285,6 +312,13 @@ public class RequestProcessor {
         if (mapRequestToRequestListener.isEmpty()) {
             requestProcessorListener.allRequestComplete();
         }
+    }
+
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+    private <T> void notifyListenersOfRequestSuccess(final CachedSpiceRequest<T> request, final T result, Set<RequestListener<?>> listeners) {
+        notifyListenersOfRequestProgress(request, listeners, RequestStatus.COMPLETE);
+        post(new ResultRunnable(listeners, result), request.getRequestCacheKey());
+        notifyOfRequestProcessed(request);
     }
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
@@ -482,6 +516,15 @@ public class RequestProcessor {
         Ln.v("Removing %s  size is %d", request, mapRequestToRequestListener.size());
         mapRequestToRequestListener.remove(request);
 
+        checkAllRequestComplete();
+        synchronized (spiceServiceListenerSet) {
+            for (final SpiceServiceServiceListener spiceServiceServiceListener : spiceServiceListenerSet) {
+                spiceServiceServiceListener.onRequestProcessed(request);
+            }
+        }
+    }
+
+    protected void notifyOfAddListenerIfPendingRequestProcessed(final CachedSpiceRequest<?> request) {
         checkAllRequestComplete();
         synchronized (spiceServiceListenerSet) {
             for (final SpiceServiceServiceListener spiceServiceServiceListener : spiceServiceListenerSet) {
