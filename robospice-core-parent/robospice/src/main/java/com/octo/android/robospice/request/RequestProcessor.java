@@ -21,6 +21,7 @@ import com.octo.android.robospice.exception.NetworkException;
 import com.octo.android.robospice.exception.NoNetworkException;
 import com.octo.android.robospice.exception.RequestCancelledException;
 import com.octo.android.robospice.networkstate.NetworkStateChecker;
+import com.octo.android.robospice.persistence.DurationInMillis;
 import com.octo.android.robospice.persistence.ICacheManager;
 import com.octo.android.robospice.persistence.exception.CacheLoadingException;
 import com.octo.android.robospice.persistence.exception.CacheSavingException;
@@ -119,11 +120,16 @@ public class RequestProcessor {
                 Set<RequestListener<?>> listRequestListenerForThisRequest = mapRequestToRequestListener.get(request);
                 if (listRequestListenerForThisRequest != null) {
                     listRequestListenerForThisRequest.addAll(listRequestListener);
-                    notifyOfRequestProcessed(request);
-                } else if (request.isGettingFromCache()) {
-                    getFromCache(request, listRequestListener);
+                    notifyOfAddListenerIfPendingRequestProcessed(request);
+                    return;
                 }
-                return;
+                if (request.isGettingFromCache()) {
+                    getFromCache(request, listRequestListener);
+                    return;
+                } else { // listRequestListenerForThisRequest == null
+                    notifyOfAddListenerIfPendingRequestProcessed(request);
+                    return;
+                }
             } else if (request.isGettingFromCache()) {
                 getFromCache(request, listRequestListener);
                 return;
@@ -174,11 +180,19 @@ public class RequestProcessor {
 
     private <T> void getFromCache(CachedSpiceRequest<T> request, final Set<RequestListener<?>> listRequestListener) {
         T result = null;
-        request.setStatus(RequestStatus.READING_FROM_CACHE);
-        try {
-            result = loadDataFromCache(request.getResultType(), request.getRequestCacheKey(), request.getCacheDuration());
-        } catch (CacheLoadingException e) {
-            cacheManager.removeDataFromCache(request.getResultType(),  request.getRequestCacheKey());
+        if (request.getCacheDuration() != DurationInMillis.NEVER) {
+            request.setStatus(RequestStatus.READING_FROM_CACHE);
+            try {
+                result = loadDataFromCache(request.getResultType(), request.getRequestCacheKey(), request.getCacheDuration());
+            } catch (CacheLoadingException e) {
+                Ln.d(e, "Cache file could not be read.");
+                if (failOnCacheError) {
+                    notifyListenersOfRequestFailure(request, e);
+                    return;
+                }
+                cacheManager.removeDataFromCache(request.getResultType(), request.getRequestCacheKey());
+                Ln.d(e, "Cache file deleted.");
+            }
         }
         Ln.d("Request loaded from cache : " + request + " result=" + result);
         notifyListenersOfRequestSuccess(request, result, listRequestListener);
@@ -502,6 +516,15 @@ public class RequestProcessor {
         Ln.v("Removing %s  size is %d", request, mapRequestToRequestListener.size());
         mapRequestToRequestListener.remove(request);
 
+        checkAllRequestComplete();
+        synchronized (spiceServiceListenerSet) {
+            for (final SpiceServiceServiceListener spiceServiceServiceListener : spiceServiceListenerSet) {
+                spiceServiceServiceListener.onRequestProcessed(request);
+            }
+        }
+    }
+
+    protected void notifyOfAddListenerIfPendingRequestProcessed(final CachedSpiceRequest<?> request) {
         checkAllRequestComplete();
         synchronized (spiceServiceListenerSet) {
             for (final SpiceServiceServiceListener spiceServiceServiceListener : spiceServiceListenerSet) {

@@ -251,6 +251,46 @@ public class RequestProcessorTest extends InstrumentationTestCase {
         assertTrue(stubRequest.isLoadDataFromNetworkCalled());
     }
 
+    public void testAddRequest_when_addListenerIfPending_is_called_first() throws InterruptedException, CacheLoadingException, CacheSavingException {
+        //given
+        CachedSpiceRequestStub<String> stubAddListenerIfPendingRequest = createSuccessfulRequest(TEST_CLASS, TEST_CACHE_KEY, TEST_DURATION, TEST_RETURNED_DATA);
+        stubAddListenerIfPendingRequest.setJustAddingListener(true);
+
+        CachedSpiceRequestStub<String> stubRequest = createSuccessfulRequest(TEST_CLASS, TEST_CACHE_KEY, TEST_DURATION, TEST_RETURNED_DATA);
+
+        Set<RequestListener<?>> addListenerIfPendingRequestListenerSet = new HashSet<RequestListener<?>>();
+        RequestListenerWithProgressStub<String> mockAddListenerIfPendingRequestListener = new RequestListenerWithProgressStub<String>();
+        addListenerIfPendingRequestListenerSet.add(mockAddListenerIfPendingRequestListener);
+
+        Set<RequestListener<?>> requestListenerSet = new HashSet<RequestListener<?>>();
+        RequestListenerWithProgressStub<String> mockRequestListener = new RequestListenerWithProgressStub<String>();
+        requestListenerSet.add(mockRequestListener);
+
+        EasyMock.expect(mockCacheManager.loadDataFromCache(EasyMock.eq(TEST_CLASS), EasyMock.eq(TEST_CACHE_KEY), EasyMock.eq(TEST_DURATION)))
+                .andReturn(null);
+        EasyMock.expectLastCall().anyTimes();
+        EasyMock.expect(mockCacheManager.saveDataToCacheAndReturnData(EasyMock.eq(TEST_RETURNED_DATA), EasyMock.eq(TEST_CACHE_KEY))).andReturn(
+                TEST_RETURNED_DATA);
+        EasyMock.expectLastCall().anyTimes();
+        EasyMock.replay(mockCacheManager);
+        
+        //when
+        requestProcessorUnderTest.addRequest(stubAddListenerIfPendingRequest, addListenerIfPendingRequestListenerSet); //add AddListenerIfPending request first
+        requestProcessorUnderTest.addRequest(stubRequest, requestListenerSet);
+        stubAddListenerIfPendingRequest.await(REQUEST_COMPLETION_TIME_OUT);
+        mockRequestListener.await(REQUEST_COMPLETION_TIME_OUT);
+
+        //then
+        assertFalse(stubAddListenerIfPendingRequest.isLoadDataFromNetworkCalled());
+        assertFalse(mockAddListenerIfPendingRequestListener.isExecutedInUIThread());
+        assertFalse(mockAddListenerIfPendingRequestListener.isComplete());
+        assertFalse(stubRequest.isCancelled());
+        assertTrue(stubRequest.isLoadDataFromNetworkCalled());
+        assertTrue(mockRequestListener.isExecutedInUIThread());
+        assertTrue(mockRequestListener.isComplete());
+        assertTrue(mockRequestListener.isSuccessful());
+    }
+
     // ============================================================================================
     // TESTING WITH FAIL ON ERROR = true
     // ============================================================================================
