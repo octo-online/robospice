@@ -1,9 +1,12 @@
 package com.octo.android.robospice.persistence.ormlite;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 import android.app.Application;
+import android.database.sqlite.SQLiteDatabase;
 import android.test.InstrumentationTestCase;
 import android.test.suitebuilder.annotation.SmallTest;
 
@@ -13,12 +16,14 @@ import com.octo.android.robospice.ormlite.test.model.Forecast;
 import com.octo.android.robospice.ormlite.test.model.Night;
 import com.octo.android.robospice.ormlite.test.model.Weather;
 import com.octo.android.robospice.ormlite.test.model.Wind;
+import com.octo.android.robospice.persistence.CacheManager;
 import com.octo.android.robospice.persistence.DurationInMillis;
 import com.octo.android.robospice.persistence.ObjectPersister;
 
 @SmallTest
 public class InDatabaseWeatherPersisterTest extends InstrumentationTestCase {
     private ObjectPersister<Weather> dataPersistenceManager;
+    private Application mApplication;
     private static final CurrenWeather TEST_TEMP = new CurrenWeather();
     private static final CurrenWeather TEST_TEMP2 = new CurrenWeather();
     private static final int CACHE_KEY = 1;
@@ -27,7 +32,7 @@ public class InDatabaseWeatherPersisterTest extends InstrumentationTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        Application application = (Application) getInstrumentation().getTargetContext().getApplicationContext();
+        mApplication = (Application) getInstrumentation().getTargetContext().getApplicationContext();
 
         List<Class<?>> classCollection = new ArrayList<Class<?>>();
 
@@ -39,9 +44,9 @@ public class InDatabaseWeatherPersisterTest extends InstrumentationTestCase {
         classCollection.add(Night.class);
         classCollection.add(Wind.class);
 
-        RoboSpiceDatabaseHelper databaseHelper = new RoboSpiceDatabaseHelper(application, "sample_database.db", 1);
+        RoboSpiceDatabaseHelper databaseHelper = new RoboSpiceDatabaseHelper(mApplication, "sample_database.db", 1);
         databaseHelper.clearTableFromDataBase(Weather.class);
-        InDatabaseObjectPersisterFactory inDatabaseObjectPersisterFactory = new InDatabaseObjectPersisterFactory(application, databaseHelper,
+        InDatabaseObjectPersisterFactory inDatabaseObjectPersisterFactory = new InDatabaseObjectPersisterFactory(mApplication, databaseHelper,
             classCollection);
         dataPersistenceManager = inDatabaseObjectPersisterFactory.createObjectPersister(Weather.class);
 
@@ -169,6 +174,33 @@ public class InDatabaseWeatherPersisterTest extends InstrumentationTestCase {
         assertEquals(1, listWeatherResult.size());
         assertTrue(listWeatherResult.contains(weatherRequestStatus));
         assertFalse(listWeatherResult.contains(weatherRequestStatus2));
+    }
+
+    public void testRemoveAllDataFromCache_removes_only_cached_databases() throws IOException {
+        // given
+
+        final CacheManager cacheManager = new CacheManager();
+        cacheManager.setApplication(mApplication);
+        cacheManager.addPersister(dataPersistenceManager);
+
+        final SQLiteDatabase otherDatabase = mApplication.openOrCreateDatabase("other_database.db", 0, null);
+        otherDatabase.close();
+
+        assertTrue(new File(otherDatabase.getPath()).exists());
+
+        final File databaseFile = mApplication.getDatabasePath("sample_database.db");
+        assertTrue(databaseFile.exists());
+
+        final File databaseMarker = mApplication.getDatabasePath("sample_database.db.robospicedb");
+        assertTrue(databaseMarker.exists());
+
+        // when
+        cacheManager.removeAllDataFromCache();
+
+        // then
+        assertTrue(new File(otherDatabase.getPath()).exists());
+        assertFalse(databaseFile.exists());
+        assertFalse(databaseMarker.exists());
     }
 
     private Weather buildWeather(int id, CurrenWeather currenWeather) {

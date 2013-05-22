@@ -1,11 +1,19 @@
 package com.octo.android.robospice.persistence;
 
+import java.io.File;
+import java.io.FileFilter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
+
+import org.apache.commons.io.FileUtils;
+
+import roboguice.util.temp.Ln;
+import android.app.Application;
 
 import com.octo.android.robospice.persistence.exception.CacheLoadingException;
 import com.octo.android.robospice.persistence.exception.CacheSavingException;
@@ -27,9 +35,19 @@ import com.octo.android.robospice.persistence.exception.CacheSavingException;
  */
 public class CacheManager implements ICacheManager {
 
+    private static final String ROBOSPICEDB_SUFFIX = ".robospicedb";
+
+    public static final String DEFAULT_CACHE_FOLDER = "robospice";
+
     /** The Chain of Responsibility list of all {@link Persister}. */
     private Collection<Persister> listPersister = new ArrayList<Persister>();
     private Map<ObjectPersisterFactory, List<ObjectPersister<?>>> mapFactoryToPersister = new HashMap<ObjectPersisterFactory, List<ObjectPersister<?>>>();
+
+    private Application mApplication;
+
+    public void setApplication(final Application application) {
+        mApplication = application;
+    }
 
     /** {@inheritDoc} */
     @Override
@@ -104,6 +122,46 @@ public class CacheManager implements ICacheManager {
                 List<ObjectPersister<?>> listPersisterForFactory = mapFactoryToPersister.get(factory);
                 for (ObjectPersister<?> objectPersister : listPersisterForFactory) {
                     objectPersister.removeAllDataFromCache();
+                }
+            }
+        }
+
+        if (mApplication != null) {
+            deleteAllRobospiceDefaultCacheFolderContent();
+            deleteAllRobospiceDatabaseFiles();
+        } else {
+            Ln.w("Cache Manager needs the application to be set. Failed to clean cache.");
+        }
+    }
+
+    private void deleteAllRobospiceDefaultCacheFolderContent() {
+        final File defaultCacheRootFolder = new File(mApplication.getCacheDir(), DEFAULT_CACHE_FOLDER);
+        try {
+            FileUtils.deleteDirectory(defaultCacheRootFolder);
+        } catch (IOException e) {
+            Ln.e(e, "Unable to delete cache folder: %s", defaultCacheRootFolder.getAbsolutePath());
+        }
+    }
+
+    private void deleteAllRobospiceDatabaseFiles() {
+        // We use any file name in order to resolve the database parent folder.
+        final File databaseFolder = mApplication.getDatabasePath(ROBOSPICEDB_SUFFIX).getParentFile();
+        final File[] markers = databaseFolder.listFiles(new FileFilter() {
+            @Override
+            public boolean accept(File file) {
+                return file.getName().endsWith(ROBOSPICEDB_SUFFIX);
+            }
+        });
+        if (markers != null) {
+            for (int i = 0; i < markers.length; i++) {
+                final String markerPath = markers[i].getAbsolutePath();
+                final String databasePath = markerPath.substring(0, markerPath.lastIndexOf(ROBOSPICEDB_SUFFIX));
+                final File database = new File(databasePath);
+                if (database.exists() && !database.delete()) {
+                    Ln.e("Unable to delete database: %s", database.getAbsolutePath());
+                }
+                if (!markers[i].delete()) {
+                    Ln.e("Unable to delete marker: %s", database.getAbsolutePath());
                 }
             }
         }

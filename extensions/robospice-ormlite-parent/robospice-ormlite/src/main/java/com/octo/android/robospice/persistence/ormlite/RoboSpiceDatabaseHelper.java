@@ -1,6 +1,7 @@
 package com.octo.android.robospice.persistence.ormlite;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
@@ -172,6 +173,12 @@ public class RoboSpiceDatabaseHelper extends OrmLiteSqliteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase database, ConnectionSource connectionSource) {
-        // override if needed
+        final File databaseFile = new File(database.getPath());
+        final File databaseMarker = new File(databaseFile.getAbsolutePath() + ".robospicedb");
+        try {
+            databaseMarker.createNewFile();
+        } catch (IOException e) {
+            Ln.e(e, "Unable to create database marker: %s.", databaseMarker);
+        }
     }
 }

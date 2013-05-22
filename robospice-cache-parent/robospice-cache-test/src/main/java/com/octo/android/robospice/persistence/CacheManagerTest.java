@@ -1,24 +1,32 @@
 package com.octo.android.robospice.persistence;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import android.test.AndroidTestCase;
+import android.app.Application;
+import android.test.InstrumentationTestCase;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import com.octo.android.robospice.persistence.exception.CacheLoadingException;
 import com.octo.android.robospice.persistence.exception.CacheSavingException;
 
 @SmallTest
-public class CacheManagerTest extends AndroidTestCase {
+public class CacheManagerTest extends InstrumentationTestCase {
     private static final String TEST_PERSISTED_STRING = "TEST";
     private static final Integer TEST_PERSISTED_INTEGER = Integer.valueOf(0);
+    private static final String TEST_FILE = "test.txt";
 
     private CacheManager cacheManager;
 
+    private Application mApplication;
+
     @Override
     protected void setUp() throws Exception {
+        mApplication = (Application) getInstrumentation().getTargetContext().getApplicationContext();
         cacheManager = new CacheManager();
+        cacheManager.setApplication(mApplication);
     }
 
     public void testGetObjectPersister_fails_to_return_a_persister_when_no_persister_is_registered() {
@@ -120,6 +128,22 @@ public class CacheManagerTest extends AndroidTestCase {
 
         // then
         assertEquals(mockIntegerPersistenceManager, persisterInteger);
+    }
+
+    public void testRemoveAllDataFromCache_removes_default_cache_folder() throws IOException {
+        // given
+
+        final File defaultCacheFolder = new File(mApplication.getCacheDir(), CacheManager.DEFAULT_CACHE_FOLDER);
+        assertTrue(defaultCacheFolder.exists() || defaultCacheFolder.mkdir());
+
+        final File anyFile = new File(defaultCacheFolder, TEST_FILE);
+        assertTrue(anyFile.exists() || anyFile.createNewFile());
+
+        // when
+        cacheManager.removeAllDataFromCache();
+
+        // then
+        assertTrue(!defaultCacheFolder.exists());
     }
 
     private class MockStringPersistenceManager extends ObjectPersister<String> {

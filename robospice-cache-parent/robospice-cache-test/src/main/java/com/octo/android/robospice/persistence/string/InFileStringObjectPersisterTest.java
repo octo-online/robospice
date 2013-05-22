@@ -13,6 +13,8 @@ import android.test.InstrumentationTestCase;
 import android.test.suitebuilder.annotation.MediumTest;
 
 import com.octo.android.robospice.persistence.DurationInMillis;
+import com.octo.android.robospice.persistence.exception.CacheLoadingException;
+import com.octo.android.robospice.persistence.exception.CacheSavingException;
 
 @MediumTest
 public class InFileStringObjectPersisterTest extends InstrumentationTestCase {
@@ -65,6 +67,33 @@ public class InFileStringObjectPersisterTest extends InstrumentationTestCase {
 
         String actual = inFileStringObjectPersister.loadDataFromCache(TEST_CACHE_KEY, DurationInMillis.ONE_SECOND);
         assertNull(actual);
+    }
+
+    public void testWhenNonSanitizedCacheKeyIsSavedAllKeysAreRetrieved() throws CacheSavingException, CacheLoadingException {
+        // GIVEN
+        inFileStringObjectPersister.saveDataToCacheAndReturnData("sanitized", "sanitized");
+        inFileStringObjectPersister.saveDataToCacheAndReturnData("$@n1t1zed", "$@n1t1zed");
+
+        // WHEN
+        List<String> result = inFileStringObjectPersister.loadAllDataFromCache();
+
+        // THEN
+        assertNotNull(result);
+        assertEquals(2, result.size());
+        assertTrue(result.contains("sanitized"));
+        assertTrue(result.contains("$@n1t1zed"));
+    }
+
+    public void testWhenNonSanitizedCacheKeyIsSavedCanRetrieved() throws CacheSavingException, CacheLoadingException {
+        // GIVEN
+        inFileStringObjectPersister.saveDataToCacheAndReturnData("$@n1t1zed", "$@n1t1zed");
+
+        // WHEN
+        String result = inFileStringObjectPersister.loadDataFromCache("$@n1t1zed", DurationInMillis.ALWAYS_RETURNED);
+
+        // THEN
+        assertNotNull(result);
+        assertEquals("$@n1t1zed", result);
     }
 
     @Override
