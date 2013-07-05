@@ -352,11 +352,11 @@ public class RequestProcessor {
         handlerResponse.postAtTime(r, token, SystemClock.uptimeMillis());
     }
 
-    private <T> void notifyListenersOfRequestProgress(final CachedSpiceRequest<?> request, final Set<RequestListener<?>> listeners, final RequestStatus status) {
+    protected <T> void notifyListenersOfRequestProgress(final CachedSpiceRequest<?> request, final Set<RequestListener<?>> listeners, final RequestStatus status) {
         notifyListenersOfRequestProgress(request, listeners, new RequestProgress(status));
     }
 
-    private <T> void notifyListenersOfRequestProgress(final CachedSpiceRequest<?> request, final Set<RequestListener<?>> listeners, final RequestProgress progress) {
+    protected <T> void notifyListenersOfRequestProgress(final CachedSpiceRequest<?> request, final Set<RequestListener<?>> listeners, final RequestProgress progress) {
         Ln.d("Sending progress %s", progress.getStatus());
         post(new ProgressRunnable(listeners, progress), request.getRequestCacheKey());
         checkAllRequestComplete();
@@ -375,7 +375,7 @@ public class RequestProcessor {
     }
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    private <T> void notifyListenersOfRequestSuccess(final CachedSpiceRequest<T> request, final T result) {
+    protected <T> void notifyListenersOfRequestSuccess(final CachedSpiceRequest<T> request, final T result) {
         final Set<RequestListener<?>> listeners = mapRequestToRequestListener.get(request);
         notifyListenersOfRequestProgress(request, listeners, RequestStatus.COMPLETE);
         post(new ResultRunnable(listeners, result), request.getRequestCacheKey());
@@ -383,7 +383,7 @@ public class RequestProcessor {
     }
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    private <T> void notifyListenersOfRequestFailure(final CachedSpiceRequest<T> request, final SpiceException e) {
+    protected <T> void notifyListenersOfRequestFailure(final CachedSpiceRequest<T> request, final SpiceException e) {
         final Set<RequestListener<?>> listeners = mapRequestToRequestListener.get(request);
         notifyListenersOfRequestProgress(request, listeners, RequestStatus.COMPLETE);
         post(new ResultRunnable(listeners, e), request.getRequestCacheKey());
@@ -391,7 +391,7 @@ public class RequestProcessor {
     }
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    private void notifyListenersOfRequestCancellation(final CachedSpiceRequest<?> request, final Set<RequestListener<?>> listeners) {
+    protected void notifyListenersOfRequestCancellation(final CachedSpiceRequest<?> request, final Set<RequestListener<?>> listeners) {
         Ln.d("Not calling network request : " + request + " as it is cancelled. ");
         notifyListenersOfRequestProgress(request, listeners, RequestStatus.COMPLETE);
         post(new ResultRunnable(listeners, new RequestCancelledException("Request has been cancelled explicitely.")), request.getRequestCacheKey());
