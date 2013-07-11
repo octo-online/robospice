@@ -134,6 +134,15 @@ public abstract class SpiceService extends Service {
      * @return a {@link RequestProcessor} that will be used to process requests.
      */
     protected RequestProcessor createRequestProcessor(ExecutorService executorService, NetworkStateChecker networkStateChecker) {
+        return createRequestProcessor(executorService, networkStateChecker, cacheManager, requestProcessorListener);
+    }
+
+    protected RequestProcessor createRequestProcessor(
+            ExecutorService executorService,
+            NetworkStateChecker networkStateChecker,
+            CacheManager cacheManager,
+            RequestProcessorListener requestProcessorListener) {
+
         return new RequestProcessor(getApplicationContext(), cacheManager, executorService, requestProcessorListener, networkStateChecker);
     }
 
