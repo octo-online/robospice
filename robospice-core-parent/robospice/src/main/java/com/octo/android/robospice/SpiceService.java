@@ -30,6 +30,8 @@ import com.octo.android.robospice.request.RequestProcessor;
 import com.octo.android.robospice.request.RequestProcessorListener;
 import com.octo.android.robospice.request.listener.RequestListener;
 import com.octo.android.robospice.request.listener.SpiceServiceServiceListener;
+import com.octo.android.robospice.request.reporter.DefaultRequestProgressReporter;
+import com.octo.android.robospice.request.reporter.RequestProgressReporter;
 
 /**
  * This is an abstract class used to manage the cache and provide web service
@@ -134,7 +136,20 @@ public abstract class SpiceService extends Service {
      * @return a {@link RequestProcessor} that will be used to process requests.
      */
     protected RequestProcessor createRequestProcessor(ExecutorService executorService, NetworkStateChecker networkStateChecker) {
-        return new RequestProcessor(getApplicationContext(), cacheManager, executorService, requestProcessorListener, networkStateChecker);
+        RequestProgressReporter progressReporter = createRequestProgressReporter();
+
+        return new RequestProcessor(getApplicationContext(), cacheManager, executorService, requestProcessorListener,
+            networkStateChecker, progressReporter);
+    }
+
+    /**
+     * Method to create a Request Progress Reporter object which is responsible
+     * for informing the listeners of the current state of each request.
+     * You can use this method to modify the existing behavior
+     * @return {@link RequestProgressReporter}
+     */
+    protected RequestProgressReporter createRequestProgressReporter() {
+        return new DefaultRequestProgressReporter();
     }
 
     /**
