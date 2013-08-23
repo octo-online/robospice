@@ -135,10 +135,8 @@ public class RequestProgressManager {
         mapRequestToRequestListener.remove(request);
 
         checkAllRequestComplete();
-        synchronized (spiceServiceListenerSet) {
-            for (final SpiceServiceServiceListener spiceServiceServiceListener : spiceServiceListenerSet) {
-                spiceServiceServiceListener.onRequestProcessed(request);
-            }
+        for (final SpiceServiceServiceListener spiceServiceServiceListener : spiceServiceListenerSet) {
+            spiceServiceServiceListener.onRequestProcessed(request);
         }
     }
 
