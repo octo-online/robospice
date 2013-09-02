@@ -131,7 +131,7 @@ public class SpiceManager implements Runnable {
     protected Thread runner;
 
     /** Reacts to service processing of requests. */
-    private final PendingRequestHandlerSpiceServiceListener removerSpiceServiceListener = new PendingRequestHandlerSpiceServiceListener();
+    private final PendingRequestHandlerSpiceServiceListener pendingRequestHandlerSpiceServiceListener = new PendingRequestHandlerSpiceServiceListener();
 
     /**
      * Whether or not we are unbinding (to prevent unbinding twice. Must be
@@ -260,6 +260,7 @@ public class SpiceManager implements Runnable {
         try {
             if (spiceRequest != null && spiceService != null) {
                 final Set<RequestListener<?>> listRequestListener = mapRequestToLaunchToRequestListener.remove(spiceRequest);
+                mapPendingRequestToRequestListener.put(spiceRequest, listRequestListener);
                 Ln.d("Sending request to service : " + spiceRequest.getClass().getSimpleName());
                 spiceService.addRequest(spiceRequest, listRequestListener);
             }
@@ -1040,7 +1041,7 @@ public class SpiceManager implements Runnable {
             lockAcquireService.lock();
             try {
                 spiceService = ((SpiceServiceBinder) service).getSpiceService();
-                spiceService.addSpiceServiceListener(removerSpiceServiceListener);
+                spiceService.addSpiceServiceListener(pendingRequestHandlerSpiceServiceListener);
                 Ln.d("Bound to service : " + spiceService.getClass().getSimpleName());
                 conditionServiceBound.signalAll();
             } finally {
@@ -1068,13 +1069,22 @@ public class SpiceManager implements Runnable {
      */
     private class PendingRequestHandlerSpiceServiceListener extends SpiceServiceAdapter {
         @Override
-        public void onRequestAdded(CachedSpiceRequest<?> cachedSpiceRequest, RequestProcessingContext requestProcessingContext) {
-            mapPendingRequestToRequestListener.put(cachedSpiceRequest, requestProcessingContext.getRequestListeners());
-        }
-
-        @Override
         public void onRequestProcessed(final CachedSpiceRequest<?> cachedSpiceRequest, RequestProcessingContext requestProcessingContext) {
-            mapPendingRequestToRequestListener.remove(cachedSpiceRequest);
+            synchronized (mapPendingRequestToRequestListener) {
+                ArrayList<CachedSpiceRequest<?>> toRemove = new ArrayList<CachedSpiceRequest<?>>();
+                for (final CachedSpiceRequest<?> cachedSpiceRequestTemp : mapPendingRequestToRequestListener.keySet()) {
+                    if (cachedSpiceRequest.equals(cachedSpiceRequestTemp)) {
+                        final Set<RequestListener<?>> setRequestListeners = mapPendingRequestToRequestListener.get(cachedSpiceRequestTemp);
+                        setRequestListeners.removeAll(requestProcessingContext.getRequestListeners());
+                        if (setRequestListeners.isEmpty()) {
+                            toRemove.add(cachedSpiceRequestTemp);
+                        }
+                    }
+                }
+                for (CachedSpiceRequest<?> cachedSpiceRequestToRemove : toRemove) {
+                    mapPendingRequestToRequestListener.remove(cachedSpiceRequestToRemove);
+                }
+            }
         }
     }
 
@@ -1131,7 +1141,7 @@ public class SpiceManager implements Runnable {
             Ln.v("Unbinding from service start.");
             if (spiceService != null && !isUnbinding) {
                 isUnbinding = true;
-                spiceService.removeSpiceServiceListener(removerSpiceServiceListener);
+                spiceService.removeSpiceServiceListener(pendingRequestHandlerSpiceServiceListener);
                 Ln.v("Unbinding from service.");
                 context.getApplicationContext().unbindService(this.spiceServiceConnection);
                 Ln.d("Unbound from service : " + spiceService.getClass().getSimpleName());
