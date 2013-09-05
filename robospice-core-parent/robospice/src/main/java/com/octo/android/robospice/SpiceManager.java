@@ -1075,8 +1075,10 @@ public class SpiceManager implements Runnable {
                 for (final CachedSpiceRequest<?> cachedSpiceRequestTemp : mapPendingRequestToRequestListener.keySet()) {
                     if (cachedSpiceRequest.equals(cachedSpiceRequestTemp)) {
                         final Set<RequestListener<?>> setRequestListeners = mapPendingRequestToRequestListener.get(cachedSpiceRequestTemp);
-                        setRequestListeners.removeAll(requestProcessingContext.getRequestListeners());
-                        if (setRequestListeners.isEmpty()) {
+                        if (setRequestListeners != null) {
+                            setRequestListeners.removeAll(requestProcessingContext.getRequestListeners());
+                        }
+                        if (setRequestListeners == null || setRequestListeners.isEmpty()) {
                             toRemove.add(cachedSpiceRequestTemp);
                         }
                     }
