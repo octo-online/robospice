@@ -230,13 +230,7 @@ public class SpiceManager implements Runnable {
 
     @Override
     public void run() {
-        // start the service it is not started yet.
-        Context context = contextWeakReference.get();
-        if (context != null) {
-            checkServiceIsProperlyDeclaredInAndroidManifest(context);
-            final Intent intent = new Intent(context, spiceServiceClass);
-            context.startService(intent);
-        } else {
+        if (!tryToStartService()) {
             Ln.d("Service was not started as Activity died prematurely");
             isStopped = true;
             return;
@@ -1138,6 +1132,21 @@ public class SpiceManager implements Runnable {
     /** For testing purpose. */
     protected boolean isBound() {
         return spiceService != null;
+    }
+    
+    private boolean tryToStartService() {
+        boolean success = false;
+
+        // start the service it is not started yet.
+        Context context = contextWeakReference.get();
+        if (context != null) {
+            checkServiceIsProperlyDeclaredInAndroidManifest(context);
+            final Intent intent = new Intent(context, spiceServiceClass);
+            context.startService(intent);
+            success = true;
+        }
+
+        return success;
     }
 
     private void bindToService(final Context context) {
