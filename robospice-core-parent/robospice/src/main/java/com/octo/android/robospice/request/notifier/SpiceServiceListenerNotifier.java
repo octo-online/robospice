@@ -174,8 +174,10 @@ public class SpiceServiceListenerNotifier {
         public void run() {
             Ln.d("Processing request added: %s", request);
 
-            for (SpiceServiceListener listener : spiceServiceListenerList) {
-                listener.onRequestAdded(request, requestProcessingContext);
+            synchronized (spiceServiceListenerList) {
+                for (SpiceServiceListener listener : spiceServiceListenerList) {
+                    listener.onRequestAdded(request, requestProcessingContext);
+                }
             }
         }
     }
@@ -200,8 +202,10 @@ public class SpiceServiceListenerNotifier {
         public void run() {
             Ln.d("Processing request added: %s", request);
 
-            for (SpiceServiceListener listener : spiceServiceListenerList) {
-                listener.onRequestAggregated(request, requestProcessingContext);
+            synchronized (spiceServiceListenerList) {
+                for (SpiceServiceListener listener : spiceServiceListenerList) {
+                    listener.onRequestAggregated(request, requestProcessingContext);
+                }
             }
         }
     }
@@ -227,8 +231,10 @@ public class SpiceServiceListenerNotifier {
         public void run() {
             Ln.d("Processing request not found: %s", request);
 
-            for (SpiceServiceListener listener : spiceServiceListenerList) {
-                listener.onRequestNotFound(request, requestProcessingContext);
+            synchronized (spiceServiceListenerList) {
+                for (SpiceServiceListener listener : spiceServiceListenerList) {
+                    listener.onRequestNotFound(request, requestProcessingContext);
+                }
             }
         }
     }
@@ -251,8 +257,12 @@ public class SpiceServiceListenerNotifier {
 
         @Override
         public void run() {
-            for (SpiceServiceListener listener : spiceServiceListenerList) {
-                listener.onRequestFailed(request, requestProcessingContext);
+            Ln.d("Processing request not found: %s", request);
+
+            synchronized (spiceServiceListenerList) {
+                for (SpiceServiceListener listener : spiceServiceListenerList) {
+                    listener.onRequestFailed(request, requestProcessingContext);
+                }
             }
         }
     }
@@ -276,8 +286,12 @@ public class SpiceServiceListenerNotifier {
 
         @Override
         public void run() {
-            for (SpiceServiceListener listener : spiceServiceListenerList) {
-                listener.onRequestSucceeded(request, requestProcessingContext);
+            Ln.d("Processing request succeeded: %s", request);
+
+            synchronized (spiceServiceListenerList) {
+                for (SpiceServiceListener listener : spiceServiceListenerList) {
+                    listener.onRequestSucceeded(request, requestProcessingContext);
+                }
             }
         }
     }
@@ -301,8 +315,10 @@ public class SpiceServiceListenerNotifier {
         public void run() {
             Ln.d("Processing request cancelled: %s", request);
 
-            for (SpiceServiceListener listener : spiceServiceListenerList) {
-                listener.onRequestCancelled(request, requestProcessingContext);
+            synchronized (spiceServiceListenerList) {
+                for (SpiceServiceListener listener : spiceServiceListenerList) {
+                    listener.onRequestCancelled(request, requestProcessingContext);
+                }
             }
         }
     }
@@ -325,8 +341,10 @@ public class SpiceServiceListenerNotifier {
 
         @Override
         public void run() {
-            for (SpiceServiceListener listener : spiceServiceListenerList) {
-                listener.onRequestProgressUpdated(request, requestProcessingContext);
+            synchronized (spiceServiceListenerList) {
+                for (SpiceServiceListener listener : spiceServiceListenerList) {
+                    listener.onRequestProgressUpdated(request, requestProcessingContext);
+                }
             }
         }
     }
@@ -349,8 +367,12 @@ public class SpiceServiceListenerNotifier {
 
         @Override
         public void run() {
-            for (SpiceServiceListener listener : spiceServiceListenerList) {
-                listener.onRequestProcessed(request, requestProcessingContext);
+            Ln.d("Processing request completed: %s", request);
+
+            synchronized (spiceServiceListenerList) {
+                for (SpiceServiceListener listener : spiceServiceListenerList) {
+                    listener.onRequestProcessed(request, requestProcessingContext);
+                }
             }
         }
     }
