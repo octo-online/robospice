@@ -8,7 +8,19 @@ Version 1.5.0 (planned)
 * TODO : inject requests in listeners
 * TODO : inject service in requests
 
-Version 1.4.11 (Planned January 2014)
+Version 1.4.12 (planned Feb 2014)
+--------------
+
+Enhancements
+
+* Updated Retrofit extension to use Retrofit version 1.4.1
+
+Bug fixes
+
+* Bug fix : add proper synchronization to DefaultRequestProcessor stop/execute
+* Fix a few bugs in spice list: when network was off, thumbnails were reloaded incorrectly.
+
+Version 1.4.11 (January 16th 2014)
 --------------
 
 Enhancements
