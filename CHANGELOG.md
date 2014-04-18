@@ -8,7 +8,7 @@ Version 1.5.0 (planned)
 * TODO : inject requests in listeners
 * TODO : inject service in requests
 
-Version 1.4.12 (planned Feb 2014)
+Version 1.4.12 (April 17th 2014)
 --------------
 
 Enhancements
