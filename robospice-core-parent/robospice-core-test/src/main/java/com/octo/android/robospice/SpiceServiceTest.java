@@ -1,3 +1,4 @@
+
 package com.octo.android.robospice;
 
 import android.content.Intent;
@@ -15,13 +16,13 @@ public class SpiceServiceTest extends ServiceTestCase<SpiceTestService> {
     public SpiceServiceTest() {
         super(SpiceTestService.class);
     }
-    
+
     @Override
     protected void setUp() throws Exception {
         super.setUp();
         SpiceService.setIsJunit(true);
     }
-    
+
     @Override
     protected void tearDown() throws Exception {
         super.tearDown();
@@ -62,11 +63,13 @@ public class SpiceServiceTest extends ServiceTestCase<SpiceTestService> {
 
         // then
         assertTrue(getService().getExecutorService() instanceof PriorityThreadPoolExecutor);
-        PriorityThreadPoolExecutor executorService = (PriorityThreadPoolExecutor) getService().getExecutorService();
+        final PriorityThreadPoolExecutor executorService =
+                (PriorityThreadPoolExecutor) getService().getExecutorService();
 
-        assertEquals(getService().getThreadCount(), executorService.getCorePoolSize());
-
-        assertEquals(getService().getThreadPriority(), executorService.getThreadFactory().newThread(null).getPriority());
+        assertEquals(getService().getCoreThreadCount(), executorService.getCorePoolSize());
+        assertEquals(getService().getMaximumThreadCount(), executorService.getMaximumPoolSize());
+        assertEquals(getService().getThreadPriority(), executorService.getThreadFactory()
+                .newThread(null).getPriority());
     }
 
     public void testStops_shutsdown_executor_service() {

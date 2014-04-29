@@ -1,14 +1,5 @@
 package com.octo.android.robospice;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.Collection;
-import java.util.Date;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.ExecutorService;
-
-import roboguice.util.temp.Ln;
 import android.app.Application;
 import android.app.Notification;
 import android.app.PendingIntent;
@@ -37,6 +28,16 @@ import com.octo.android.robospice.request.listener.SpiceServiceListener;
 import com.octo.android.robospice.request.notifier.DefaultRequestListenerNotifier;
 import com.octo.android.robospice.request.notifier.RequestListenerNotifier;
 import com.octo.android.robospice.request.notifier.SpiceServiceListenerNotifier;
+
+import roboguice.util.temp.Ln;
+
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.Collection;
+import java.util.Date;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.ExecutorService;
 
 /**
  * This is an abstract class used to manage the cache and provide web service
@@ -106,7 +107,8 @@ public abstract class SpiceService extends Service {
             return;
         }
         if (cacheManager == null) {
-            Ln.e(new CacheCreationException("createCacheManager() can't create a null cacheManager"));
+            Ln.e(new CacheCreationException(
+                "createCacheManager() can't create a null cacheManager"));
             stopSelf();
             return;
         }
@@ -116,10 +118,14 @@ public abstract class SpiceService extends Service {
         final RequestProcessorListener requestProcessorListener = createRequestProcessorListener();
         final ExecutorService executorService = getExecutorService();
         final NetworkStateChecker networkStateChecker = getNetworkStateChecker();
-        final RequestProgressManager requestProgressManager = createRequestProgressManager(requestProcessorListener, progressReporter, spiceServiceListenerNotifier);
-        final RequestRunner requestRunner = createRequestRunner(executorService, networkStateChecker, requestProgressManager);
+        final RequestProgressManager requestProgressManager = createRequestProgressManager(
+            requestProcessorListener, progressReporter,
+            spiceServiceListenerNotifier);
+        final RequestRunner requestRunner = createRequestRunner(
+            executorService, networkStateChecker, requestProgressManager);
 
-        requestProcessor = createRequestProcessor(cacheManager, requestProgressManager, requestRunner);
+        requestProcessor = createRequestProcessor(cacheManager,
+            requestProgressManager, requestRunner);
         requestProcessor.setFailOnCacheError(DEFAULT_FAIL_ON_CACHE_ERROR);
 
         notification = createDefaultNotification();
@@ -127,17 +133,25 @@ public abstract class SpiceService extends Service {
         Ln.d("SpiceService instance created.");
     }
 
-    private RequestRunner createRequestRunner(final ExecutorService executorService, final NetworkStateChecker networkStateChecker, RequestProgressManager requestProgressManager) {
-        return new DefaultRequestRunner(getApplicationContext(), cacheManager, executorService, requestProgressManager, networkStateChecker);
+    private RequestRunner createRequestRunner(
+        final ExecutorService executorService,
+        final NetworkStateChecker networkStateChecker,
+        RequestProgressManager requestProgressManager) {
+        return new DefaultRequestRunner(getApplicationContext(), cacheManager,
+            executorService, requestProgressManager, networkStateChecker);
     }
 
-    private RequestProgressManager createRequestProgressManager(final RequestProcessorListener requestProcessorListener, final RequestListenerNotifier progressReporter,
+    private RequestProgressManager createRequestProgressManager(
+        final RequestProcessorListener requestProcessorListener,
+        final RequestListenerNotifier progressReporter,
         final SpiceServiceListenerNotifier spiceServiceListenerNotifier) {
-        return new RequestProgressManager(requestProcessorListener, progressReporter, spiceServiceListenerNotifier);
+        return new RequestProgressManager(requestProcessorListener,
+            progressReporter, spiceServiceListenerNotifier);
     }
 
     @Override
-    public int onStartCommand(final Intent intent, final int flags, final int startId) {
+    public int onStartCommand(final Intent intent, final int flags,
+        final int startId) {
         super.onStartCommand(intent, flags, startId);
         return START_NOT_STICKY;
     }
@@ -156,8 +170,12 @@ public abstract class SpiceService extends Service {
      *            executes requests.
      * @return a {@link RequestProcessor} that will be used to process requests.
      */
-    protected RequestProcessor createRequestProcessor(CacheManager cacheManager, RequestProgressManager requestProgressManager, RequestRunner requestRunner) {
-        return new RequestProcessor(cacheManager, requestProgressManager, requestRunner);
+    protected RequestProcessor createRequestProcessor(
+        CacheManager cacheManager,
+        RequestProgressManager requestProgressManager,
+        RequestRunner requestRunner) {
+        return new RequestProcessor(cacheManager, requestProgressManager,
+            requestRunner);
     }
 
     /**
@@ -220,12 +238,14 @@ public abstract class SpiceService extends Service {
      * @return the {@link ExecutorService} to be used to execute requests .
      */
     protected ExecutorService getExecutorService() {
-        final int threadCount = getThreadCount();
+        final int coreThreadCount = getCoreThreadCount();
+        final int maxThreadCount = getMaximumThreadCount();
         final int threadPriority = getThreadPriority();
-        if (threadCount <= 0) {
+        if (coreThreadCount <= 0 || maxThreadCount <= 0) {
             throw new IllegalArgumentException("Thread count must be >= 1");
         } else {
-            return PriorityThreadPoolExecutor.getPriorityExecutor(threadCount, threadPriority);
+            return PriorityThreadPoolExecutor.getPriorityExecutor(
+                coreThreadCount, maxThreadCount, threadPriority);
         }
     }
 
@@ -253,14 +273,17 @@ public abstract class SpiceService extends Service {
 
         Notification notification = null;
         if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-            notification = new Notification.Builder(this).setSmallIcon(getApplicationInfo().icon).build();
+            notification = new Notification.Builder(this).setSmallIcon(
+                getApplicationInfo().icon).build();
         } else if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-            notification = new Notification.Builder(this).setSmallIcon(getApplicationInfo().icon).getNotification();
+            notification = new Notification.Builder(this).setSmallIcon(
+                getApplicationInfo().icon).getNotification();
         } else {
             notification = new Notification();
             notification.icon = getApplicationInfo().icon;
             // temporary fix https://github.com/octo-online/robospice/issues/200
-            PendingIntent pendingIntent = PendingIntent.getActivity(getApplicationContext(), 0, new Intent(), 0);
+            PendingIntent pendingIntent = PendingIntent.getActivity(
+                getApplicationContext(), 0, new Intent(), 0);
             notification.setLatestEventInfo(this, "", "", pendingIntent);
             notification.tickerText = null;
             notification.when = System.currentTimeMillis();
@@ -288,16 +311,28 @@ public abstract class SpiceService extends Service {
     // DELEGATE METHODS (delegation is used to ease tests)
     // ----------------------------------
 
-    public abstract CacheManager createCacheManager(Application application) throws CacheCreationException;
+    public abstract CacheManager createCacheManager(Application application)
+        throws CacheCreationException;
 
     /**
-     * Override this method to increase the number of threads used to process
-     * requests. This method will have no effect if you override
+     * Override this method to increase the number of core threads used to
+     * process requests. This method will have no effect if you override
      * {@link #getExecutorService()}.
      * @return the number of threads used to process requests. Defaults to
      *         {@link #DEFAULT_THREAD_COUNT}.
      */
-    public int getThreadCount() {
+    public int getCoreThreadCount() {
+        return DEFAULT_THREAD_COUNT;
+    }
+
+    /**
+     * Override this method to increase the number of maximum threads used to
+     * process requests. This method will have no effect if you override
+     * {@link #getExecutorService()}.
+     * @return the number of threads used to process requests. Defaults to
+     *         {@link #DEFAULT_THREAD_COUNT}.
+     */
+    public int getMaximumThreadCount() {
         return DEFAULT_THREAD_COUNT;
     }
 
@@ -311,13 +346,15 @@ public abstract class SpiceService extends Service {
         return DEFAULT_THREAD_PRIORITY;
     }
 
-    public void addRequest(final CachedSpiceRequest<?> request, final Set<RequestListener<?>> listRequestListener) {
+    public void addRequest(final CachedSpiceRequest<?> request,
+        final Set<RequestListener<?>> listRequestListener) {
         currentPendingRequestCount++;
         requestProcessor.addRequest(request, listRequestListener);
         showNotificationIfNotBoundAndHasPendingRequestsOtherwiseHideNotification();
     }
 
-    public boolean removeDataFromCache(final Class<?> clazz, final Object cacheKey) {
+    public boolean removeDataFromCache(final Class<?> clazz,
+        final Object cacheKey) {
         return requestProcessor.removeDataFromCache(clazz, cacheKey);
     }
 
@@ -329,23 +366,29 @@ public abstract class SpiceService extends Service {
         return cacheManager.getAllCacheKeys(clazz);
     }
 
-    public <T> List<T> loadAllDataFromCache(final Class<T> clazz) throws CacheLoadingException, CacheCreationException {
+    public <T> List<T> loadAllDataFromCache(final Class<T> clazz)
+        throws CacheLoadingException, CacheCreationException {
         return cacheManager.loadAllDataFromCache(clazz);
     }
 
-    public <T> T getDataFromCache(final Class<T> clazz, final Object cacheKey) throws CacheLoadingException, CacheCreationException {
-        return cacheManager.loadDataFromCache(clazz, cacheKey, DurationInMillis.ALWAYS_RETURNED);
+    public <T> T getDataFromCache(final Class<T> clazz, final Object cacheKey)
+        throws CacheLoadingException, CacheCreationException {
+        return cacheManager.loadDataFromCache(clazz, cacheKey,
+            DurationInMillis.ALWAYS_RETURNED);
     }
 
-    public <T> T putDataInCache(final Object cacheKey, T data) throws CacheSavingException, CacheCreationException {
+    public <T> T putDataInCache(final Object cacheKey, T data)
+        throws CacheSavingException, CacheCreationException {
         return cacheManager.saveDataToCacheAndReturnData(data, cacheKey);
     }
 
-    public boolean isDataInCache(Class<?> clazz, Object cacheKey, long cacheExpiryDuration) throws CacheCreationException {
+    public boolean isDataInCache(Class<?> clazz, Object cacheKey,
+        long cacheExpiryDuration) throws CacheCreationException {
         return cacheManager.isDataInCache(clazz, cacheKey, cacheExpiryDuration);
     }
 
-    public Date getDateOfDataInCache(Class<?> clazz, Object cacheKey) throws CacheLoadingException, CacheCreationException {
+    public Date getDateOfDataInCache(Class<?> clazz, Object cacheKey)
+        throws CacheLoadingException, CacheCreationException {
         return cacheManager.getDateOfDataInCache(clazz, cacheKey);
     }
 
@@ -361,8 +404,11 @@ public abstract class SpiceService extends Service {
         requestProcessor.setFailOnCacheError(failOnCacheError);
     }
 
-    public void dontNotifyRequestListenersForRequest(final CachedSpiceRequest<?> request, final Collection<RequestListener<?>> listRequestListener) {
-        requestProcessor.dontNotifyRequestListenersForRequest(request, listRequestListener);
+    public void dontNotifyRequestListenersForRequest(
+        final CachedSpiceRequest<?> request,
+        final Collection<RequestListener<?>> listRequestListener) {
+        requestProcessor.dontNotifyRequestListenersForRequest(request,
+            listRequestListener);
     }
 
     // ----------------------------------
@@ -391,7 +437,8 @@ public abstract class SpiceService extends Service {
         return true;
     }
 
-    protected final class SelfStopperRequestProcessorListener implements RequestProcessorListener {
+    protected final class SelfStopperRequestProcessorListener implements
+    RequestProcessorListener {
         @Override
         public void requestsInProgress() {
         }
@@ -419,11 +466,13 @@ public abstract class SpiceService extends Service {
         Ln.v(requestProcessor.toString());
     }
 
-    public void addSpiceServiceListener(final SpiceServiceListener spiceServiceListener) {
+    public void addSpiceServiceListener(
+        final SpiceServiceListener spiceServiceListener) {
         requestProcessor.addSpiceServiceListener(spiceServiceListener);
     }
 
-    public void removeSpiceServiceListener(final SpiceServiceListener spiceServiceListener) {
+    public void removeSpiceServiceListener(
+        final SpiceServiceListener spiceServiceListener) {
         requestProcessor.removeSpiceServiceListener(spiceServiceListener);
     }
 
@@ -451,7 +500,8 @@ public abstract class SpiceService extends Service {
 
     private void startForeground(final Notification notification) {
         try {
-            final Method setForegroundMethod = Service.class.getMethod("startForeground", int.class, Notification.class);
+            final Method setForegroundMethod = Service.class.getMethod(
+                "startForeground", int.class, Notification.class);
             setForegroundMethod.invoke(this, getNotificationId(), notification);
         } catch (final SecurityException e) {
             Ln.e(e, "Unable to start a service in foreground");

@@ -13,11 +13,16 @@ import java.util.concurrent.RunnableFuture;
  * thread in the pool size.
  * @author SNI
  */
-public final class PriorityThreadPoolExecutor extends PausableThreadPoolExecutor {
+public final class PriorityThreadPoolExecutor extends
+    PausableThreadPoolExecutor {
 
     // ----------------------------------
     // CONSTRUCTORS
     // ----------------------------------
+    public PriorityThreadPoolExecutor(int corePoolSize, int maxPoolSize,
+        int threadPriority) {
+        super(corePoolSize, maxPoolSize, threadPriority);
+    }
 
     public PriorityThreadPoolExecutor(int poolSize, int threadPriority) {
         super(poolSize, threadPriority);
@@ -30,8 +35,14 @@ public final class PriorityThreadPoolExecutor extends PausableThreadPoolExecutor
     // ----------------------------------
     // API
     // ----------------------------------
+    public static PriorityThreadPoolExecutor getPriorityExecutor(
+        int nCoreThreads, int maxPoolSize, int threadPriority) {
+        return new PriorityThreadPoolExecutor(nCoreThreads, maxPoolSize,
+            threadPriority);
+    }
 
-    public static PriorityThreadPoolExecutor getPriorityExecutor(int nThreads, int threadPriority) {
+    public static PriorityThreadPoolExecutor getPriorityExecutor(int nThreads,
+        int threadPriority) {
         return new PriorityThreadPoolExecutor(nThreads, threadPriority);
     }
 
@@ -52,7 +63,8 @@ public final class PriorityThreadPoolExecutor extends PausableThreadPoolExecutor
         if (runnable == null) {
             return null;
         }
-        return new PriorityFuture<T>(runnable, ((PriorityRunnable) runnable).getPriority(), value);
+        return new PriorityFuture<T>(runnable,
+            ((PriorityRunnable) runnable).getPriority(), value);
     }
 
     // form JDK 1.6, to ensure backward compatibility
@@ -61,7 +73,7 @@ public final class PriorityThreadPoolExecutor extends PausableThreadPoolExecutor
         if (task == null) {
             throw new NullPointerException();
         }
-        RunnableFuture<Object> ftask = newTaskFor(task, null);
+        final RunnableFuture<Object> ftask = newTaskFor(task, null);
         execute(ftask);
         return ftask;
     }
