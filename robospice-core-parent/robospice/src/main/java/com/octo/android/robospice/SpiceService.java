@@ -315,6 +315,17 @@ public abstract class SpiceService extends Service {
         throws CacheCreationException;
 
     /**
+     * Override this method to increase the number of threads used to process
+     * requests. This method will have no effect if you override
+     * {@link #getExecutorService()}.
+     * @return the number of threads used to process requests. Defaults to
+     *         {@link #DEFAULT_THREAD_COUNT}.
+     */
+    public int getThreadCount() {
+        return DEFAULT_THREAD_COUNT;
+    }
+
+    /**
      * Override this method to increase the number of core threads used to
      * process requests. This method will have no effect if you override
      * {@link #getExecutorService()}.
@@ -322,7 +333,7 @@ public abstract class SpiceService extends Service {
      *         {@link #DEFAULT_THREAD_COUNT}.
      */
     public int getCoreThreadCount() {
-        return DEFAULT_THREAD_COUNT;
+        return getThreadCount();
     }
 
     /**
@@ -333,7 +344,7 @@ public abstract class SpiceService extends Service {
      *         {@link #DEFAULT_THREAD_COUNT}.
      */
     public int getMaximumThreadCount() {
-        return DEFAULT_THREAD_COUNT;
+        return getThreadCount();
     }
 
     /**
@@ -438,7 +449,7 @@ public abstract class SpiceService extends Service {
     }
 
     protected final class SelfStopperRequestProcessorListener implements
-    RequestProcessorListener {
+        RequestProcessorListener {
         @Override
         public void requestsInProgress() {
         }

@@ -66,6 +66,25 @@ public class SpiceServiceTest extends ServiceTestCase<SpiceTestService> {
         final PriorityThreadPoolExecutor executorService =
                 (PriorityThreadPoolExecutor) getService().getExecutorService();
 
+        assertEquals(getService().getThreadCount(), executorService.getCorePoolSize());
+        assertEquals(getService().getThreadCount(), executorService.getMaximumPoolSize());
+        assertEquals(getService().getThreadPriority(), executorService.getThreadFactory()
+                .newThread(null).getPriority());
+    }
+
+    public void testGetExecutorService_corethread_defaults() {
+        // given
+
+        // when
+        Intent startIntent = new Intent();
+        startIntent.setClass(getContext(), SpiceTestService.class);
+        startService(startIntent);
+
+        // then
+        assertTrue(getService().getExecutorService() instanceof PriorityThreadPoolExecutor);
+        final PriorityThreadPoolExecutor executorService =
+                (PriorityThreadPoolExecutor) getService().getExecutorService();
+
         assertEquals(getService().getCoreThreadCount(), executorService.getCorePoolSize());
         assertEquals(getService().getMaximumThreadCount(), executorService.getMaximumPoolSize());
         assertEquals(getService().getThreadPriority(), executorService.getThreadFactory()
