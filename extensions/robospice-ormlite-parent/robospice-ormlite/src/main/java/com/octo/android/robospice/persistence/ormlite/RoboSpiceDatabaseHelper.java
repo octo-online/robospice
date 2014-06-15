@@ -10,7 +10,6 @@ import java.util.Collection;
 import java.util.List;
 
 import roboguice.util.temp.Ln;
-import android.app.Application;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 
@@ -34,8 +33,8 @@ public class RoboSpiceDatabaseHelper extends OrmLiteSqliteOpenHelper {
         return cacheKey.substring(cacheKey.indexOf('_') + 1);
     }
 
-    public RoboSpiceDatabaseHelper(Application application, String databaseName, int databaseVersion) {
-        super(application, databaseName, null, databaseVersion);
+    public RoboSpiceDatabaseHelper(Context context, String databaseName, int databaseVersion) {
+        super(context, databaseName, null, databaseVersion);
     }
 
     public RoboSpiceDatabaseHelper(Context context, String databaseName, SQLiteDatabase.CursorFactory factory, int databaseVersion) {
