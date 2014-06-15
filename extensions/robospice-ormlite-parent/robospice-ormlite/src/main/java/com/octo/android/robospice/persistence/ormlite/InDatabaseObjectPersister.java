@@ -162,7 +162,7 @@ public class InDatabaseObjectPersister<T, ID> extends ObjectPersister<T> {
      * @throws IllegalAccessException
      * @throws InvocationTargetException
      */
-    @SuppressWarnings({"unchecked", "rawtypes"})
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     protected <E> void saveAllForeignObjectsToCache(E data) throws SQLException, IllegalAccessException, InvocationTargetException {
         // copy children on memory
         // set children to null on parents so that we can save the parent
@@ -322,8 +322,8 @@ public class InDatabaseObjectPersister<T, ID> extends ObjectPersister<T> {
         DatabaseTableConfig config = mTableConfigs.get(clazz);
         if (config == null) {
             config = DatabaseTableConfigUtil.fromClass(databaseHelper.getConnectionSource(), clazz);
-            config.extractFieldTypes(databaseHelper.getConnectionSource());
             if (config != null) {
+                config.extractFieldTypes(databaseHelper.getConnectionSource());
                 mTableConfigs.put(clazz, config);
             }
         }
