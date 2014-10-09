@@ -17,32 +17,39 @@ import com.octo.android.robospice.request.retrofit.RetrofitSpiceRequest;
 public abstract class RetrofitSpiceService extends SpiceService {
 
     private Map<Class<?>, Object> retrofitInterfaceToServiceMap = new HashMap<Class<?>, Object>();
-    private RestAdapter.Builder builder;
     private RestAdapter restAdapter;
     protected List<Class<?>> retrofitInterfaceList = new ArrayList<Class<?>>();
-    private Converter mConverter;
+    private Converter converter;
 
     @Override
     public void onCreate() {
         super.onCreate();
-        builder = createRestAdapterBuilder();
+        RestAdapter.Builder builder = createRestAdapterBuilder();
+        onCreateRestAdapterBuilder(builder);
         restAdapter = builder.build();
     }
 
     protected abstract String getServerUrl();
-
+    protected abstract Converter createConverter();
+    
+    protected void onCreateRestAdapterBuilder(RestAdapter.Builder builder) {}
+    
+    /**
+     * @deprecated Use {@link #onCreateRestAdapterBuilder(RestAdapter.Builder)}
+     */
+    @Deprecated
     protected RestAdapter.Builder createRestAdapterBuilder() {
-        return new RestAdapter.Builder().setEndpoint(getServerUrl()).setConverter(getConverter());
+        return new RestAdapter.Builder()
+            .setEndpoint(getServerUrl())
+            .setConverter(getConverter());
     }
 
-    protected abstract Converter createConverter();
-
     protected final Converter getConverter() {
-        if (mConverter == null) {
-            mConverter = createConverter();
+        if (converter == null) {
+            converter = createConverter();
         }
 
-        return mConverter;
+        return converter;
     }
 
     @SuppressWarnings("unchecked")
