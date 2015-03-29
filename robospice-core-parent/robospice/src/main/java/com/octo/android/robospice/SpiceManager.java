@@ -26,6 +26,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.os.Bundle;
 import android.os.IBinder;
 
 import com.octo.android.robospice.SpiceService.SpiceServiceBinder;
@@ -96,6 +97,8 @@ public class SpiceManager implements Runnable {
     /** The class of the {@link SpiceService} to bind to. */
     private final Class<? extends SpiceService> spiceServiceClass;
 
+    /** Service arguments */
+    private Bundle args;
     /** A reference on the {@link SpiceService} obtained by local binding. */
     private SpiceService spiceService;
     /** {@link SpiceService} binder. */
@@ -198,10 +201,25 @@ public class SpiceManager implements Runnable {
      *            {@link SpiceService}.
      */
     public synchronized void start(final Context context) {
+        start(context, null);
+    }
+
+    /**
+     * Start the {@link SpiceManager}. It will bind asynchronously to the
+     * {@link SpiceService}.
+     * @param context
+     *            a context that will be used to bind to the service. Typically,
+     *            the Activity or Fragment that needs to interact with the
+     *            {@link SpiceService}.
+     * @param args
+     *            {@link android.os.Bundle} with parameters for the service
+     */
+    public synchronized void start(final Context context, final Bundle args) {
         this.contextWeakReference = new WeakReference<Context>(context);
         if (isStarted()) {
             throw new IllegalStateException("Already started.");
         } else {
+            this.args = args;
             executorService = Executors.newFixedThreadPool(getThreadCount(), new MinPriorityThreadFactory());
             // start the binding to the service
             runner = new Thread(this, SPICE_MANAGER_THREAD_NAME_PREFIX + spiceManagerThreadIndex++);
@@ -1188,6 +1206,10 @@ public class SpiceManager implements Runnable {
 
             if (spiceService == null) {
                 final Intent intentService = new Intent(context, spiceServiceClass);
+                if (args != null) {
+                    intentService.putExtras(args);
+                    args = null;
+                }
                 Ln.v("Binding to service.");
                 spiceServiceConnection = new SpiceServiceConnection();
                 boolean bound = context.getApplicationContext().bindService(intentService, spiceServiceConnection, Context.BIND_AUTO_CREATE);
