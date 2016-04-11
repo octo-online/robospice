@@ -49,7 +49,8 @@ public class DefaultRequestListenerNotifier implements RequestListenerNotifier {
 
     @Override
     public <T> void notifyListenersOfRequestAggregated(final CachedSpiceRequest<T> request, Set<RequestListener<?>> listeners) {
-        // does nothing for now
+
+        post(new PendingAttachedRunnable<T>(listeners, request), request.getRequestCacheKey());
     }
 
     @Override
@@ -111,7 +112,37 @@ public class DefaultRequestListenerNotifier implements RequestListenerNotifier {
             }
         }
     }
-    
+
+    private static class PendingAttachedRunnable<T> implements Runnable {
+        private final Set<RequestListener<?>> listeners;
+        private final CachedSpiceRequest<T> request;
+
+        public PendingAttachedRunnable(final Set<RequestListener<?>> listeners, final CachedSpiceRequest<T> request) {
+            this.listeners = listeners;
+            this.request = request;
+        }
+
+        @Override
+        public void run() {
+
+            if (listeners == null) {
+                return;
+            }
+
+            Ln.v("Notifying " + listeners.size() + " listeners of pending request attached");
+            synchronized (listeners) {
+                for (final RequestListener<?> listener : listeners) {
+                    if (listener != null && listener instanceof PendingRequestListener) {
+                        @SuppressWarnings("unchecked")
+                        final PendingRequestListener<T> listenerOfT = (PendingRequestListener<T>) listener;
+                        Ln.v("Notifying %s", listener.getClass().getSimpleName());
+                        listenerOfT.onRequestAttached(request);
+                    }
+                }
+            }
+        }
+    }
+
     private static class ProgressRunnable implements Runnable {
         private final RequestProgress progress;
         private final Set<RequestListener<?>> listeners;
