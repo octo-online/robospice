@@ -5,27 +5,27 @@ import android.test.ServiceTestCase;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import com.octo.android.robospice.SpiceManager;
-import com.octo.android.robospice.retrofit2.test.TestRetrofitGsonSpiceService2;
+import com.octo.android.robospice.retrofit2.test.TestRetrofitGsonSpiceService;
 import com.octo.android.robospice.retrofit2.test.model.WeatherResult;
 import com.octo.android.robospice.retrofit2.test.stub.RequestListenerStub;
 import com.octo.android.robospice.retrofit2.test.stub.RetrofitSpiceRequestStub;
 
 @SmallTest
-public class RetrofitGsonSpiceService2Test extends ServiceTestCase<TestRetrofitGsonSpiceService2> {
+public class RetrofitGsonSpiceServiceTest extends ServiceTestCase<TestRetrofitGsonSpiceService> {
 
     private static final int REQUEST_COMPLETION_TIMEOUT = 1000;
     private static final long SMALL_THREAD_SLEEP = 50;
     private SpiceManager spiceManager;
 
-    public RetrofitGsonSpiceService2Test() {
-        super(TestRetrofitGsonSpiceService2.class);
+    public RetrofitGsonSpiceServiceTest() {
+        super(TestRetrofitGsonSpiceService.class);
     }
 
     @Override
     protected void setUp() throws Exception {
         super.setUp();
         Thread.sleep(SMALL_THREAD_SLEEP);
-        spiceManager = new SpiceManager(TestRetrofitGsonSpiceService2.class);
+        spiceManager = new SpiceManager(TestRetrofitGsonSpiceService.class);
     }
 
     @Override
@@ -39,7 +39,7 @@ public class RetrofitGsonSpiceService2Test extends ServiceTestCase<TestRetrofitG
 
     public void test_createRequestFactory_returns_default_factory() {
         Intent startIntent = new Intent();
-        startIntent.setClass(getContext(), TestRetrofitGsonSpiceService2.class);
+        startIntent.setClass(getContext(), TestRetrofitGsonSpiceService.class);
         startService(startIntent);
         assertNotNull(getService().createRestAdapterBuilder());
     }

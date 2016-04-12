@@ -3,7 +3,7 @@ package com.octo.android.robospice.retrofit2.test;
 import com.octo.android.robospice.retrofit2.RetrofitGsonSpiceService;
 import java.io.File;
 
-public class TestRetrofitGsonSpiceService2 extends RetrofitGsonSpiceService {
+public class TestRetrofitGsonSpiceService extends RetrofitGsonSpiceService {
 
     @Override
     protected String getServerUrl() {
