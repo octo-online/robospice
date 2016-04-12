@@ -11,12 +11,12 @@ import com.octo.android.robospice.request.SpiceRequest;
  * @param <R>
  *            the retrofited interface used by this request.
  */
-public abstract class RetrofitSpiceRequest2<T, R> extends SpiceRequest<T> {
+public abstract class RetrofitSpiceRequest<T, R> extends SpiceRequest<T> {
 
     private final Class<R> retrofitedInterfaceClass;
     private R service;
 
-    public RetrofitSpiceRequest2(Class<T> clazz, Class<R> retrofitedInterfaceClass) {
+    public RetrofitSpiceRequest(Class<T> clazz, Class<R> retrofitedInterfaceClass) {
         super(clazz);
         this.retrofitedInterfaceClass = retrofitedInterfaceClass;
     }

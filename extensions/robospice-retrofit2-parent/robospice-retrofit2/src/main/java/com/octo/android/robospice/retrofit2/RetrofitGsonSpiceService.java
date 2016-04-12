@@ -7,7 +7,7 @@ import android.app.Application;
 
 import com.octo.android.robospice.persistence.CacheManager;
 import com.octo.android.robospice.persistence.exception.CacheCreationException;
-import com.octo.android.robospice.persistence.retrofit2.RetrofitObjectPersisterFactory2;
+import com.octo.android.robospice.persistence.retrofit2.RetrofitObjectPersisterFactory;
 import com.octo.android.robospice.persistence.retrofit2.transformers.RetrofitGsonConvertAware;
 import retrofit2.converter.gson.GsonConverterFactory;
 
@@ -16,12 +16,12 @@ import retrofit2.converter.gson.GsonConverterFactory;
  * requests and both networking and caching will use Gson. To use it, make your
  * service to extend this service.
  */
-public abstract class RetrofitGsonSpiceService2 extends RetrofitSpiceService2 {
+public abstract class RetrofitGsonSpiceService extends RetrofitSpiceService {
 
     @Override
     public CacheManager createCacheManager(Application application) throws CacheCreationException {
         CacheManager cacheManager = new CacheManager();
-        cacheManager.addPersister(new RetrofitObjectPersisterFactory2(getApplication(), getRetrofitToCacheConverter(), getCacheFolder()));
+        cacheManager.addPersister(new RetrofitObjectPersisterFactory(getApplication(), getRetrofitToCacheConverter(), getCacheFolder()));
         return cacheManager;
     }
 

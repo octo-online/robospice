@@ -12,18 +12,18 @@ import com.octo.android.robospice.persistence.exception.CacheSavingException;
 import com.octo.android.robospice.persistence.file.InFileObjectPersister;
 import com.octo.android.robospice.persistence.retrofit2.transformers.RetrofitConvertAware;
 
-public abstract class RetrofitObjectPersister2<T> extends InFileObjectPersister<T> {
+public abstract class RetrofitObjectPersister<T> extends InFileObjectPersister<T> {
     private RetrofitConvertAware converter;
 
     // ============================================================================================
     // CONSTRUCTOR
     // ============================================================================================
-    public RetrofitObjectPersister2(Application application, RetrofitConvertAware converter, Class<T> clazz, File cacheFolder) throws CacheCreationException {
+    public RetrofitObjectPersister(Application application, RetrofitConvertAware converter, Class<T> clazz, File cacheFolder) throws CacheCreationException {
         super(application, clazz, cacheFolder);
         this.converter = converter;
     }
 
-    public RetrofitObjectPersister2(Application application, RetrofitConvertAware converter, Class<T> clazz) throws CacheCreationException {
+    public RetrofitObjectPersister(Application application, RetrofitConvertAware converter, Class<T> clazz) throws CacheCreationException {
         this(application, converter, clazz, null);
     }
 

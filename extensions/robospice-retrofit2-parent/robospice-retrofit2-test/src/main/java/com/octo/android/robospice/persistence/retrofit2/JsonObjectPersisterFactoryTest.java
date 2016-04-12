@@ -28,7 +28,7 @@ public abstract class JsonObjectPersisterFactoryTest extends AndroidTestCase {
         super.setUp();
         Thread.sleep(SMALL_THREAD_SLEEP);
         Application application = (Application) getContext().getApplicationContext();
-        RetrofitObjectPersisterFactory2 factory = getRetrofitObjectPersisterFactory(application);
+        RetrofitObjectPersisterFactory factory = getRetrofitObjectPersisterFactory(application);
         inFileObjectPersister = factory.createObjectPersister(WeatherResult.class);
     }
 
@@ -85,7 +85,7 @@ public abstract class JsonObjectPersisterFactoryTest extends AndroidTestCase {
         WeatherResult weatherRequestStatus = buildWeather(TEST_TEMP2, TEST_TEMP_UNIT);
         final String fileName = "toto";
         inFileObjectPersister.saveDataToCacheAndReturnData(weatherRequestStatus, fileName);
-        File cachedFile = ((RetrofitObjectPersister2<?>) inFileObjectPersister).getCacheFile(fileName);
+        File cachedFile = ((RetrofitObjectPersister<?>) inFileObjectPersister).getCacheFile(fileName);
         final int secondsCountBackInTime = 5;
         cachedFile.setLastModified(System.currentTimeMillis() - secondsCountBackInTime * DurationInMillis.ONE_SECOND);
 
@@ -177,5 +177,5 @@ public abstract class JsonObjectPersisterFactoryTest extends AndroidTestCase {
         return weatherRequestStatus;
     }
 
-    protected abstract RetrofitObjectPersisterFactory2 getRetrofitObjectPersisterFactory(Application application) throws CacheCreationException;
+    protected abstract RetrofitObjectPersisterFactory getRetrofitObjectPersisterFactory(Application application) throws CacheCreationException;
 }

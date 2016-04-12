@@ -13,9 +13,9 @@ import com.octo.android.robospice.SpiceService;
 import com.octo.android.robospice.persistence.retrofit2.transformers.RetrofitConvertAware;
 import com.octo.android.robospice.request.CachedSpiceRequest;
 import com.octo.android.robospice.request.listener.RequestListener;
-import com.octo.android.robospice.request.retrofit2.RetrofitSpiceRequest2;
+import com.octo.android.robospice.request.retrofit2.RetrofitSpiceRequest;
 
-public abstract class RetrofitSpiceService2 extends SpiceService {
+public abstract class RetrofitSpiceService extends SpiceService {
 
     private final Map<Class<?>, Object> retrofitInterfaceToServiceMap = new HashMap<Class<?>, Object>();
     private Retrofit.Builder builder;
@@ -74,8 +74,8 @@ public abstract class RetrofitSpiceService2 extends SpiceService {
     @SuppressWarnings({ "rawtypes", "unchecked" })
     @Override
     public void addRequest(CachedSpiceRequest<?> request, Set<RequestListener<?>> listRequestListener) {
-        if (request.getSpiceRequest() instanceof RetrofitSpiceRequest2) {
-            RetrofitSpiceRequest2 retrofitSpiceRequest = (RetrofitSpiceRequest2) request.getSpiceRequest();
+        if (request.getSpiceRequest() instanceof RetrofitSpiceRequest) {
+            RetrofitSpiceRequest retrofitSpiceRequest = (RetrofitSpiceRequest) request.getSpiceRequest();
             retrofitSpiceRequest.setService(getRetrofitService(retrofitSpiceRequest.getRetrofitedInterfaceClass()));
         }
         super.addRequest(request, listRequestListener);

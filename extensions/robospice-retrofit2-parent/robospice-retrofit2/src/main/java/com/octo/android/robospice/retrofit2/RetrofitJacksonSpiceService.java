@@ -7,7 +7,7 @@ import android.app.Application;
 
 import com.octo.android.robospice.persistence.CacheManager;
 import com.octo.android.robospice.persistence.exception.CacheCreationException;
-import com.octo.android.robospice.persistence.retrofit2.RetrofitObjectPersisterFactory2;
+import com.octo.android.robospice.persistence.retrofit2.RetrofitObjectPersisterFactory;
 import com.octo.android.robospice.persistence.retrofit2.transformers.RetrofitJacksonConvertAware;
 import retrofit2.converter.jackson.JacksonConverterFactory;
 
@@ -16,12 +16,12 @@ import retrofit2.converter.jackson.JacksonConverterFactory;
  * requests and both networking and caching will use Jackson. To use it, make your
  * service to extend this service.
  */
-public abstract class RetrofitJacksonSpiceService2 extends RetrofitSpiceService2 {
+public abstract class RetrofitJacksonSpiceService extends RetrofitSpiceService {
 
     @Override
     public CacheManager createCacheManager(Application application) throws CacheCreationException {
         CacheManager cacheManager = new CacheManager();
-        cacheManager.addPersister(new RetrofitObjectPersisterFactory2(getApplication(), getRetrofitToCacheConverter(), getCacheFolder()));
+        cacheManager.addPersister(new RetrofitObjectPersisterFactory(getApplication(), getRetrofitToCacheConverter(), getCacheFolder()));
         return cacheManager;
     }
 

@@ -10,7 +10,7 @@ import com.octo.android.robospice.persistence.file.InFileObjectPersisterFactory;
 import com.octo.android.robospice.persistence.retrofit2.transformers.RetrofitConvertAware;
 import java.util.List;
 
-public class RetrofitObjectPersisterFactory2 extends InFileObjectPersisterFactory {
+public class RetrofitObjectPersisterFactory extends InFileObjectPersisterFactory {
 
     // ----------------------------------
     // ATTRIBUTES
@@ -20,20 +20,20 @@ public class RetrofitObjectPersisterFactory2 extends InFileObjectPersisterFactor
     // ----------------------------------
     // CONSTRUCTORS
     // ----------------------------------
-    public RetrofitObjectPersisterFactory2(Application application, RetrofitConvertAware converter, File cacheFolder) throws CacheCreationException {
+    public RetrofitObjectPersisterFactory(Application application, RetrofitConvertAware converter, File cacheFolder) throws CacheCreationException {
         this(application, converter, null, cacheFolder);
     }
 
-    public RetrofitObjectPersisterFactory2(Application application, RetrofitConvertAware converter, List<Class<?>> listHandledClasses, File cacheFolder) throws CacheCreationException {
+    public RetrofitObjectPersisterFactory(Application application, RetrofitConvertAware converter, List<Class<?>> listHandledClasses, File cacheFolder) throws CacheCreationException {
         super(application, listHandledClasses, cacheFolder);
         this.converter = converter;
     }
 
-    public RetrofitObjectPersisterFactory2(Application application, RetrofitConvertAware converter) throws CacheCreationException {
+    public RetrofitObjectPersisterFactory(Application application, RetrofitConvertAware converter) throws CacheCreationException {
         this(application, converter, null, null);
     }
 
-    public RetrofitObjectPersisterFactory2(Application application, RetrofitConvertAware converter,
+    public RetrofitObjectPersisterFactory(Application application, RetrofitConvertAware converter,
             List<Class<?>> listHandledClasses) throws CacheCreationException {
         this(application, converter, listHandledClasses, null);
     }
@@ -43,7 +43,7 @@ public class RetrofitObjectPersisterFactory2 extends InFileObjectPersisterFactor
     // ----------------------------------
     @Override
     public <DATA> InFileObjectPersister<DATA> createInFileObjectPersister(Class<DATA> clazz, File cacheFolder) throws CacheCreationException {
-        return new RetrofitGsonObjectPersister2<DATA>(getApplication(), converter, clazz, cacheFolder);
+        return new RetrofitGsonObjectPersister<DATA>(getApplication(), converter, clazz, cacheFolder);
     }
 
 }

@@ -28,16 +28,16 @@ import java.nio.charset.Charset;
 import roboguice.util.temp.Ln;
 
 
-public class RetrofitGsonObjectPersister2<T> extends RetrofitObjectPersister2<T> {
+public class RetrofitGsonObjectPersister<T> extends RetrofitObjectPersister<T> {
     private static final int READ_BUFFER_SIZE = 512;
     private final RetrofitConvertAware converter;
 
-    public RetrofitGsonObjectPersister2(Application application, RetrofitConvertAware converter, Class<T> clazz, File cacheFolder) throws CacheCreationException {
+    public RetrofitGsonObjectPersister(Application application, RetrofitConvertAware converter, Class<T> clazz, File cacheFolder) throws CacheCreationException {
         super(application, converter, clazz, cacheFolder);
         this.converter = converter;
     }
 
-    public RetrofitGsonObjectPersister2(Application application, RetrofitConvertAware converter, Class<T> clazz) throws CacheCreationException {
+    public RetrofitGsonObjectPersister(Application application, RetrofitConvertAware converter, Class<T> clazz) throws CacheCreationException {
         super(application, converter, clazz);
         this.converter = converter;
     }
