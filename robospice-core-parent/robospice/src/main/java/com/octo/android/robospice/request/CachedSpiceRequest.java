@@ -25,6 +25,7 @@ public class CachedSpiceRequest<RESULT> extends SpiceRequest<RESULT> {
     private boolean isProcessable = true;
     private boolean isAcceptingDirtyCache;
     private boolean isOffline;
+    private boolean isLoadDataFromNetworkCalledBefore;
 
     public CachedSpiceRequest(final SpiceRequest<RESULT> spiceRequest, final Object requestCacheKey, final long cacheDuration) {
         super(spiceRequest.getResultType());
@@ -45,6 +46,8 @@ public class CachedSpiceRequest<RESULT> extends SpiceRequest<RESULT> {
 
     @Override
     public RESULT loadDataFromNetwork() throws Exception {
+        isLoadDataFromNetworkCalledBefore = true;
+
         return spiceRequest.loadDataFromNetwork();
     }
 
@@ -126,6 +129,14 @@ public class CachedSpiceRequest<RESULT> extends SpiceRequest<RESULT> {
     /* package private */@Override
     RequestProgress getProgress() {
         return spiceRequest.getProgress();
+    }
+
+    /**
+     * Has this request had a load data from network attempt before?
+     * @return false if the call has never been attempted before (including failed attempts)
+     */
+    public boolean isLoadDataFromNetworkCalledBefore() {
+        return isLoadDataFromNetworkCalledBefore;
     }
 
     @Override

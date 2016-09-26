@@ -131,8 +131,12 @@ public class DefaultRequestRunner implements RequestRunner {
             Ln.e("Network is down.");
 
             if (!request.isCancelled()) {
-                // don't retry when there is no network
-                requestProgressManager.notifyListenersOfRequestFailure(request, new NoNetworkException());
+                if (!request.isLoadDataFromNetworkCalledBefore()) {
+                    // don't retry when there has been no indication of an active network before
+                    requestProgressManager.notifyListenersOfRequestFailure(request, new NoNetworkException());
+                } else {
+                    handleRetry(request, new NoNetworkException());
+                }
             }
 
             printRequestProcessingDuration(startTime, request);

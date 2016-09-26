@@ -1232,6 +1232,43 @@ public class RequestProcessorTest extends AndroidTestCase {
         assertTrue(mockRequestListener.getReceivedException() instanceof NoNetworkException);
     }
 
+    public void testAddRequestInProgressButNetworkGoesDown_and_request_has_retry_policy() throws CacheLoadingException, SpiceException, InterruptedException, Exception {
+        // given
+        CachedSpiceRequestStub<String> stubRequest = createFailedRequest(TEST_CLASS, TEST_CACHE_KEY, TEST_DURATION);
+
+        DefaultRetryPolicy retryPolicy = new DefaultRetryPolicy(TEST_RETRY_COUNT, TEST_DELAY_BEFORE_RETRY, TEST_RETRY_BACKOFF_MULTIPLIER);
+        stubRequest.setRetryPolicy(retryPolicy);
+
+        RequestListenerStub<String> mockRequestListener = new RequestListenerStub<String>();
+        Set<RequestListener<?>> requestListenerSet = new HashSet<RequestListener<?>>();
+        requestListenerSet.add(mockRequestListener);
+
+        networkStateChecker = new MockLimitedAvailabilityNetworkStateChecker();
+        ExecutorService executorService = PriorityThreadPoolExecutor.getPriorityExecutor(1);
+        mockRequestRunner = new DefaultRequestRunner(getContext(), mockCacheManager, executorService, mockRequestProgressManager, networkStateChecker);
+        requestProcessorUnderTest = new RequestProcessor(mockCacheManager, mockRequestProgressManager, mockRequestRunner);
+
+        EasyMock.expect(mockCacheManager.loadDataFromCache(EasyMock.eq(TEST_CLASS), EasyMock.eq(TEST_CACHE_KEY), EasyMock.eq(TEST_DURATION))).andReturn(null);
+        EasyMock.expectLastCall().anyTimes();
+        EasyMock.replay(mockCacheManager);
+
+        // when
+        requestProcessorUnderTest.setFailOnCacheError(true);
+        networkStateChecker.setNetworkAvailable(true);
+        requestProcessorUnderTest.addRequest(stubRequest, requestListenerSet);
+
+        mockRequestListener.await(REQUEST_COMPLETION_TIME_OUT);
+
+        // then
+        assertNotNull(stubRequest.getRetryPolicy());
+        assertEquals(0, stubRequest.getRetryPolicy().getRetryCount());
+        EasyMock.verify(mockCacheManager);
+        assertTrue(stubRequest.isLoadDataFromNetworkCalled());
+        assertTrue(mockRequestListener.isExecutedInUIThread());
+        assertFalse(mockRequestListener.isSuccessful());
+        assertTrue(mockRequestListener.getReceivedException() instanceof NoNetworkException);
+    }
+
     public void testDefaultRetryPolicy_implements_retry_countdown_and_exponential_backoff() throws Exception {
         // define local values since class constant values didn't reveal
         // incremental backoff
@@ -1349,6 +1386,24 @@ public class RequestProcessorTest extends AndroidTestCase {
         @Override
         public void checkPermissions(Context context) {
             // do nothing
+        }
+    }
+
+    private class MockLimitedAvailabilityNetworkStateChecker extends MockNetworkStateChecker {
+        private boolean networkAvailable = true;
+        private boolean isFirstCheckNetworkAvailable = true;
+
+        @Override
+        public boolean isNetworkAvailable(Context context) {
+            boolean result = false;
+
+            if (isFirstCheckNetworkAvailable) {
+                result = super.isNetworkAvailable(context);
+
+                isFirstCheckNetworkAvailable = false;
+            }
+
+            return result;
         }
     }
 }
