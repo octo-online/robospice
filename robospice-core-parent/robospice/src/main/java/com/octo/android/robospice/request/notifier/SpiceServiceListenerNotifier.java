@@ -159,7 +159,7 @@ public class SpiceServiceListenerNotifier {
      * @author Andrew.Clark
      */
     private static class RequestAddedNotifier implements Runnable {
-        private List<SpiceServiceListener> spiceServiceListenerList;
+        private final List<SpiceServiceListener> spiceServiceListenerList;
         private CachedSpiceRequest<?> request;
         private RequestProcessingContext requestProcessingContext;
 
@@ -187,7 +187,7 @@ public class SpiceServiceListenerNotifier {
      * @author Andrew.Clark
      */
     private static class RequestAggregatedNotifier implements Runnable {
-        private List<SpiceServiceListener> spiceServiceListenerList;
+        private final List<SpiceServiceListener> spiceServiceListenerList;
         private CachedSpiceRequest<?> request;
         private RequestProcessingContext requestProcessingContext;
 
@@ -216,7 +216,7 @@ public class SpiceServiceListenerNotifier {
      * @author Andrew.Clark
      */
     private static class RequestNotFoundNotifier implements Runnable {
-        private List<SpiceServiceListener> spiceServiceListenerList;
+        private final List<SpiceServiceListener> spiceServiceListenerList;
         private CachedSpiceRequest<?> request;
         private RequestProcessingContext requestProcessingContext;
 
@@ -244,7 +244,7 @@ public class SpiceServiceListenerNotifier {
      * @author Andrew.Clark
      */
     private static class RequestFailedNotifier implements Runnable {
-        private List<SpiceServiceListener> spiceServiceListenerList;
+        private final List<SpiceServiceListener> spiceServiceListenerList;
         private CachedSpiceRequest<?> request;
         private RequestProcessingContext requestProcessingContext;
 
@@ -271,7 +271,7 @@ public class SpiceServiceListenerNotifier {
      * @param <T>
      */
     private static class RequestSucceededNotifier<T> implements Runnable {
-        private List<SpiceServiceListener> spiceServiceListenerList;
+        private final List<SpiceServiceListener> spiceServiceListenerList;
         private CachedSpiceRequest<T> request;
         private RequestProcessingContext requestProcessingContext;
 
@@ -297,7 +297,7 @@ public class SpiceServiceListenerNotifier {
      * @author Andrew.Clark
      */
     private static class RequestCancelledNotifier implements Runnable {
-        private List<SpiceServiceListener> spiceServiceListenerList;
+        private final List<SpiceServiceListener> spiceServiceListenerList;
         private CachedSpiceRequest<?> request;
         private RequestProcessingContext requestProcessingContext;
 
@@ -324,7 +324,7 @@ public class SpiceServiceListenerNotifier {
      * @author Andrew.Clark
      */
     private static class RequestProgressNotifier implements Runnable {
-        private List<SpiceServiceListener> spiceServiceListenerList;
+        private final List<SpiceServiceListener> spiceServiceListenerList;
         private CachedSpiceRequest<?> request;
         private RequestProcessingContext requestProcessingContext;
 
@@ -350,7 +350,7 @@ public class SpiceServiceListenerNotifier {
      * @author SNI
      */
     private static class RequestProcessedNotifier implements Runnable {
-        private List<SpiceServiceListener> spiceServiceListenerList;
+        private final List<SpiceServiceListener> spiceServiceListenerList;
         private CachedSpiceRequest<?> request;
         private RequestProcessingContext requestProcessingContext;
 
