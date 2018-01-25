@@ -32,7 +32,7 @@ public class DoubleInMemoryPersisterStub extends ObjectPersister<Double> {
         if (maxTimeInCache == DurationInMillis.ALWAYS_EXPIRED || maxTimeInCache > DurationInMillis.ONE_MINUTE) {
             return null;
         }
-        Ln.d("Value in cache for " + cacheKey + " is " + map.get(cacheKey));
+        Ln.d("Value in cache for %s is %s", cacheKey, map.get(cacheKey));
         return map.get(cacheKey);
     }
 
@@ -49,14 +49,14 @@ public class DoubleInMemoryPersisterStub extends ObjectPersister<Double> {
 
     @Override
     public Double saveDataToCacheAndReturnData(Double data, Object cacheKey) throws CacheSavingException {
-        Ln.d("Adding " + data + " to cache at " + cacheKey);
+        Ln.d("Adding %s to cache at %s", data, cacheKey);
         map.put(cacheKey, data);
         return data;
     }
 
     @Override
     public boolean removeDataFromCache(Object cacheKey) {
-        Ln.d("Clearing cache at" + cacheKey);
+        Ln.d("Clearing cache at %s", cacheKey);
         map.remove(cacheKey);
         return true;
     }

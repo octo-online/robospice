@@ -69,7 +69,7 @@ public class DefaultRequestRunner implements RequestRunner {
 
         try {
             if (isStopped) {
-                Ln.d("Dropping request : " + request + " as runner is stopped.");
+                Ln.d("Dropping request : %s as runner is stopped.", request);
                 return;
             }
             planRequestExecution(request);
@@ -80,7 +80,7 @@ public class DefaultRequestRunner implements RequestRunner {
 
     protected <T> void processRequest(final CachedSpiceRequest<T> request) {
         final long startTime = System.currentTimeMillis();
-        Ln.d("Processing request : " + request);
+        Ln.d("Processing request : %s", request);
 
         T result = null;
 
@@ -94,13 +94,13 @@ public class DefaultRequestRunner implements RequestRunner {
         if (request.getRequestCacheKey() != null && request.getCacheDuration() != DurationInMillis.ALWAYS_EXPIRED) {
             // First, search data in cache
             try {
-                Ln.d("Loading request from cache : " + request);
+                Ln.d("Loading request from cache : %s", request);
                 request.setStatus(RequestStatus.READING_FROM_CACHE);
                 result = loadDataFromCache(request.getResultType(), request.getRequestCacheKey(), request.getCacheDuration());
                 // if something is found in cache, fire result and finish
                 // request
                 if (result != null) {
-                    Ln.d("Request loaded from cache : " + request + " result=" + result);
+                    Ln.d("Request loaded from cache : %s result=%s", request, result);
                     requestProgressManager.notifyListenersOfRequestSuccess(request, result);
                     printRequestProcessingDuration(startTime, request);
                     return;
@@ -151,7 +151,7 @@ public class DefaultRequestRunner implements RequestRunner {
             Ln.d("Network request call ended.");
         } catch (final Exception e) {
             if (!request.isCancelled()) {
-                Ln.e(e, "An exception occurred during request network execution :" + e.getMessage());
+                Ln.e(e, "An exception occurred during request network execution : %s", e.getMessage());
                 handleRetry(request, new NetworkException("Exception occurred during invocation of web service.", e));
             } else {
                 Ln.e("An exception occurred during request network execution but request was cancelled, so listeners are not called.");
@@ -277,7 +277,7 @@ public class DefaultRequestRunner implements RequestRunner {
                             Thread.sleep(request.getRetryPolicy().getDelayBeforeRetry());
                             executeRequest(request);
                         } catch (InterruptedException e) {
-                            Ln.e(e, "Retry attempt failed for request " + request);
+                            Ln.e(e, "Retry attempt failed for request %s", request);
                         }
                     }
                 }).start();
